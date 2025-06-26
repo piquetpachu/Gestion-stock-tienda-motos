@@ -1,0 +1,2 @@
+cualquier cosa publica que se deba cargar en la pagina
+(imagenes, iconos, fuentes, etc)
