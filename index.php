@@ -1,7 +1,7 @@
 <?php
-//archivo para ver la version de php
-//asegurate de que sea mayos a la version 8 
-//nacho tiene la version  8.2.12
-phpinfo();
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Content-Type: application/json");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+require_once 'routes/api.php';
 
-?>
