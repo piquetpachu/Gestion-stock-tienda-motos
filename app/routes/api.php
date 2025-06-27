@@ -1,6 +1,6 @@
 <?php
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$basePath = '/Gestion-stock-tienda-motos/';
+$basePath = '/Gestion-stock-tienda-motos/app/';
 $ruta = str_replace($basePath, '', $uri);
 $partes = explode('/', trim($ruta, '/'));
 $recurso = $partes[0] ?? null;
@@ -12,7 +12,7 @@ switch ($recurso) {
     case 'crear_producto':
     case (preg_match('/^actualizar_producto\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_producto\/\d+$/', $ruta) ? true : false):
-        require_once __DIR__ . '/../app/controllers/productosController.php';
+        require_once __DIR__ . '/../controllers/productosController.php';
         break;
 
     case 'usuarios':
