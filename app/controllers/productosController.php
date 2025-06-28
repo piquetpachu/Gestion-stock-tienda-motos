@@ -1,12 +1,7 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../models/productos.php';
-
-$metodo = $_SERVER['REQUEST_METHOD'];
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$basePath = '/Gestion-stock-tienda-motos/app/';
-$ruta = str_replace($basePath, '', $uri);
-$partes = explode('/', trim($ruta, '/'));
+require_once __DIR__ . '/../helpers/parsearRutas.php';
 
 switch (true) {
     case $ruta === 'productos' && $metodo === 'GET':
