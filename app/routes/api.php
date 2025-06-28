@@ -17,12 +17,21 @@ switch ($recurso) {
 
     case 'usuarios':
     case 'usuario':
-    case 'crear_usuario':
+    case 'registrar_usuario':
     case 'login':
     case (preg_match('/^actualizar_usuario\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_usuario\/\d+$/', $ruta) ? true : false):
         require_once __DIR__ . '/../controllers/usuariosController.php';
         break;
+
+    case 'ventas':
+    case 'venta':
+    case 'crear_venta':
+    case 'detalle_venta':
+    case (preg_match('/^borrar_venta\/\d+$/', $ruta) ? true : false):
+        require_once __DIR__ . '/../controllers/ventasController.php';
+        break;
+
 
     default:
         echo json_encode(["error" => "Ruta no válida"]);

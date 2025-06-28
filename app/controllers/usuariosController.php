@@ -1,13 +1,10 @@
 <?php
 require_once __DIR__ . '/../../config/database.php';
 require_once (__DIR__ . '/../models/usuarios.php');
+require_once __DIR__ . '/../helpers/parsearRutas.php';
 
 
-$metodo = $_SERVER['REQUEST_METHOD'];
-$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$basePath = '/Gestion-stock-tienda-motos/app/';
-$ruta = str_replace($basePath, '', $uri);
-$partes = explode('/', trim($ruta, '/'));
+
 switch ($recurso) {
     case 'usuarios':
         if ($metodo === 'GET') echo json_encode(obtenerUsuarios($pdo));
