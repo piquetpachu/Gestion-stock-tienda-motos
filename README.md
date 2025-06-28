@@ -1,101 +1,135 @@
-# 📁 Estructura del Proyecto PHP (MVC + API)
+# 👥 Guía de Colaboración con Git para el Proyecto Tienda de Motos
 
-Este proyecto está organizado siguiendo una estructura **MVC** (Modelo-Vista-Controlador) combinada con rutas para una **API REST**. A continuación, se detalla el propósito de cada carpeta y archivo:
-
----
-
-## 🧠 `app/`
-
-Contiene toda la lógica de negocio, organización del código y configuración principal del sistema.
-
-### 📁 `controllers/`
-- **productosController.php**: Controlador responsable de manejar las solicitudes relacionadas con productos. Recibe las peticiones desde las rutas y se comunica con los modelos para devolver resultados.
-
-### 📁 `models/`
-- **productos.php**: Modelo de productos. Contiene funciones para interactuar con la base de datos (obtener, insertar, actualizar, eliminar productos).
-- **usuario.php**: Modelo de usuarios. Similar al de productos pero para manejar datos de usuarios.
-
-### 📁 `routes/`
-- **api.php**: Define las rutas disponibles para consumir la API (por ejemplo: `/api/productos`, `/api/usuarios`). Conecta las URLs con sus respectivos controladores.
-- **index.php**: Punto de entrada principal si se accede por web tradicional (por ejemplo, para servir vistas o redireccionar).
-- **.htaccess**: Archivo de configuración de Apache para redirigir todas las solicitudes a `index.php` (routing amigable con URLs limpias).
+Este documento describe el flujo de trabajo que usamos en el equipo para desarrollar de forma ordenada y evitar conflictos de código.
 
 ---
 
-## ⚙️ `config/`
+## 🌿 Estructura de ramas
 
-Contiene archivos de configuración global del sistema.
-
-- **config.php**: Configuraciones generales (constantes, rutas, opciones de sistema).
-- **database.php**: Configura la conexión con la base de datos.
-- **cargar_env.php**: Carga las variables de entorno definidas en el archivo `.env`.
-
----
-
-## 🖼️ `frontend/views/`
-
-Agrupa todos los recursos estáticos y vistas del frontend.
-
-### 📁 `css/`
-- Archivos de estilo CSS del frontend.
-
-### 📁 `html/`
-- Archivos `.html` que representan la estructura visual de la interfaz.
-
-### 📁 `js/`
-- Scripts JavaScript que brindan interactividad al sitio.
+- **main** → Solo contiene código estable y funcional. Rama que se subirá al hosting.
+- **main-dev** → Rama de desarrollo general, donde se integran las funcionalidades del equipo.
+- **ramas de tarea** → Cada desarrollador crea una rama por tarea específica. Ejemplos:
+  - `crud-motos`
+  - `api-ventas`
+  - `registro-usuarios`
 
 ---
 
-## 🌐 `public/`
+## 🧪 Flujo paso a paso
 
-Esta carpeta es la única que debe estar accesible desde el navegador (document root).
+### 1. Actualizar tu repositorio local
 
-- 📁 `img/`: Imágenes públicas del sitio.
-- 📝 `cosas.txt`: Ejemplo de archivo público. No sensible.
+Antes de empezar una tarea, **actualizá tu copia local** del proyecto para tener el código más reciente del equipo:
+```bash
+git checkout main-dev
+git pull origin main-dev
+```
+🔎 ¿Qué hace git pull origin main-dev?
 
----
+Este comando:
 
-## 📦 `storage/`
+Descarga los últimos cambios que haya hecho otro compañero en la rama main-dev.
 
-Contenedor para archivos generados o subidos por el sistema. Puede incluir logs, archivos temporales, uploads, etc.
+Los fusiona automáticamente en tu copia local.
 
-- 📝 `cosas.txt`: Archivo de ejemplo, podría ser contenido generado por el sistema.
+📌 Es importante hacerlo siempre antes de crear una nueva rama o seguir trabajando en una que quedó pendiente.
 
----
+2. Crear una nueva rama de trabajo
+```bash
+git checkout -b nombre-de-la-rama
+```
+Ejemplo:
+```bash
+git checkout -b crud-motos
+```
+3. Trabajar en tu funcionalidad
+Agregá/modificá solo lo relacionado con tu tarea.
 
-## 🔐 Archivos raíz
+Evitá mezclar cambios innecesarios.
 
-- **.env**: Variables de entorno (credenciales, puertos, etc.). Nunca debe subirse a producción pública.
-- **.gitignore**: Define qué archivos deben ser ignorados por Git (por ejemplo, `.env`, `storage/`, etc.).
-- **env.txt**: Posiblemente un backup o ejemplo del `.env`.
+4. Guardar tus cambios
+```bash
+git add .
+git commit -m "feat: agregar formulario de motos"
+```
+5. Subir tu rama a GitHub
+```bash
+git push origin nombre-de-la-rama
+```
+Ejemplo:
 
----
+```bash
+git push origin crud-motos
+```
+6. Crear un Pull Request (PR)
+Entrá al repositorio en GitHub.
 
-## 🛠 Cómo trabajar con esta estructura
+GitHub mostrará un botón:
+👉 Compare & pull request
 
-### 1. Configura el entorno
-- Copia `env.txt` como `.env` y coloca tus credenciales y configuraciones reales.
-- Asegúrate de que Apache y PHP estén configurados para apuntar a la carpeta `public/`.
+Asegurate de que diga:
 
-### 2. Define rutas en `routes/api.php`
-- Cada ruta debe apuntar a una función en un controlador.
+- base: main-dev
 
-### 3. Controladores (`controllers/`)
-- Contienen la lógica para procesar solicitudes y respuestas.
+- compare: tu-rama
 
-### 4. Modelos (`models/`)
-- Realizan consultas y operaciones sobre la base de datos.
+Escribí un título y descripción clara.
 
-### 5. Frontend (`frontend/views/`)
-- Construye la interfaz de usuario usando HTML, CSS y JS.
+Hacé clic en Create pull request.
 
-### 6. Public
-- Solo esta carpeta se expone directamente al navegador.
+📌 Nota: Si la tarea está incompleta, podés marcar la PR como Draft.
 
-### 7. Storage
-- Ideal para manejar archivos temporales, logs, o archivos subidos.
+7. Merge y limpieza
+Una vez aprobada la PR:
 
----
+🔀 Merge:
+Hacé clic en el botón Merge pull request desde GitHub.
 
-✅ **Recomendación**: Mantén el código organizado, aplica buenas prácticas de seguridad y estructura tus rutas de forma clara y coherente.
+🧹 Borrar la rama:
+Desde GitHub:
+
+GitHub te ofrecerá un botón para Delete branch.
+
+Desde tu computadora:
+```bash
+git checkout main-dev
+git branch -d nombre-de-la-rama
+git push origin --delete nombre-de-la-rama
+```
+🧠 Buenas prácticas
+- Usá git pull origin main-dev antes de empezar o continuar una tarea.
+
+- Escribí mensajes de commit claros 
+
+- Probá tu código antes de subirlo.
+
+- Si tenés dudas, consultá en el grupo antes de mergear.
+
+💬 Ejemplo de Pull Request
+
+Título: CRUD de motos básico
+
+Descripción:
+
+Se creó el formulario para agregar motos.
+
+Se implementó listado y edición.
+
+Falta validación de campos (se hará en otra tarea).
+
+## 📘 Glosario rápido de comandos Git
+
+| Comando                                 | Descripción                                                                 |
+|-----------------------------------------|-----------------------------------------------------------------------------|
+| `git pull origin main-dev`              | Descarga los últimos cambios de la rama `main-dev` y los fusiona localmente |
+| `git checkout -b nombre-rama`           | Crea una nueva rama y cambia a ella inmediatamente                          |
+| `git add .`                             | Agrega todos los archivos modificados para el próximo commit               |
+| `git commit -m "mensaje"`               | Guarda los cambios con un mensaje descriptivo                              |
+| `git push origin nombre-rama`           | Sube la rama y tus cambios a GitHub                                        |
+| `git branch`                            | Muestra la lista de ramas locales                                           |
+| `git branch -d nombre-rama`             | Elimina una rama local (solo si ya fue fusionada)                          |
+| `git push origin --delete nombre-rama`  | Elimina una rama remota de GitHub                                          |
+| `git checkout main-dev`                 | Cambia a la rama `main-dev`                                                |
+| `git status`                            | Muestra el estado de los archivos (modificados, sin agregar, etc.)         |
+
+¡Gracias por contribuir! 🚀
