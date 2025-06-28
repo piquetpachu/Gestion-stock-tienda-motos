@@ -21,7 +21,7 @@ switch ($recurso) {
     case 'login':
     case (preg_match('/^actualizar_usuario\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_usuario\/\d+$/', $ruta) ? true : false):
-        require_once __DIR__ . '/usuarios.php';
+        require_once __DIR__ . '/../controllers/usuariosController.php';
         break;
 
     default:
