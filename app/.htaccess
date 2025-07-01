@@ -1,5 +1,5 @@
 RewriteEngine On
-RewriteBase Gestion-stock-tienda-motos/app/helpers/
+RewriteBase /Gestion-stock-tienda-motos/app/
 
 # Redirige todas las peticiones a index.php
 RewriteCond %{REQUEST_FILENAME} !-f

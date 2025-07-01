@@ -14,7 +14,7 @@ form.addEventListener('submit', async (e) => {
     };
 
     try {
-        const respuesta = await fetch('/control_stock/Gestion-stock-tienda-motos/app/controllers/ventasController.php?ruta=crear_venta', {
+        const respuesta = await fetch('/Gestion-stock-tienda-motos/app/controllers/ventasController.php?ruta=crear_venta', {
 
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
