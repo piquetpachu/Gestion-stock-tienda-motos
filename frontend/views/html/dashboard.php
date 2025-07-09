@@ -32,16 +32,8 @@
 
   </style>
 
-  <div id="navbar-placeholder"></div>
+  <?php include 'navbar.php'; ?>
 
-  <script>
-    fetch('navbar.html')
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('navbar-placeholder').innerHTML = data;
-      });
-  </script>
-  
 </head>
 <body>
 
