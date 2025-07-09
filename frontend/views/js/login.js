@@ -18,7 +18,7 @@
           alerta.className = "alert alert-success";
           alerta.textContent = data.mensaje;
           alerta.classList.remove("d-none");
-          location.href="dashboard.php"
+          location.href = "/Gestion-stock-tienda-motos/frontend/views/html/dashboard.php";
           // Redirigir o guardar datos en localStorage si hace falta
         } else {
           alerta.className = "alert alert-danger";
