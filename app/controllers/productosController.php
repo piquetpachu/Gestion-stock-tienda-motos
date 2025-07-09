@@ -2,9 +2,11 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once __DIR__ . '/../models/productos.php';
 require_once __DIR__ . '/../helpers/parsearRutas.php';
+require_once __DIR__ . '/../helpers/middlewares.php';
 
 switch (true) {
     case $ruta === 'productos' && $metodo === 'GET':
+        autorizar(['admin', 'vendedor']);
         echo json_encode(obtenerProductos($pdo));
         break;
 

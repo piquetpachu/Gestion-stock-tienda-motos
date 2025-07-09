@@ -19,6 +19,7 @@
       <div id="login-alert" class="alert d-none" role="alert"></div>
       <button type="submit" class="btn btn-primary w-100">Ingresar</button>
     </form>
+    <button onclick="location.href='register.html'">Registrarse</button>
   </div>
 
   <script src="../js/login.js"></script>
