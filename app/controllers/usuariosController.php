@@ -2,15 +2,17 @@
 require_once __DIR__ . '/../../config/database.php';
 require_once (__DIR__ . '/../models/usuarios.php');
 require_once __DIR__ . '/../helpers/parsearRutas.php';
-
+require_once __DIR__ . '/../helpers/middlewares.php';
 
 
 switch ($recurso) {
     case 'usuarios':
+        autorizar(['admin', 'vendedor']);
         if ($metodo === 'GET') echo json_encode(obtenerUsuarios($pdo));
         break;
 
     case 'usuario':
+        autorizar(['admin', 'vendedor']);
         if ($metodo === 'GET' && isset($partes[1])) {
             echo json_encode(obtenerUsuarioPorId($pdo, $partes[1]));
         }
@@ -54,6 +56,7 @@ switch ($recurso) {
     }
     break;
     case (preg_match('/^actualizar_usuario\/(\d+)$/', $ruta, $matches) ? true : false):
+        autorizar(['admin']);
         if ($metodo === 'PUT') {
             $id = $matches[1];
             $datos = json_decode(file_get_contents("php://input"), true);
@@ -67,6 +70,7 @@ switch ($recurso) {
     }
     break;
 case 'usuario-info':
+    autorizar(['admin', 'vendedor']);
     if ($metodo === 'GET') {
         // REMOVER session_start() - Ya está iniciada en api.php
         

@@ -11,11 +11,13 @@ switch (true) {
         break;
 
     case preg_match('/^producto\/(\d+)$/', $ruta, $matches) && $metodo === 'GET':
+        autorizar(['admin', 'vendedor']);
         $id = $matches[1];
         echo json_encode(obtenerProductoPorId($pdo, $id));
         break;
 
     case $ruta === 'crear_producto' && $metodo === 'POST':
+        autorizar(['admin']);
         $datos = json_decode(file_get_contents('php://input'), true);
         if ($datos) {
             $id = crearProducto($pdo, $datos);
@@ -26,12 +28,14 @@ switch (true) {
         break;
 
     case preg_match('/^actualizar_producto\/(\d+)$/', $ruta, $matches) && $metodo === 'PUT':
+        autorizar(['admin']);
         $id = $matches[1];
         $datos = json_decode(file_get_contents('php://input'), true);
         echo json_encode(actualizarProducto($pdo, $id, $datos));
         break;
 
     case preg_match('/^borrar_producto\/(\d+)$/', $ruta, $matches) && $metodo === 'DELETE':
+        autorizar(['admin']);
         echo json_encode(borrarProducto($pdo, $matches[1]));
         break;
 
