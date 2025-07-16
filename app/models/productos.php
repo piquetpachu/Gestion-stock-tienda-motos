@@ -10,6 +10,14 @@ function obtenerProductoPorId($pdo, $id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function obtenerProductoPorCodigo($pdo, $codigo)
+{
+    $stmt = $pdo->prepare("SELECT * FROM producto WHERE codigo = ?");
+    $stmt->execute([$codigo]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
 function crearProducto($pdo, $datos) {
     $sql = "INSERT INTO producto (nombre, descripcion, precio_venta, precio_compra, stock, id_proveedor, id_rubro, fecha_alta, activo, stock_minimo)
             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
