@@ -15,6 +15,25 @@ function obtenerUsuarioPorId($pdo, $id) {
 
 // Crear usuario con contraseña encriptada
 function crearUsuario($pdo, $datos) {
+    // 1. Verificar si el email ya existe
+    $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
+    $stmt->execute([$datos['email']]);
+    
+    if ($stmt->fetch()) {
+        throw new Exception("El email ya está registrado");
+    }
+
+    // 2. Verificar duplicados de nombre si es necesario
+    if (isset($datos['nombre'])) {
+        $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE nombre = ?");
+        $stmt->execute([$datos['nombre']]);
+        
+        if ($stmt->fetch()) {
+            throw new Exception("El nombre de usuario ya existe");
+        }
+    }
+
+    // 3. Si todo está bien, crear el usuario
     $hash = password_hash($datos['contrasena'], PASSWORD_BCRYPT);
 
     $sql = "INSERT INTO usuario (nombre, email, contrasena, rol)
@@ -38,8 +57,13 @@ function loginUsuario($pdo, $email, $contrasena) {
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
-        unset($usuario['contrasena']); // no devolver la contraseña
-        return $usuario;
+        // Devolver solo datos necesarios para sesión
+        return [
+            'id_usuario' => $usuario['id_usuario'],
+            'nombre' => $usuario['nombre'],
+            'email' => $usuario['email'],
+            'rol' => $usuario['rol']
+        ];
     }
     return false;
 }
