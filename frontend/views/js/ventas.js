@@ -15,12 +15,11 @@ const divCamposAdicionalesPago = document.getElementById('campos_adicionales_pag
 const botonFinalizar = document.getElementById('boton_finalizar');
 const botonCancelar = document.getElementById('boton_cancelar');
 const mensajeResultado = document.getElementById('mensaje_resultado');
-const inputFiltroProducto = document.getElementById('filtro_producto');
 
 // Estado interno
 let productosLista = [];
 let productosVenta = [];
-let metodosPagoLista = []; // Para cargar métodos de pago y usar sus IDs
+let metodosPagoLista = [];
 
 // Formateador de moneda
 const formatearMoneda = valor =>
@@ -61,7 +60,7 @@ function cargarMetodosPago() {
             selectMetodoPago.innerHTML = '<option value="" disabled selected>Seleccionar método de pago</option>';
             data.forEach(metodo => {
                 const opcion = document.createElement('option');
-                opcion.value = metodo.id_medio_pago; // enviar ID para backend
+                opcion.value = metodo.id_medio_pago;
                 opcion.textContent = metodo.descripcion || 'Sin nombre';
                 selectMetodoPago.appendChild(opcion);
             });
@@ -165,7 +164,7 @@ function agregarProducto() {
     } else {
         productosVenta.push({
             codigo: producto.codigo_barras,
-            id_producto: producto.id_producto, // <-- agregar id_producto para backend
+            id_producto: producto.id_producto,
             nombre: producto.nombre,
             cantidad: 1,
             precio: parseFloat(producto.precio_venta) || 0
@@ -185,49 +184,45 @@ function cambiarCamposMetodoPago() {
 
     if (metodo === '2') { // tarjeta
         divCamposAdicionalesPago.innerHTML = `
-      <div class="mb-3">
-        <label for="num_tarjeta" class="form-label">Número de tarjeta</label>
-        <input type="text" class="form-control" id="num_tarjeta" placeholder="Ej: 1234 5678 9012 3456">
-      </div>
-      <div class="mb-3">
-        <label for="titular_tarjeta" class="form-label">Titular</label>
-        <input type="text" class="form-control" id="titular_tarjeta" placeholder="Nombre completo del titular">
-      </div>
-      <div class="row">
-        <div class="col-md-4 mb-3">
-          <label for="vencimiento_tarjeta" class="form-label">Vencimiento</label>
-          <input type="month" class="form-control" id="vencimiento_tarjeta">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label for="dni_tarjeta" class="form-label">DNI</label>
-          <input type="text" class="form-control" id="dni_tarjeta" placeholder="DNI del titular">
-        </div>
-        <div class="col-md-4 mb-3">
-          <label for="cvv_tarjeta" class="form-label">CVV</label>
-          <input type="text" class="form-control" id="cvv_tarjeta" placeholder="Código de seguridad">
-        </div>
-      </div>
-    `;
-    } else if (metodo === '3') { // cuenta corriente
-        divCamposAdicionalesPago.innerHTML = `
-      <div class="mb-3">
-        <label for="cuenta_cliente" class="form-label">Número de cuenta</label>
-        <input type="text" class="form-control" id="cuenta_cliente" placeholder="Ej: 123456">
-      </div>
-      <div class="mb-3">
-        <label for="nombre_cliente" class="form-label">Nombre del cliente</label>
-        <input type="text" class="form-control" id="nombre_cliente" placeholder="Nombre completo">
-      </div>
-      <div class="mb-3">
-        <label for="dni_cliente" class="form-label">DNI</label>
-        <input type="text" class="form-control" id="dni_cliente" placeholder="DNI del cliente">
-      </div>
-      <div class="mb-3">
-        <label for="telefono_cliente" class="form-label">Teléfono</label>
-        <input type="tel" class="form-control" id="telefono_cliente" placeholder="Ej: 11 3456-7890">
-      </div>
-    `;
+          <div class="mb-3">
+            <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
+            <input
+              type="text"
+              class="form-control"
+              id="cuit_tarjeta"
+              placeholder="Ej: 20-12345678-9"
+              pattern="^\\d{2}-\\d{8}-\\d{1}$"
+              maxlength="13"
+              title="Formato válido: XX-XXXXXXXX-X (sólo números y guiones)"
+              autocomplete="off"
+              required
+            >
+            <div class="form-text">Formato: 20-12345678-9</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Fecha actual (se asigna automáticamente)</label>
+            <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
+          </div>
+        `;
+
+        // Validación y formateo en tiempo real del CUIT/CUIL
+        const inputCuit = document.getElementById('cuit_tarjeta');
+        inputCuit.addEventListener('input', () => {
+            let val = inputCuit.value;
+            // Permitir sólo números y guiones
+            val = val.replace(/[^0-9\-]/g, '');
+
+            // Insertar guiones automáticamente en las posiciones 2 y 11
+            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
+            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
+
+            // Limitar a 13 caracteres (XX-XXXXXXXX-X)
+            if (val.length > 13) val = val.slice(0, 13);
+
+            inputCuit.value = val;
+        });
     }
+    // efectivo (1) y transferencia (3) no piden campos adicionales, así que no hacemos nada
 }
 
 function finalizarVenta() {
@@ -241,9 +236,8 @@ function finalizarVenta() {
         return;
     }
 
-    const metodoPago = parseInt(selectMetodoPago.value);
+    const metodoPago = selectMetodoPago.value;
 
-    // Preparo items para backend con la estructura que espera PHP
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
         cantidad: p.cantidad,
@@ -252,23 +246,17 @@ function finalizarVenta() {
         iva: parseFloat(inputIVA.value) || 0
     }));
 
-    // Comienzo el objeto pago con lo básico
     const pago = {
-        id_medio_pago: metodoPago,
+        id_medio_pago: parseInt(metodoPago),
         monto: parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0
     };
 
-    // Según método, agrego campos extra
-    if (metodoPago === 2) { // tarjeta
-        pago.numero_tarjeta = document.getElementById('num_tarjeta')?.value || null;
-        pago.nombre_titular = document.getElementById('titular_tarjeta')?.value || null;
-        pago.fecha_vencimiento = document.getElementById('vencimiento_tarjeta')?.value || null;
-        pago.dni = document.getElementById('dni_tarjeta')?.value || null;
-    } else if (metodoPago === 3) { // cuenta corriente
-        pago.id_cuenta_corriente = document.getElementById('cuenta_cliente')?.value || null;
-        pago.nombre_titular = document.getElementById('nombre_cliente')?.value || null;
-        pago.dni = document.getElementById('dni_cliente')?.value || null;
+    if (metodoPago === '2') { // tarjeta
+        pago.cuit_cuil = document.getElementById('cuit_tarjeta')?.value || null;
+        pago.fecha = new Date().toISOString().split('T')[0]; // fecha actual en formato yyyy-mm-dd
     }
+
+    // para efectivo (1) y transferencia (3) no agregamos datos extras
 
     const datosVenta = {
         monto_total: pago.monto,
@@ -308,7 +296,6 @@ function finalizarVenta() {
             mensajeResultado.className = 'alert alert-danger';
         });
 }
-
 
 function cancelarVenta() {
     if (!confirm('¿Seguro que desea cancelar la venta? Se perderán los datos.')) return;

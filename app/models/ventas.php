@@ -77,13 +77,11 @@ function crearVenta($pdo, $datos)
             agregarMedioPago($pdo, $idVenta, [
                 'id_medio_pago' => $pago['id_medio_pago'],
                 'monto' => $pago['monto'],
-                'nombre_titular' => $pago['nombre_titular'] ?? null,
-                'numero_tarjeta' => $pago['numero_tarjeta'] ?? null,
-                'fecha_vencimiento' => $pago['fecha_vencimiento'] ?? null,
-                'dni' => $pago['dni'] ?? null,
-                'id_cuenta_corriente' => $pago['id_cuenta_corriente'] ?? null
+                // Solo cuil_cuit para tarjeta, nada más
+                'cuil_cuit' => $pago['cuil_cuit'] ?? null
             ]);
         }
+
 
         $pdo->commit();
         return ["success" => true, "id_venta" => $idVenta];

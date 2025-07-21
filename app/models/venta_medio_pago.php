@@ -16,22 +16,15 @@ function agregarMedioPago($pdo, $idVenta, $datos)
         id_venta, 
         id_medio_pago, 
         monto, 
-        nombre_titular, 
-        numero_tarjeta, 
-        fecha_vencimiento, 
-        dni, 
-        id_cuenta_corriente
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        cuil_cuit,
+        fecha_pago
+    ) VALUES (?, ?, ?, ?, CURRENT_DATE)");
 
     $stmt->execute([
         $idVenta,
         $datos['id_medio_pago'],
         $datos['monto'],
-        $datos['nombre_titular'] ?? null,
-        $datos['numero_tarjeta'] ?? null,
-        $datos['fecha_vencimiento'] ?? null,
-        $datos['dni'] ?? null,
-        $datos['id_cuenta_corriente'] ?? null
+        $datos['cuil_cuit'] ?? null
     ]);
 
     return $pdo->lastInsertId();
