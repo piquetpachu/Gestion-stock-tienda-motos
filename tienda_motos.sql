@@ -300,3 +300,10 @@ INSERT INTO `venta_medio_pago` (`id_venta_medio_pago`, `id_venta`, `id_medio_pag
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+-- Agregar columnas nuevas a venta_medio_pago si no existen
+ALTER TABLE venta_medio_pago ADD COLUMN IF NOT EXISTS nombre_titular VARCHAR(100);
+ALTER TABLE venta_medio_pago ADD COLUMN IF NOT EXISTS numero_tarjeta VARCHAR(20);
+ALTER TABLE venta_medio_pago ADD COLUMN IF NOT EXISTS fecha_vencimiento DATE;
+ALTER TABLE venta_medio_pago ADD COLUMN IF NOT EXISTS dni VARCHAR(20);
+ALTER TABLE venta_medio_pago ADD COLUMN IF NOT EXISTS id_cuenta_corriente INT;

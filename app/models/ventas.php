@@ -1,5 +1,7 @@
 <?php
 
+require_once 'venta_medio_pago.php'; // Asegúrate de incluir esto para poder usar agregarMedioPago()
+
 function obtenerVentas($pdo)
 {
     $stmt = $pdo->query("SELECT * FROM venta ORDER BY fecha DESC");
@@ -70,14 +72,16 @@ function crearVenta($pdo, $datos)
             ]);
         }
 
-        // Insertar medios de pago
+        // Insertar medios de pago (con campos adicionales)
         foreach ($datos['pagos'] as $pago) {
-            $stmtPago = $pdo->prepare("INSERT INTO venta_medio_pago (id_venta, id_medio_pago, monto) 
-                                       VALUES (?, ?, ?)");
-            $stmtPago->execute([
-                $idVenta,
-                $pago['id_medio_pago'],
-                $pago['monto']
+            agregarMedioPago($pdo, $idVenta, [
+                'id_medio_pago' => $pago['id_medio_pago'],
+                'monto' => $pago['monto'],
+                'nombre_titular' => $pago['nombre_titular'] ?? null,
+                'numero_tarjeta' => $pago['numero_tarjeta'] ?? null,
+                'fecha_vencimiento' => $pago['fecha_vencimiento'] ?? null,
+                'dni' => $pago['dni'] ?? null,
+                'id_cuenta_corriente' => $pago['id_cuenta_corriente'] ?? null
             ]);
         }
 

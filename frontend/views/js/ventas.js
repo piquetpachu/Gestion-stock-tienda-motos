@@ -15,6 +15,7 @@ const divCamposAdicionalesPago = document.getElementById('campos_adicionales_pag
 const botonFinalizar = document.getElementById('boton_finalizar');
 const botonCancelar = document.getElementById('boton_cancelar');
 const mensajeResultado = document.getElementById('mensaje_resultado');
+const inputFiltroProducto = document.getElementById('filtro_producto');
 
 // Estado interno
 let productosLista = [];
@@ -182,7 +183,7 @@ function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
     divCamposAdicionalesPago.innerHTML = '';
 
-    if (metodo === 'tarjeta') {
+    if (metodo === '2') { // tarjeta
         divCamposAdicionalesPago.innerHTML = `
       <div class="mb-3">
         <label for="num_tarjeta" class="form-label">Número de tarjeta</label>
@@ -207,7 +208,7 @@ function cambiarCamposMetodoPago() {
         </div>
       </div>
     `;
-    } else if (metodo === 'cuenta_corriente') {
+    } else if (metodo === '3') { // cuenta corriente
         divCamposAdicionalesPago.innerHTML = `
       <div class="mb-3">
         <label for="cuenta_cliente" class="form-label">Número de cuenta</label>
@@ -240,30 +241,43 @@ function finalizarVenta() {
         return;
     }
 
+    const metodoPago = parseInt(selectMetodoPago.value);
+
     // Preparo items para backend con la estructura que espera PHP
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
         cantidad: p.cantidad,
         precio_unitario: p.precio,
-        descuento: 0,  // Podés cambiar si querés sumar campo para descuento por producto
+        descuento: 0,
         iva: parseFloat(inputIVA.value) || 0
     }));
 
-    // Preparo pagos
-    const pagos = [{
-        id_medio_pago: parseInt(selectMetodoPago.value),
+    // Comienzo el objeto pago con lo básico
+    const pago = {
+        id_medio_pago: metodoPago,
         monto: parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0
-    }];
+    };
 
-    // Datos extra requeridos por backend (ajustalos si querés)
+    // Según método, agrego campos extra
+    if (metodoPago === 2) { // tarjeta
+        pago.numero_tarjeta = document.getElementById('num_tarjeta')?.value || null;
+        pago.nombre_titular = document.getElementById('titular_tarjeta')?.value || null;
+        pago.fecha_vencimiento = document.getElementById('vencimiento_tarjeta')?.value || null;
+        pago.dni = document.getElementById('dni_tarjeta')?.value || null;
+    } else if (metodoPago === 3) { // cuenta corriente
+        pago.id_cuenta_corriente = document.getElementById('cuenta_cliente')?.value || null;
+        pago.nombre_titular = document.getElementById('nombre_cliente')?.value || null;
+        pago.dni = document.getElementById('dni_cliente')?.value || null;
+    }
+
     const datosVenta = {
-        monto_total: parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0,
+        monto_total: pago.monto,
         tipo_comprobante: 'Factura A',
         nro_comprobante: '0001-00000001',
         id_iva: 1,
         id_usuario: 1,
         items: items,
-        pagos: pagos
+        pagos: [pago]
     };
 
     fetch('http://localhost/Gestion-stock-tienda-motos/app/crear_venta', {
@@ -294,6 +308,7 @@ function finalizarVenta() {
             mensajeResultado.className = 'alert alert-danger';
         });
 }
+
 
 function cancelarVenta() {
     if (!confirm('¿Seguro que desea cancelar la venta? Se perderán los datos.')) return;
