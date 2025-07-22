@@ -252,7 +252,8 @@ function finalizarVenta() {
     };
 
     if (metodoPago === '2') { // tarjeta
-        pago.cuit_cuil = document.getElementById('cuit_tarjeta')?.value || null;
+        pago.cuil_cuit = document.getElementById('cuit_tarjeta')?.value || null;
+
         pago.fecha = new Date().toISOString().split('T')[0]; // fecha actual en formato yyyy-mm-dd
     }
 

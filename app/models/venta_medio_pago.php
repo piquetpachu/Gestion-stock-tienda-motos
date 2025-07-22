@@ -17,7 +17,7 @@ function agregarMedioPago($pdo, $idVenta, $datos)
         id_medio_pago, 
         monto, 
         cuil_cuit,
-        fecha_pago
+        fecha
     ) VALUES (?, ?, ?, ?, CURRENT_DATE)");
 
     $stmt->execute([
