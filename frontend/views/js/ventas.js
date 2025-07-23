@@ -16,6 +16,8 @@ const botonFinalizar = document.getElementById('boton_finalizar');
 const botonCancelar = document.getElementById('boton_cancelar');
 const mensajeResultado = document.getElementById('mensaje_resultado');
 
+const reciboDiv = document.getElementById('recibo_venta'); // Referencia al div del recibo
+
 // Estado interno
 let productosLista = [];
 let productosVenta = [];
@@ -222,8 +224,88 @@ function cambiarCamposMetodoPago() {
             inputCuit.value = val;
         });
     }
-    // efectivo (1) y transferencia (3) no piden campos adicionales, así que no hacemos nada
+    // efectivo (1) y transferencia (3)
 }
+
+
+function mostrarRecibo(data) {
+    const fechaActual = new Date().toLocaleDateString('es-AR');
+    const horaActual = new Date().toLocaleTimeString('es-AR');
+
+    let reciboHTML = `
+    <html>
+      <head>
+        <title>Recibo de Venta</title>
+        <style>
+          body { font-family: monospace; padding: 20px; }
+          h2 { text-align: center; }
+          .info { margin-bottom: 15px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
+          .totales { margin-top: 20px; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <h2>Recibo de Venta</h2>
+        <div class="info">
+          <p><strong>Fecha:</strong> ${fechaActual}</p>
+          <p><strong>Hora:</strong> ${horaActual}</p>
+          <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio Unitario</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+  `;
+
+    productosVenta.forEach(p => {
+        const totalProd = p.precio * p.cantidad;
+        reciboHTML += `
+      <tr>
+        <td>${p.nombre}</td>
+        <td>${p.cantidad}</td>
+        <td>${formatearMoneda(p.precio)}</td>
+        <td>${formatearMoneda(totalProd)}</td>
+      </tr>`;
+    });
+
+    reciboHTML += `
+          </tbody>
+        </table>
+        <div class="totales">
+          <p>Subtotal: ${inputPrecioUnitario.value}</p>
+          <p>Descuento: ${inputDescuento.value || 0}%</p>
+          <p>IVA: ${inputIVA.value || 0}%</p>
+          <p>Total Final: ${inputTotalVenta.value}</p>
+        </div>
+        <div style="text-align: center; margin-top: 30px;">
+          <p>¡Gracias por su compra!</p>
+        </div>
+        <script>
+          window.onload = () => window.print();
+        </script>
+      </body>
+    </html>
+  `;
+
+    const ventanaRecibo = window.open('', '_blank', 'width=600,height=800');
+    ventanaRecibo.document.open();
+    ventanaRecibo.document.write(reciboHTML);
+    ventanaRecibo.document.close();
+}
+
+function getNombreMetodoPago(id) {
+    const metodo = metodosPagoLista.find(m => m.id_medio_pago.toString() === id);
+    return metodo ? metodo.descripcion : 'Desconocido';
+}
+
+
 
 function finalizarVenta() {
     if (productosVenta.length === 0) {
@@ -282,6 +364,8 @@ function finalizarVenta() {
             if (data.error) throw new Error(data.error + (data.detalle ? ': ' + data.detalle : ''));
             mensajeResultado.textContent = 'Venta registrada con éxito. ID: ' + data.id_venta;
             mensajeResultado.className = 'alert alert-success';
+
+            mostrarRecibo(data); // <-- Mostramos el recibo ANTES de vaciar los productos
 
             productosVenta = [];
             actualizarTabla();
