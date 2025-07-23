@@ -7,7 +7,7 @@ const ordenarPor = document.getElementById('ordenarPor');
 
 let productos = [];
 let paginaActual = 1;
-const porPagina = 2;
+const porPagina = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductos();
