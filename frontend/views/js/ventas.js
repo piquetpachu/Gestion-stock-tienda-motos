@@ -16,12 +16,13 @@ const botonFinalizar = document.getElementById('boton_finalizar');
 const botonCancelar = document.getElementById('boton_cancelar');
 const mensajeResultado = document.getElementById('mensaje_resultado');
 
-const reciboDiv = document.getElementById('recibo_venta'); // Referencia al div del recibo
+const botonImprimirRecibo = document.getElementById('btn_imprimir_recibo'); // Botón imprimir
 
 // Estado interno
 let productosLista = [];
 let productosVenta = [];
 let metodosPagoLista = [];
+let reciboGuardado = null;
 
 // Formateador de moneda
 const formatearMoneda = valor =>
@@ -207,32 +208,31 @@ function cambiarCamposMetodoPago() {
           </div>
         `;
 
-        // Validación y formateo en tiempo real del CUIT/CUIL
         const inputCuit = document.getElementById('cuit_tarjeta');
         inputCuit.addEventListener('input', () => {
             let val = inputCuit.value;
-            // Permitir sólo números y guiones
             val = val.replace(/[^0-9\-]/g, '');
 
-            // Insertar guiones automáticamente en las posiciones 2 y 11
             if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
             if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
 
-            // Limitar a 13 caracteres (XX-XXXXXXXX-X)
             if (val.length > 13) val = val.slice(0, 13);
 
             inputCuit.value = val;
         });
     }
-    // efectivo (1) y transferencia (3)
 }
 
+function getNombreMetodoPago(id) {
+    const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
+    return metodo ? metodo.descripcion : 'Desconocido';
+}
 
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
-    const horaActual = new Date().toLocaleTimeString('es-AR');
+    const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
 
-    let reciboHTML = `
+    reciboGuardado = `
     <html>
       <head>
         <title>Recibo de Venta</title>
@@ -262,11 +262,11 @@ function mostrarRecibo(data) {
             </tr>
           </thead>
           <tbody>
-  `;
+    `;
 
     productosVenta.forEach(p => {
         const totalProd = p.precio * p.cantidad;
-        reciboHTML += `
+        reciboGuardado += `
       <tr>
         <td>${p.nombre}</td>
         <td>${p.cantidad}</td>
@@ -275,7 +275,7 @@ function mostrarRecibo(data) {
       </tr>`;
     });
 
-    reciboHTML += `
+    reciboGuardado += `
           </tbody>
         </table>
         <div class="totales">
@@ -287,25 +287,23 @@ function mostrarRecibo(data) {
         <div style="text-align: center; margin-top: 30px;">
           <p>¡Gracias por su compra!</p>
         </div>
-        <script>
-          window.onload = () => window.print();
-        </script>
       </body>
     </html>
   `;
+}
 
+botonImprimirRecibo.addEventListener('click', () => {
+    if (!reciboGuardado) {
+        alert('No hay recibo para imprimir. Finalice una venta primero.');
+        return;
+    }
     const ventanaRecibo = window.open('', '_blank', 'width=600,height=800');
     ventanaRecibo.document.open();
-    ventanaRecibo.document.write(reciboHTML);
+    ventanaRecibo.document.write(reciboGuardado);
     ventanaRecibo.document.close();
-}
-
-function getNombreMetodoPago(id) {
-    const metodo = metodosPagoLista.find(m => m.id_medio_pago.toString() === id);
-    return metodo ? metodo.descripcion : 'Desconocido';
-}
-
-
+    ventanaRecibo.focus();
+    ventanaRecibo.print();
+});
 
 function finalizarVenta() {
     if (productosVenta.length === 0) {
@@ -330,78 +328,101 @@ function finalizarVenta() {
 
     const pago = {
         id_medio_pago: parseInt(metodoPago),
-        monto: parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0
+        monto: (parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0)
     };
 
-    if (metodoPago === '2') { // tarjeta
-        pago.cuil_cuit = document.getElementById('cuit_tarjeta')?.value || null;
-
-        pago.fecha = new Date().toISOString().split('T')[0]; // fecha actual en formato yyyy-mm-dd
+    // Si método es tarjeta, validar CUIT
+    if (metodoPago === '2') {
+        const cuitInput = document.getElementById('cuit_tarjeta');
+        if (!cuitInput || !cuitInput.value.match(/^\d{2}-\d{8}-\d{1}$/)) {
+            alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
+            return;
+        }
+        pago.cuit = cuitInput.value;
     }
 
-    // para efectivo (1) y transferencia (3) no agregamos datos extras
-
-    const datosVenta = {
-        monto_total: pago.monto,
-        tipo_comprobante: 'Factura A',
-        nro_comprobante: '0001-00000001',
-        id_iva: 1,
-        id_usuario: 1,
-        items: items,
-        pagos: [pago]
+    // Preparar datos para enviar
+    const data = {
+        items,
+        pago
     };
 
-    fetch('http://localhost/Gestion-stock-tienda-motos/app/crear_venta', {
+    botonFinalizar.disabled = true;
+    botonFinalizar.textContent = 'Procesando...';
+
+    fetch('http://localhost/Gestion-stock-tienda-motos/app/ventas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(datosVenta)
+        body: JSON.stringify(data)
     })
         .then(res => {
-            if (!res.ok) throw new Error('Error al registrar la venta');
+            if (!res.ok) throw new Error('Error al crear la venta');
             return res.json();
         })
-        .then(data => {
-            if (data.error) throw new Error(data.error + (data.detalle ? ': ' + data.detalle : ''));
-            mensajeResultado.textContent = 'Venta registrada con éxito. ID: ' + data.id_venta;
+        .then(response => {
+            mensajeResultado.textContent = 'Venta registrada con éxito.';
             mensajeResultado.className = 'alert alert-success';
 
-            mostrarRecibo(data); // <-- Mostramos el recibo ANTES de vaciar los productos
+            // Mostrar recibo
+            mostrarRecibo(data);
 
+            // Activar botón imprimir y cambiar color
+            botonImprimirRecibo.disabled = false;
+            botonImprimirRecibo.classList.remove('btn-secondary');
+            botonImprimirRecibo.classList.add('btn-success');
+
+            // Limpiar formulario y tabla
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
+
             selectMetodoPago.value = '';
-            cambiarCamposMetodoPago();
-            inputDescuento.value = '0';
-            inputIVA.value = '21';
+            divCamposAdicionalesPago.innerHTML = '';
         })
         .catch(err => {
-            console.error(err);
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
             mensajeResultado.className = 'alert alert-danger';
+        })
+        .finally(() => {
+            botonFinalizar.disabled = false;
+            botonFinalizar.textContent = 'Finalizar';
         });
 }
 
 function cancelarVenta() {
-    if (!confirm('¿Seguro que desea cancelar la venta? Se perderán los datos.')) return;
+    if (!confirm('¿Está seguro que desea cancelar la venta? Se perderán los datos ingresados.')) return;
+
     productosVenta = [];
     actualizarTabla();
     actualizarTotales();
+
     selectMetodoPago.value = '';
-    cambiarCamposMetodoPago();
+    divCamposAdicionalesPago.innerHTML = '';
+
+    mensajeResultado.textContent = '';
+    botonImprimirRecibo.disabled = true;
+    botonImprimirRecibo.classList.remove('btn-success');
+    botonImprimirRecibo.classList.add('btn-secondary');
+
+    selectProducto.value = '';
+    inputCodigoBarras.value = '';
     inputDescuento.value = '0';
     inputIVA.value = '21';
-    mensajeResultado.textContent = '';
+    inputPrecioUnitario.value = '';
+    inputTotalVenta.value = '';
 }
 
 // Eventos
-document.addEventListener('DOMContentLoaded', () => {
-    cargarProductos();
-    cargarMetodosPago();
-    actualizarTotales();
-});
-
 botonAgregar.addEventListener('click', agregarProducto);
+
 selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
+
 botonFinalizar.addEventListener('click', finalizarVenta);
+
 botonCancelar.addEventListener('click', cancelarVenta);
+
+// Carga inicial
+cargarProductos();
+cargarMetodosPago();
+actualizarTotales();
+botonImprimirRecibo.disabled = true;

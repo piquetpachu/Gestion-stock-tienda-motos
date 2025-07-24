@@ -91,8 +91,6 @@
         <option value="2">Tarjeta</option>
         <option value="3">Transferencia</option>
       </select>
-
-
     </div>
 
     <!-- CAMPOS ADICIONALES SEGÚN EL MÉTODO DE PAGO -->
@@ -106,16 +104,16 @@
       <button type="button" class="btn btn-danger" id="boton_cancelar" aria-label="Cancelar venta">Cancelar</button>
     </div>
 
+    <!-- SECCIÓN RECIBO E IMPRESIÓN -->
+    <div class="mt-4 d-flex align-items-center gap-3">
+      <h4 class="mb-0">Recibo</h4>
+      <button id="btn_imprimir_recibo" class="btn btn-secondary" disabled>Imprimir Recibo</button>
+    </div>
+
     <!-- RESULTADO -->
     <div id="mensaje_resultado" class="mt-4" role="alert" aria-live="polite"></div>
 
   </div>
-  <!-- CONTENEDOR PARA RECIBO -->
-  <div id="recibo_venta" class="mt-4 p-3 border bg-white"
-    style="display:none; white-space: pre-wrap; font-family: monospace;">
-    <!-- Aquí se mostrará el recibo -->
-  </div>
-
 
   <!-- SCRIPTS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
