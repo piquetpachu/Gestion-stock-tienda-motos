@@ -92,6 +92,11 @@ switch ($recurso) {
         require_once __DIR__ . '/../controllers/comprasItemController.php';
         break;
     
+    case 'proveedores';
+        require_once __DIR__ . '/../controllers/proveedorController.php';
+        break;
+    
+    
     case 'rubros':
     case 'rubro':
     case 'crear_rubro':
