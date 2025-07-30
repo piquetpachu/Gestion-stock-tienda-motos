@@ -19,8 +19,10 @@ function obtenerProductoPorCodigo($pdo, $codigo)
 
 
 function crearProducto($pdo, $datos) {
-    $sql = "INSERT INTO producto (nombre, descripcion, precio_venta, precio_compra, stock, id_proveedor, id_rubro, fecha_alta, activo, stock_minimo, codigo_barras)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+    $sql = "INSERT INTO producto (
+  nombre, descripcion, precio_venta, precio_compra, stock,
+  id_proveedor, id_rubro, fecha_alta, activo, stock_minimo, codigo_barras
+) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['nombre'],

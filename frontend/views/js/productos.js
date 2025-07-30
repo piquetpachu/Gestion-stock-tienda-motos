@@ -11,6 +11,8 @@ const porPagina = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductos();
+  cargarProveedores();
+  cargarRubros();
   busqueda.addEventListener('input', () => {
     paginaActual = 1;
     mostrarProductos();
@@ -101,26 +103,56 @@ function borrar(id) {
 function nuevoProducto() {
   form.reset();
   document.getElementById('id_producto').value = '';
-  document.getElementById('fecha_alta').value = new Date().toISOString().split('T')[0];
+
+    if (document.getElementById('id_proveedor').tomselect) {
+    document.getElementById('id_proveedor').tomselect.clear();
+  }
+  if (document.getElementById('id_rubro').tomselect) {
+  document.getElementById('id_rubro').tomselect.clear();
+}
+
+
   new bootstrap.Modal(document.getElementById('modalProducto')).show();
 }
 
+// Función para generar un código de barras EAN-13 válido
+function generarCodigoBarras() {
+  const base = Math.floor(Math.random() * 1e12).toString().padStart(12, '0');
+  let suma = 0;
+  for (let i = 0; i < 12; i++) {
+    const num = parseInt(base[i]);
+    suma += (i % 2 === 0) ? num : num * 3;
+  }
+  const digitoControl = (10 - (suma % 10)) % 10;
+  return base + digitoControl;
+}
+
+// Evento de envío del formulario
 form.addEventListener('submit', e => {
   e.preventDefault();
+
   const datos = {
+    id_producto: document.getElementById('id_producto').value,
     nombre: document.getElementById('nombre').value,
     descripcion: document.getElementById('descripcion').value,
     precio_venta: parseFloat(document.getElementById('precio_venta').value) || 0,
     precio_compra: parseFloat(document.getElementById('precio_compra').value) || 0,
     stock: parseInt(document.getElementById('stock').value) || 0,
-    stock_minimo: parseInt(document.getElementById('stock_minimo').value) || 0,
-    codigo_barras: document.getElementById('codigo_barras').value,
-    fecha_alta: document.getElementById('fecha_alta').value,
     id_proveedor: parseInt(document.getElementById('id_proveedor').value) || null,
     id_rubro: parseInt(document.getElementById('id_rubro').value) || null,
-    activo: document.getElementById('activo').value
+    // fecha_alta: document.getElementById('fecha_alta').value ,
+    activo: document.getElementById('activo').checked ? 1 : 0,
+    stock_minimo: parseInt(document.getElementById('stock_minimo').value) || 0,
+    codigo_barras: document.getElementById('codigo_barras').value.trim()
   };
-  const id = document.getElementById('id_producto').value;
+
+  // Si no se ingresó un código de barras, generar uno automático
+  if (!datos.codigo_barras) {
+    datos.codigo_barras = generarCodigoBarras();
+  }
+  
+
+  const id = datos.id_producto;
   const metodo = id ? 'PUT' : 'POST';
   const url = id ? API_URL + 'actualizar_producto/' + id : API_URL + 'crear_producto';
 
@@ -129,10 +161,76 @@ form.addEventListener('submit', e => {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(datos)
   })
-    .then(res => res.json())
-    .then(() => {
+  .then(res => res.json())
+  .then(resp => {
+    if (resp.error) {
+      alert('Error: ' + resp.error);
+    } else {
       bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
       form.reset();
       cargarProductos();
-    });
+    }
+  });
 });
+
+async function cargarProveedores() {
+  const select = document.getElementById('id_proveedor');
+  select.innerHTML = '<option value="">Seleccione proveedor</option>';
+
+  try {
+    const res = await fetch(API_URL + 'proveedores');
+    const proveedores = await res.json();
+
+    proveedores.forEach(p => {
+      const option = document.createElement('option');
+      option.value = p.id_proveedor;
+      option.textContent = p.nombre;
+      select.appendChild(option);
+    });
+
+    // Activar Tom Select solo una vez (si no está inicializado ya)
+    if (!select.tomselect) {
+      new TomSelect('#id_proveedor', {
+        placeholder: 'Seleccione proveedor',
+        allowEmptyOption: true,
+        maxOptions: 1000,
+        closeAfterSelect: true,
+        render: {
+          no_results: () => '<div class="no-results">No se encontró ningún proveedor</div>',
+        }
+      });
+    }
+
+  } catch (error) {
+    console.error('Error al cargar proveedores:', error);
+  }
+}
+async function cargarRubros() {
+  const select = document.getElementById('id_rubro');
+  select.innerHTML = '<option value="">Seleccione rubro</option>';
+
+  try {
+    const res = await fetch(API_URL + 'rubros');
+    const rubros = await res.json();
+
+    rubros.forEach(r => {
+      const option = document.createElement('option');
+      option.value = r.id_rubro;
+      option.textContent = r.nombre;
+      select.appendChild(option);
+    });
+
+    // Inicializar Tom Select si no está ya
+    if (!select.tomselect) {
+      new TomSelect('#id_rubro', {
+        placeholder: 'Seleccione rubro',
+        allowEmptyOption: true,
+        maxOptions: 500,
+        closeAfterSelect: true
+      });
+    }
+
+  } catch (error) {
+    console.error('Error al cargar rubros:', error);
+  }
+}
