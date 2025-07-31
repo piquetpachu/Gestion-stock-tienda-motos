@@ -20,7 +20,6 @@
         <li class="nav-item"><a class="nav-link" href="#">Clientes</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Deudores</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Caja Diaria</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Reportes</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Usuario</a></li>
       </ul>
     </div>

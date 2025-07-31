@@ -1,0 +1,23 @@
+.icon-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 15px;
+    transition: 0.3s;
+    height: 100%;
+}
+
+.icon-card:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.icon-card img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+}
+
+.icon-title {
+    font-weight: 500;
+    color: #343a40;
+}
