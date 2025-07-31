@@ -5,8 +5,32 @@
   <title>Panel Principal</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="<?php echo 'frontend/views/css/style.css'; ?>">
-  <link rel="stylesheet" href="../views/css/style.css">
+  <style>
+    .icon-card {
+      text-align: center;
+      padding: 20px;
+      border-radius: 15px;
+      transition: 0.3s;
+      height: 100%;
+    }
+
+    .icon-card:hover {
+      background-color: #f8f9fa;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .icon-card img {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 15px;
+    }
+
+    .icon-title {
+      font-weight: 500;
+      color: #343a40;
+    }
+
+  </style>
 
   <?php include 'navbar.php'; ?>
 
