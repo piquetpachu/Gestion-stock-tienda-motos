@@ -60,26 +60,6 @@
       </a>
     </div>
 
-    <!-- Clientes -->
-    <div class="col-6 col-md-3">
-      <a href="clientes.html" class="text-decoration-none">
-        <div class="icon-card border shadow-sm">
-          <img src="img/clientes.png" alt="Clientes">
-          <div class="icon-title">Clientes</div>
-        </div>
-      </a>
-    </div>
-
-    <!-- Usuarios -->
-    <div class="col-6 col-md-3">
-      <a href="usuarios.html" class="text-decoration-none">
-        <div class="icon-card border shadow-sm">
-          <img src="img/usuarios.png" alt="Usuarios">
-          <div class="icon-title">Usuarios</div>
-        </div>
-      </a>
-    </div>
-
     <!-- Compras -->
     <div class="col-6 col-md-3">
       <a href="compras.html" class="text-decoration-none">
