@@ -91,7 +91,7 @@
     </div>
 
     <!-- Movimientos -->
-    <div class="col-6 col-md-3">
+    <div class="col-6 col-md-3 solo-admin">
       <a href="movimientos.html" class="text-decoration-none">
         <div class="icon-card border shadow-sm">
           <img src="img/movimientos.png" alt="Movimientos">
@@ -152,7 +152,7 @@
   </div>
 </div>
 
-<script src="../js/logout.js"></script>
+
 <script src="../js/estadisticas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

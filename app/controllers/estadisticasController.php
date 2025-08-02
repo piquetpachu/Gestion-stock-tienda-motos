@@ -6,12 +6,12 @@ require_once __DIR__ . '/../helpers/middlewares.php';
 
 switch (true) {
     case $ruta === 'estadisticas' && $metodo === 'GET':
-        autorizar(['admin']);
+        autorizar(['admin', 'vendedor']);
         echo json_encode(obtenerResumenEstadisticas($pdo));
         break;
 
     case $ruta === 'top_productos' && $metodo === 'GET':
-        autorizar(['admin']);
+        autorizar(['admin','vendedor']);
         echo json_encode(obtenerTopProductos($pdo));
         break;
 
