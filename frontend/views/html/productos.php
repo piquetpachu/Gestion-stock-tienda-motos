@@ -70,7 +70,7 @@
     <div class="modal-dialog modal-lg">
       <form id="formProducto" class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title solo-admin">Producto</h5>
+          <h5 class="modal-title">Producto</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row g-3">
