@@ -30,9 +30,9 @@ document
 
           // Redirigir según rol
           if (userData.rol === "admin") {
-            location.href = "../html/dashboard.html";
+            location.href = "../html/dashboard.php";
           } else {
-            location.href = "dashboard.html";
+            location.href = "dashboard.php";
           }
         };
 

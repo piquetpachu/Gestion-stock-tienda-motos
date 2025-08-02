@@ -14,6 +14,8 @@
 </head>
 
 </style>
+  <?php include 'navbar.php'; ?>
+
 <body class="bg-light">
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
