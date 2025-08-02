@@ -133,6 +133,12 @@ switch ($recurso) {
     case 'registrar_movimiento_stock':
         require_once __DIR__ . '/../controllers/movimientoStockController.php';
         break;
+    // Estadísticas generales
+    case 'estadisticas':
+    case 'top_productos':
+        require_once __DIR__ . '/../controllers/estadisticasController.php';
+        break;
+
 
 
 

@@ -9,6 +9,7 @@
 </head>
 
 <body style="background-color: #f2f2f2;">
+  <?php include 'navbar.php'; ?>
 
   <div class="container my-5">
 

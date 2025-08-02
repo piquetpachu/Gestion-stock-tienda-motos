@@ -14,6 +14,8 @@
 </head>
 
 </style>
+  <?php include 'navbar.php'; ?>
+
 <body class="bg-light">
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -113,5 +115,6 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/productos.js"></script>
+  <script src="../js/index.js"></script>
 </body>
 </html>
