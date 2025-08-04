@@ -1,20 +1,42 @@
 <?php
 
 // Obtener todos los usuarios
-function obtenerUsuarios($pdo) {
+function obtenerUsuarios($pdo)
+{
     $stmt = $pdo->query("SELECT id_usuario, nombre, email, rol FROM usuario");
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 // Obtener usuario por ID
-function obtenerUsuarioPorId($pdo, $id) {
+function obtenerUsuarioPorId($pdo, $id)
+{
     $stmt = $pdo->prepare("SELECT id_usuario, nombre, email, rol FROM usuario WHERE id_usuario = ?");
     $stmt->execute([$id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
 // Crear usuario con contraseña encriptada
-function crearUsuario($pdo, $datos) {
+function crearUsuario($pdo, $datos)
+{
+    // 1. Verificar si el email ya existe
+    $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE email = ?");
+    $stmt->execute([$datos['email']]);
+
+    if ($stmt->fetch()) {
+        throw new Exception("El email ya está registrado");
+    }
+
+    // 2. Verificar duplicados de nombre si es necesario
+    if (isset($datos['nombre'])) {
+        $stmt = $pdo->prepare("SELECT id_usuario FROM usuario WHERE nombre = ?");
+        $stmt->execute([$datos['nombre']]);
+
+        if ($stmt->fetch()) {
+            throw new Exception("El nombre de usuario ya existe");
+        }
+    }
+
+    // 3. Si todo está bien, crear el usuario
     $hash = password_hash($datos['contrasena'], PASSWORD_BCRYPT);
 
     $sql = "INSERT INTO usuario (nombre, email, contrasena, rol)
@@ -32,20 +54,27 @@ function crearUsuario($pdo, $datos) {
 }
 
 // Verificar login
-function loginUsuario($pdo, $email, $contrasena) {
+function loginUsuario($pdo, $email, $contrasena)
+{
     $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
-        unset($usuario['contrasena']); // no devolver la contraseña
-        return $usuario;
+        // Devolver solo datos necesarios para sesión
+        return [
+            'id_usuario' => $usuario['id_usuario'],
+            'nombre' => $usuario['nombre'],
+            'email' => $usuario['email'],
+            'rol' => $usuario['rol']
+        ];
     }
     return false;
 }
 
 // Actualizar usuario (con opción a cambiar contraseña si viene)
-function actualizarUsuario($pdo, $id, $datos) {
+function actualizarUsuario($pdo, $id, $datos)
+{
     if (isset($datos['contrasena'])) {
         $hash = password_hash($datos['contrasena'], PASSWORD_BCRYPT);
     }
@@ -74,7 +103,8 @@ function actualizarUsuario($pdo, $id, $datos) {
 }
 
 // Eliminar usuario
-function borrarUsuario($pdo, $id) {
+function borrarUsuario($pdo, $id)
+{
     $stmt = $pdo->prepare("DELETE FROM usuario WHERE id_usuario = ?");
     $stmt->execute([$id]);
 

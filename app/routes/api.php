@@ -4,6 +4,24 @@ $basePath = '/Gestion-stock-tienda-motos/app/';
 $ruta = str_replace($basePath, '', $uri);
 $partes = explode('/', trim($ruta, '/'));
 $recurso = $partes[0] ?? null;
+// CONFIGURACIÓN DE SESIÓN DEBE ESTAR ANTES DE session_start()
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+$secureCookie = $isSecure ? true : false; // Solo true en producción con HTTPS
+
+session_set_cookie_params([
+    'lifetime' => 86400, // 1 día
+    'path' => '/',
+    'domain' => $_SERVER['HTTP_HOST'],
+    'secure' => $secureCookie,     // Auto-ajuste para desarrollo/producción
+    'httponly' => true,
+    'samesite' => 'Strict'
+]);
+
+// Iniciar sesión solo si no está iniciada
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 
 // Reenviamos a cada archivo de rutas
 switch ($recurso) {
@@ -17,8 +35,10 @@ switch ($recurso) {
 
     case 'usuarios':
     case 'usuario':
+    case 'usuario-info':
     case 'registrar_usuario':
     case 'login':
+    case 'logout':
     case (preg_match('/^actualizar_usuario\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_usuario\/\d+$/', $ruta) ? true : false):
         require_once __DIR__ . '/../controllers/usuariosController.php';
@@ -72,6 +92,11 @@ switch ($recurso) {
         require_once __DIR__ . '/../controllers/comprasItemController.php';
         break;
     
+    case 'proveedores';
+        require_once __DIR__ . '/../controllers/proveedorController.php';
+        break;
+    
+    
     case 'rubros':
     case 'rubro':
     case 'crear_rubro':
@@ -108,6 +133,12 @@ switch ($recurso) {
     case 'registrar_movimiento_stock':
         require_once __DIR__ . '/../controllers/movimientoStockController.php';
         break;
+    // Estadísticas generales
+    case 'estadisticas':
+    case 'top_productos':
+        require_once __DIR__ . '/../controllers/estadisticasController.php';
+        break;
+
 
 
 

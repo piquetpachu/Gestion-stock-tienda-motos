@@ -10,9 +10,19 @@ function obtenerProductoPorId($pdo, $id) {
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function obtenerProductoPorCodigo($pdo, $codigo)
+{
+    $stmt = $pdo->prepare("SELECT * FROM producto WHERE codigo = ?");
+    $stmt->execute([$codigo]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
 function crearProducto($pdo, $datos) {
-    $sql = "INSERT INTO producto (nombre, descripcion, precio_venta, precio_compra, stock, id_proveedor, id_rubro, fecha_alta, activo, stock_minimo)
-            VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)";
+    $sql = "INSERT INTO producto (
+  nombre, descripcion, precio_venta, precio_compra, stock,
+  id_proveedor, id_rubro, fecha_alta, activo, stock_minimo, codigo_barras
+) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['nombre'],
@@ -23,7 +33,8 @@ function crearProducto($pdo, $datos) {
         $datos['id_proveedor'],
         $datos['id_rubro'],
         $datos['activo'],
-        $datos['stock_minimo']
+        $datos['stock_minimo'],
+        $datos['codigo_barras']
     ]);
     return $pdo->lastInsertId();
 }
@@ -31,7 +42,7 @@ function crearProducto($pdo, $datos) {
 function actualizarProducto($pdo, $id, $datos) {
     $sql = "UPDATE producto SET
                 nombre = ?, descripcion = ?, precio_venta = ?, precio_compra = ?, stock = ?,
-                id_proveedor = ?, id_rubro = ?, activo = ?, stock_minimo = ?
+                id_proveedor = ?, id_rubro = ?, activo = ?, stock_minimo = ?, codigo_barras = ?
             WHERE id_producto = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
@@ -44,6 +55,7 @@ function actualizarProducto($pdo, $id, $datos) {
         $datos['id_rubro'],
         $datos['activo'],
         $datos['stock_minimo'],
+        $datos['codigo_barras'],
         $id
     ]);
     return $stmt->rowCount() > 0;

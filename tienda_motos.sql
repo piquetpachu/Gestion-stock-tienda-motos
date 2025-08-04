@@ -300,3 +300,20 @@ INSERT INTO `venta_medio_pago` (`id_venta_medio_pago`, `id_venta`, `id_medio_pag
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+
+
+-- Eliminar columnas que ya no querés (si existen)
+ALTER TABLE venta_medio_pago
+  DROP COLUMN nombre_titular
+,
+DROP COLUMN numero_tarjeta,
+DROP COLUMN fecha_vencimiento,
+DROP COLUMN dni,
+DROP COLUMN id_cuenta_corriente;
+
+-- Agregar columnas nuevas para CUIL/CUIT y fecha (si no existen)
+ALTER TABLE venta_medio_pago
+  ADD COLUMN cuil_cuit VARCHAR
+(20) DEFAULT NULL,
+ADD COLUMN fecha DATE DEFAULT NULL;
