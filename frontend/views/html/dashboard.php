@@ -42,11 +42,7 @@
   <div class="row g-4">
     <!-- Artículos -->
     <div class="col-6 col-md-3">
-<<<<<<< HEAD
-      <a href="articulos.html" class="text-decoration-none">
-=======
       <a href="productos.php" class="text-decoration-none">
->>>>>>> 1938be69e95e45d28c686e877706023e0ba9deff
         <div class="icon-card border shadow-sm">
           <img src="img/articulos.png" alt="Artículos">
           <div class="icon-title">Artículos</div>
@@ -76,11 +72,7 @@
 
     <!-- Ventas -->
     <div class="col-6 col-md-3">
-<<<<<<< HEAD
-      <a href="ventas.html" class="text-decoration-none">
-=======
       <a href="ventas.php" class="text-decoration-none">
->>>>>>> 1938be69e95e45d28c686e877706023e0ba9deff
         <div class="icon-card border shadow-sm">
           <img src="img/ventas.png" alt="Ventas">
           <div class="icon-title">Ventas</div>
@@ -99,11 +91,7 @@
     </div>
 
     <!-- Movimientos -->
-<<<<<<< HEAD
-    <div class="col-6 col-md-3">
-=======
     <div class="col-6 col-md-3 solo-admin">
->>>>>>> 1938be69e95e45d28c686e877706023e0ba9deff
       <a href="movimientos.html" class="text-decoration-none">
         <div class="icon-card border shadow-sm">
           <img src="img/movimientos.png" alt="Movimientos">
@@ -114,8 +102,6 @@
   </div>
 </div>
 
-<<<<<<< HEAD
-=======
 <div class="container mt-5">
   <div class="card shadow rounded-4">
     <div class="card-body">
@@ -169,7 +155,6 @@
 
 <script src="../js/estadisticas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
->>>>>>> 1938be69e95e45d28c686e877706023e0ba9deff
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
