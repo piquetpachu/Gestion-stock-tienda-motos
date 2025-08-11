@@ -40,31 +40,7 @@
           </form>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-header fw-bold">Registrar Compra</div>
-        <div class="card-body">
-          <form>
-            <div class="mb-3">
-              <label class="form-label">Cliente</label>
-              <select class="form-select"></select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input class="form-control">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Monto (ARS)</label>
-              <input type="number" step="0.01" class="form-control">
-            </div>
-            <div class="d-flex justify-content-end">
-              <button class="btn btn-primary" type="button">Registrar Compra</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-
+      
     <!-- Columna Listas -->
     <div class="col-lg-6">
       <div class="card mb-4">
