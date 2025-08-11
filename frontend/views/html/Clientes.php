@@ -6,15 +6,10 @@
   <title>Gestión de Clientes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
+  <?php include 'navbar.php'; ?>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">Clientes</a>
-    <button class="btn btn-light">Nuevo Cliente</button>
-  </div>
-</nav>
-
+<button class="btn btn-light">Nuevo Cliente</button>
 <div class="container my-4">
   <div class="row">
     <div class="col-lg-6">
