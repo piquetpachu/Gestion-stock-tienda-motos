@@ -6,14 +6,15 @@
   <title>Gestión de Clientes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
-  <?php include 'navbar.php'; ?>
 </head>
 <body>
+<?php include 'navbar.php'; ?>
 <div class="container my-4">
-  <div class="row">
+  <div class="row g-4">
+    <!-- Columna Formulario -->
     <div class="col-lg-6">
-      <div class="card mb-3">
-        <div class="card-header">Formulario de Cliente</div>
+      <div class="card mb-4">
+        <div class="card-header fw-bold">Formulario de Cliente</div>
         <div class="card-body">
           <form>
             <div class="mb-3">
@@ -32,7 +33,7 @@
               <label class="form-label">Dirección</label>
               <input type="text" class="form-control">
             </div>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <div class="d-flex justify-content-end gap-2">
               <button type="button" class="btn btn-success">Guardar</button>
               <button type="button" class="btn btn-secondary">Limpiar</button>
             </div>
@@ -40,23 +41,48 @@
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-header fw-bold">Registrar Compra</div>
+        <div class="card-body">
+          <form>
+            <div class="mb-3">
+              <label class="form-label">Cliente</label>
+              <select class="form-select"></select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Producto</label>
+              <input class="form-control">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Monto (ARS)</label>
+              <input type="number" step="0.01" class="form-control">
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-primary" type="button">Registrar Compra</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Listas -->
     <div class="col-lg-6">
-      <div class="card mb-3">
-        <div class="card-header">Lista de Clientes</div>
+      <div class="card mb-4">
+        <div class="card-header fw-bold">Lista de Clientes</div>
         <div class="card-body table-responsive">
-          <table class="table table-hover">
-            <thead>
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
               <tr>
                 <th>Nombre</th>
                 <th>Contacto</th>
-                <th>Acciones</th>
+                <th class="text-center">Acciones</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Ejemplo Nombre</td>
                 <td>Email<br>Teléfono<br>Dirección</td>
-                <td>
+                <td class="text-center">
                   <button class="btn btn-sm btn-primary me-1">Editar</button>
                   <button class="btn btn-sm btn-danger">Borrar</button>
                 </td>
@@ -67,10 +93,10 @@
       </div>
 
       <div class="card">
-        <div class="card-header">Historial de Compras</div>
+        <div class="card-header fw-bold">Historial de Compras</div>
         <div class="card-body table-responsive">
-          <table class="table">
-            <thead>
+          <table class="table align-middle">
+            <thead class="table-light">
               <tr>
                 <th>Fecha</th>
                 <th>Cliente</th>
