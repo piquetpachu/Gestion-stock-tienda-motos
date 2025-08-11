@@ -9,7 +9,6 @@
   <?php include 'navbar.php'; ?>
 </head>
 <body>
-<button class="btn btn-light">Nuevo Cliente</button>
 <div class="container my-4">
   <div class="row">
     <div class="col-lg-6">
@@ -40,30 +39,6 @@
           </form>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-header">Registrar Compra</div>
-        <div class="card-body">
-          <form>
-            <div class="mb-3">
-              <label class="form-label">Cliente</label>
-              <select class="form-select"></select>
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Producto</label>
-              <input class="form-control">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Monto (ARS)</label>
-              <input type="number" step="0.01" class="form-control">
-            </div>
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <button class="btn btn-primary" type="button">Registrar Compra</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
 
     <div class="col-lg-6">
       <div class="card mb-3">
