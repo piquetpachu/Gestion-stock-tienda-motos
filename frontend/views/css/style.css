@@ -21,3 +21,21 @@
     font-weight: 500;
     color: #343a40;
 }
+
+h2 {
+    font-weight: bold;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.table {
+    margin-bottom: 0;
+}
