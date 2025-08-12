@@ -323,12 +323,16 @@ function finalizarVenta() {
         cantidad: p.cantidad,
         precio_unitario: p.precio,
         descuento: 0,
-        iva: parseFloat(inputIVA.value) || 0
+
+        iva: parseFloat(inputIVA.value) || 21 // Valor por defecto 21%
     }));
+
+    // Calcular total
+    const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
 
     const pago = {
         id_medio_pago: parseInt(metodoPago),
-        monto: (parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0)
+        monto: montoTotal
     };
 
     // Si método es tarjeta, validar CUIT
@@ -338,19 +342,28 @@ function finalizarVenta() {
             alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
             return;
         }
-        pago.cuit = cuitInput.value;
+        pago.cuil_cuit = cuitInput.value; // ✅ Campo corregido
     }
 
-    // Preparar datos para enviar
+    // Preparar datos para enviar - Incluir TODOS los campos requeridos
     const data = {
         items,
-        pago
+        pagos: [pago],
+        monto_total: montoTotal,
+        tipo_comprobante: 'TICKET', // Valor por defecto
+        nro_comprobante: Date.now().toString(), // Generar número único
+        id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
+        id_usuario: 1 // ID del usuario logueado (ajusta según tu sesión)
     };
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
 
-    fetch('http://localhost/Gestion-stock-tienda-motos/app/ventas', {
+
+    botonFinalizar.disabled = true;
+    botonFinalizar.textContent = 'Procesando...';
+
+    fetch('http://localhost/Gestion-stock-tienda-motos/app/crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
