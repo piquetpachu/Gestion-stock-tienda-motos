@@ -7,7 +7,9 @@ function obtenerResumenEstadisticas($pdo) {
     $resumen = [];
 
     // Total ganado hoy
-    $stmt = $pdo->prepare("SELECT SUM(monto_total) AS total FROM venta WHERE fecha = ?");
+    $stmt = $pdo->prepare("SELECT SUM(monto_total) AS ganancias_brutas_hoy
+FROM venta
+WHERE DATE(fecha) = ?;");
     $stmt->execute([$hoy]);
     $resumen['ganancia_hoy'] = (float) $stmt->fetchColumn() ?: 0;
 

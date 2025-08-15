@@ -9,6 +9,15 @@ let productos = [];
 let paginaActual = 1;
 const porPagina = 30;
 
+let usuarioRol = null;
+// Obtener el rol del usuario al cargar la página
+fetch('http://localhost/Gestion-stock-tienda-motos/app/usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    usuarioRol = data.rol;
+    mostrarProductos(); // Actualiza la tabla si ya está cargada
+  });
+
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductos();
   cargarProveedores();
@@ -49,22 +58,29 @@ function mostrarProductos() {
   const inicio = (paginaActual - 1) * porPagina;
   const productosPagina = filtrados.slice(inicio, inicio + porPagina);
 
-  tabla.innerHTML = productosPagina.map(p => `
-    <tr>
-      <td>${p.id_producto}</td>
-      <td>${p.nombre}</td>
-      <td>${p.descripcion || ''}</td>
-      <td>${p.precio_venta || 0}</td>
-      <td>${p.precio_compra || 0}</td>
-      <td>${p.stock || 0}</td>
-      <td>${p.stock_minimo || 0}</td>
-      <td>${p.codigo_barras || p.codigo_barras || ''}</td>
-      <td>${p.fecha_alta || ''}</td>
-      <td>
+
+  tabla.innerHTML = productosPagina.map(p => {
+    let botones = '';
+    if (usuarioRol === 'admin') {
+      botones = `
         <button class="btn btn-warning btn-sm" onclick='editar(${JSON.stringify(p)})'>✏️</button>
         <button class="btn btn-danger btn-sm" onclick='borrar(${p.id_producto})'>🗑️</button>
-      </td>
-    </tr>`).join('');
+      `;
+    }
+    return `
+      <tr>
+        <td>${p.id_producto}</td>
+        <td>${p.nombre}</td>
+        <td>${p.descripcion || ''}</td>
+        <td>${p.precio_venta || 0}</td>
+        <td>${p.precio_compra || 0}</td>
+        <td>${p.stock || 0}</td>
+        <td>${p.stock_minimo || 0}</td>
+        <td>${p.codigo_barras || p.codigo_barras || ''}</td>
+        <td>${p.fecha_alta || ''}</td>
+        <td>${botones}</td>
+      </tr>`;
+  }).join('');
 
   paginacion.innerHTML = '';
   for (let i = 1; i <= totalPaginas; i++) {
