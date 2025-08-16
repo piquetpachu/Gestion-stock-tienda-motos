@@ -25,7 +25,7 @@
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>👥 Gestión de Clientes</h1>
-      <button class="btn btn-success" onclick="nuevoCliente()">➕ Agregar Cliente</button>
+      <button class="btn btn-success" onclick="nuevoCliente()" id="btnAgregarCliente" style="display: none;">➕ Agregar Cliente</button>
     </div>
 
     <!-- Filtros -->
@@ -108,6 +108,7 @@
   </div>
 
   <!-- Scripts -->
+   <script src="../js/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="../js/clientes.js"></script>

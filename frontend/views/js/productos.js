@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
+// const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
 const form = document.getElementById('formProducto');
 const tabla = document.getElementById('tablaProductos');
 const paginacion = document.getElementById('paginacion');
@@ -11,7 +11,7 @@ const porPagina = 30;
 
 let usuarioRol = null;
 // Obtener el rol del usuario al cargar la página
-fetch('http://localhost/Gestion-stock-tienda-motos/app/usuario-info')
+fetch(API_URL+'usuario-info')
   .then(response => response.json())
   .then(data => {
     usuarioRol = data.rol;
@@ -46,7 +46,16 @@ function mostrarProductos() {
   const campoOrden = ordenarPor.value;
 
   const filtrados = productos
-    .filter(p => p.nombre.toLowerCase().includes(filtro))
+    .filter(p => {
+  const searchTerm = filtro.toLowerCase();
+  return (
+    p.nombre.toLowerCase().includes(searchTerm) ||
+    (p.precio_venta && p.precio_venta.toString().includes(searchTerm)) ||
+    (p.precio_compra && p.precio_compra.toString().includes(searchTerm)) ||
+    (p.codigo_barras && p.codigo_barras.toString().toLowerCase().includes(searchTerm)) ||
+    (p.fecha_alta && p.fecha_alta.toLowerCase().includes(searchTerm))
+  );
+})
     .sort((a, b) => {
       let A = a[campoOrden] || '', B = b[campoOrden] || '';
       if (typeof A === 'string') A = A.toLowerCase();
@@ -54,10 +63,10 @@ function mostrarProductos() {
       return A > B ? 1 : A < B ? -1 : 0;
     });
 
+  // Resto de la función permanece igual...
   const totalPaginas = Math.ceil(filtrados.length / porPagina);
   const inicio = (paginaActual - 1) * porPagina;
   const productosPagina = filtrados.slice(inicio, inicio + porPagina);
-
 
   tabla.innerHTML = productosPagina.map(p => {
     let botones = '';
@@ -76,7 +85,7 @@ function mostrarProductos() {
         <td>${p.precio_compra || 0}</td>
         <td>${p.stock || 0}</td>
         <td>${p.stock_minimo || 0}</td>
-        <td>${p.codigo_barras || p.codigo_barras || ''}</td>
+        <td>${p.codigo_barras || ''}</td>
         <td>${p.fecha_alta || ''}</td>
         <td>${botones}</td>
       </tr>`;

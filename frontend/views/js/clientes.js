@@ -1,4 +1,3 @@
-    const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
     const form = document.getElementById('formCliente');
     const tabla = document.getElementById('tablaClientes');
     const paginacion = document.getElementById('paginacion');
@@ -8,6 +7,16 @@
     let clientes = [];
     let paginaActual = 1;
     const porPagina = 30;
+
+let usuarioRol = null;
+
+// Obtener el rol del usuario al cargar la página
+fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    usuarioRol = data.rol;
+    mostrarClientes(); // Actualiza la tabla si ya está cargada
+  });
 
     document.addEventListener('DOMContentLoaded', () => {
       cargarClientes();
@@ -30,51 +39,56 @@
         });
     }
 
-    function mostrarClientes() {
-      const filtro = busqueda.value.toLowerCase();
-      const campoOrden = ordenarPor.value;
+function mostrarClientes() {
+  const filtro = busqueda.value.toLowerCase();
+  const campoOrden = ordenarPor.value;
 
-      const filtrados = clientes
-        .filter(c => 
-          c.nombre.toLowerCase().includes(filtro) || 
-          c.email.toLowerCase().includes(filtro) || 
-          c.dni.includes(filtro)
-        )
-        .sort((a, b) => {
-          let A = a[campoOrden] || '', B = b[campoOrden] || '';
-          if (typeof A === 'string') A = A.toLowerCase();
-          if (typeof B === 'string') B = B.toLowerCase();
-          return A > B ? 1 : A < B ? -1 : 0;
-        });
+  const filtrados = clientes
+    .filter(c => 
+      c.nombre.toLowerCase().includes(filtro) || 
+      c.email.toLowerCase().includes(filtro) || 
+      c.dni.includes(filtro)
+    )
+    .sort((a, b) => {
+      let A = a[campoOrden] || '', B = b[campoOrden] || '';
+      if (typeof A === 'string') A = A.toLowerCase();
+      if (typeof B === 'string') B = B.toLowerCase();
+      return A > B ? 1 : A < B ? -1 : 0;
+    });
 
-      const totalPaginas = Math.ceil(filtrados.length / porPagina);
-      const inicio = (paginaActual - 1) * porPagina;
-      const clientesPagina = filtrados.slice(inicio, inicio + porPagina);
+  const totalPaginas = Math.ceil(filtrados.length / porPagina);
+  const inicio = (paginaActual - 1) * porPagina;
+  const clientesPagina = filtrados.slice(inicio, inicio + porPagina);
 
-      tabla.innerHTML = clientesPagina.map(c => `
-        <tr>
-          <td>${c.id_cliente}</td>
-          <td>${c.nombre} ${c.apellido || ''}</td>
-          <td>${c.email}</td>
-          <td>${c.telefono || '-'}</td>
-          <td>${c.direccion || '-'}</td>
-          <td>${c.dni}</td>
-          <td>${c.fecha_alta || '-'}</td>
-          <td>
-            <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
-            <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
-          </td>
-        </tr>`).join('');
-
-      paginacion.innerHTML = '';
-      for (let i = 1; i <= totalPaginas; i++) {
-        paginacion.innerHTML += `
-          <li class="page-item ${i === paginaActual ? 'active' : ''}">
-            <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
-          </li>`;
-      }
+  tabla.innerHTML = clientesPagina.map(c => {
+    let botones = '';
+    if (usuarioRol === 'admin') {
+      botones = `
+        <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
+        <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
+      `;
     }
+    return `
+      <tr>
+        <td>${c.id_cliente}</td>
+        <td>${c.nombre} ${c.apellido || ''}</td>
+        <td>${c.email}</td>
+        <td>${c.telefono || '-'}</td>
+        <td>${c.direccion || '-'}</td>
+        <td>${c.dni}</td>
+        <td>${c.fecha_alta || '-'}</td>
+        <td>${botones}</td>
+      </tr>`;
+  }).join('');
 
+  paginacion.innerHTML = '';
+  for (let i = 1; i <= totalPaginas; i++) {
+    paginacion.innerHTML += `
+      <li class="page-item ${i === paginaActual ? 'active' : ''}">
+        <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
+      </li>`;
+  }
+}
     function cambiarPagina(n) {
       paginaActual = n;
       mostrarClientes();
@@ -151,3 +165,11 @@ form.addEventListener('submit', e => {
         alert('Error: ' + error.message);
     });
 });
+// Mostrar/ocultar botón de agregar según el rol
+fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'admin') {
+      document.getElementById('btnAgregarCliente').style.display = 'block';
+    }
+  });
