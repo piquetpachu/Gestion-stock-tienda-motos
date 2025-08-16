@@ -156,7 +156,7 @@
   </div>
 </div>
 
-
+<script src="../js/config.js"></script>
 <script src="../js/dashboard-proteccion.js"></script>
 <script src="../js/estadisticas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

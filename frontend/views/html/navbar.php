@@ -17,7 +17,7 @@
     <div class="collapse navbar-collapse" id="navbarContenido">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link" href="productos.php">Gestión de Stock</a></li>
-        <li class="nav-item"><a class="nav-link" href="#">Clientes</a></li>
+        <li class="nav-item"><a class="nav-link" href="clientes.php">Clientes</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Deudores</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Caja Diaria</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Usuario</a></li>

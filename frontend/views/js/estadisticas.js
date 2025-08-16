@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
+// const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarResumen();

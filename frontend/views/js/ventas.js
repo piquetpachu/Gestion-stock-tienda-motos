@@ -30,7 +30,7 @@ const formatearMoneda = valor =>
 
 // Cargar productos
 function cargarProductos() {
-    fetch('http://localhost/Gestion-stock-tienda-motos/app/productos')
+    fetch(API_URL + 'productos')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener productos');
             return res.json();
@@ -53,7 +53,7 @@ function cargarProductos() {
 
 // Cargar métodos de pago
 function cargarMetodosPago() {
-    fetch('http://localhost/Gestion-stock-tienda-motos/app/medios_pago')
+    fetch(API_URL+'medios_pago')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener métodos de pago');
             return res.json();
@@ -363,7 +363,7 @@ function finalizarVenta() {
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
 
-    fetch('http://localhost/Gestion-stock-tienda-motos/app/crear_venta', {
+    fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)

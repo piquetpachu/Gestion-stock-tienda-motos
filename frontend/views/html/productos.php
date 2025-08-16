@@ -30,7 +30,7 @@
     <!-- Filtros -->
     <div class="row mb-3">
       <div class="col-md-6">
-        <input type="text" id="busqueda" class="form-control" placeholder="🔍 Buscar por nombre..." />
+<input type="text" id="busqueda" class="form-control" placeholder="🔍 Buscar por nombre, precio, código o fecha..." />
       </div>
       <div class="col-md-6">
         <select id="ordenarPor" class="form-select">
@@ -117,6 +117,7 @@
   </div>
 
   <!-- Scripts -->
+   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/productos.js"></script>
