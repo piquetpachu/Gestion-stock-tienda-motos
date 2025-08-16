@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
+// const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
 const form = document.getElementById('formProducto');
 const tabla = document.getElementById('tablaProductos');
 const paginacion = document.getElementById('paginacion');
@@ -8,6 +8,15 @@ const ordenarPor = document.getElementById('ordenarPor');
 let productos = [];
 let paginaActual = 1;
 const porPagina = 30;
+
+let usuarioRol = null;
+// Obtener el rol del usuario al cargar la página
+fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    usuarioRol = data.rol;
+    mostrarProductos(); // Actualiza la tabla si ya está cargada
+  });
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarProductos();
@@ -37,7 +46,16 @@ function mostrarProductos() {
   const campoOrden = ordenarPor.value;
 
   const filtrados = productos
-    .filter(p => p.nombre.toLowerCase().includes(filtro))
+    .filter(p => {
+  const searchTerm = filtro.toLowerCase();
+  return (
+    p.nombre.toLowerCase().includes(searchTerm) ||
+    (p.precio_venta && p.precio_venta.toString().includes(searchTerm)) ||
+    (p.precio_compra && p.precio_compra.toString().includes(searchTerm)) ||
+    (p.codigo_barras && p.codigo_barras.toString().toLowerCase().includes(searchTerm)) ||
+    (p.fecha_alta && p.fecha_alta.toLowerCase().includes(searchTerm))
+  );
+})
     .sort((a, b) => {
       let A = a[campoOrden] || '', B = b[campoOrden] || '';
       if (typeof A === 'string') A = A.toLowerCase();
@@ -45,26 +63,33 @@ function mostrarProductos() {
       return A > B ? 1 : A < B ? -1 : 0;
     });
 
+  // Resto de la función permanece igual...
   const totalPaginas = Math.ceil(filtrados.length / porPagina);
   const inicio = (paginaActual - 1) * porPagina;
   const productosPagina = filtrados.slice(inicio, inicio + porPagina);
 
-  tabla.innerHTML = productosPagina.map(p => `
-    <tr>
-      <td>${p.id_producto}</td>
-      <td>${p.nombre}</td>
-      <td>${p.descripcion || ''}</td>
-      <td>${p.precio_venta || 0}</td>
-      <td>${p.precio_compra || 0}</td>
-      <td>${p.stock || 0}</td>
-      <td>${p.stock_minimo || 0}</td>
-      <td>${p.codigo_barras || p.codigo_barras || ''}</td>
-      <td>${p.fecha_alta || ''}</td>
-      <td>
+  tabla.innerHTML = productosPagina.map(p => {
+    let botones = '';
+    if (usuarioRol === 'admin') {
+      botones = `
         <button class="btn btn-warning btn-sm" onclick='editar(${JSON.stringify(p)})'>✏️</button>
         <button class="btn btn-danger btn-sm" onclick='borrar(${p.id_producto})'>🗑️</button>
-      </td>
-    </tr>`).join('');
+      `;
+    }
+    return `
+      <tr>
+        <td>${p.id_producto}</td>
+        <td>${p.nombre}</td>
+        <td>${p.descripcion || ''}</td>
+        <td>${p.precio_venta || 0}</td>
+        <td>${p.precio_compra || 0}</td>
+        <td>${p.stock || 0}</td>
+        <td>${p.stock_minimo || 0}</td>
+        <td>${p.codigo_barras || ''}</td>
+        <td>${p.fecha_alta || ''}</td>
+        <td>${botones}</td>
+      </tr>`;
+  }).join('');
 
   paginacion.innerHTML = '';
   for (let i = 1; i <= totalPaginas; i++) {

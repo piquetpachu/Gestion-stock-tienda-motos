@@ -30,6 +30,10 @@
       color: #343a40;
     }
 
+       body { 
+            display: none; /* Oculta toda la página inicialmente */
+        }
+
   </style>
 
   <?php include 'navbar.php'; ?>
@@ -152,7 +156,8 @@
   </div>
 </div>
 
-
+<script src="../js/config.js"></script>
+<script src="../js/dashboard-proteccion.js"></script>
 <script src="../js/estadisticas.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
