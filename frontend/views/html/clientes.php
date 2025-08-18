@@ -16,6 +16,9 @@
     .pagination {
       margin-top: 20px;
     }
+    body { 
+            display: none; /* Oculta toda la página inicialmente */
+        }
   </style>
 </head>
 
@@ -108,7 +111,8 @@
   </div>
 
   <!-- Scripts -->
-   <script src="../js/config.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="../js/clientes.js"></script>
