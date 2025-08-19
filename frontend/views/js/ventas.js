@@ -1,7 +1,6 @@
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
 const inputCodigoBarras = document.getElementById('codigo_de_barras');
-const botonAgregar = document.getElementById('boton_agregar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
 const inputPrecioUnitario = document.getElementById('precio_unitario');
@@ -44,6 +43,9 @@ function cargarProductos() {
                 opcion.textContent = prod.nombre || 'Sin nombre';
                 selectProducto.appendChild(opcion);
             });
+
+            // Inicializar Tom Select
+            new TomSelect(selectProducto, { create: false, sortField: { field: "text", direction: "asc" } });
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
@@ -53,7 +55,7 @@ function cargarProductos() {
 
 // Cargar métodos de pago
 function cargarMetodosPago() {
-    fetch(API_URL+'medios_pago')
+    fetch(API_URL + 'medios_pago')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener métodos de pago');
             return res.json();
@@ -181,6 +183,11 @@ function agregarProducto() {
     inputCodigoBarras.value = '';
 }
 
+// Detectar Enter en selectProducto o inputCodigoBarras
+selectProducto.addEventListener('change', () => agregarProducto());
+selectProducto.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
+inputCodigoBarras.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
+
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
     divCamposAdicionalesPago.innerHTML = '';
@@ -212,12 +219,9 @@ function cambiarCamposMetodoPago() {
         inputCuit.addEventListener('input', () => {
             let val = inputCuit.value;
             val = val.replace(/[^0-9\-]/g, '');
-
             if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
             if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-
             if (val.length > 13) val = val.slice(0, 13);
-
             inputCuit.value = val;
         });
     }
@@ -323,11 +327,9 @@ function finalizarVenta() {
         cantidad: p.cantidad,
         precio_unitario: p.precio,
         descuento: 0,
-
         iva: parseFloat(inputIVA.value) || 21 // Valor por defecto 21%
     }));
 
-    // Calcular total
     const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
 
     const pago = {
@@ -335,30 +337,24 @@ function finalizarVenta() {
         monto: montoTotal
     };
 
-    // Si método es tarjeta, validar CUIT
     if (metodoPago === '2') {
         const cuitInput = document.getElementById('cuit_tarjeta');
         if (!cuitInput || !cuitInput.value.match(/^\d{2}-\d{8}-\d{1}$/)) {
             alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
             return;
         }
-        pago.cuil_cuit = cuitInput.value; // ✅ Campo corregido
+        pago.cuil_cuit = cuitInput.value;
     }
 
-    // Preparar datos para enviar - Incluir TODOS los campos requeridos
     const data = {
         items,
         pagos: [pago],
         monto_total: montoTotal,
-        tipo_comprobante: 'TICKET', // Valor por defecto
-        nro_comprobante: Date.now().toString(), // Generar número único
-        id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
-        id_usuario: 1 // ID del usuario logueado (ajusta según tu sesión)
+        tipo_comprobante: 'TICKET',
+        nro_comprobante: Date.now().toString(),
+        id_iva: 1,
+        id_usuario: 1
     };
-
-    botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
-
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
@@ -376,15 +372,12 @@ function finalizarVenta() {
             mensajeResultado.textContent = 'Venta registrada con éxito.';
             mensajeResultado.className = 'alert alert-success';
 
-            // Mostrar recibo
             mostrarRecibo(data);
 
-            // Activar botón imprimir y cambiar color
             botonImprimirRecibo.disabled = false;
             botonImprimirRecibo.classList.remove('btn-secondary');
             botonImprimirRecibo.classList.add('btn-success');
 
-            // Limpiar formulario y tabla
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
@@ -426,12 +419,8 @@ function cancelarVenta() {
 }
 
 // Eventos
-botonAgregar.addEventListener('click', agregarProducto);
-
 selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
-
 botonFinalizar.addEventListener('click', finalizarVenta);
-
 botonCancelar.addEventListener('click', cancelarVenta);
 
 // Carga inicial

@@ -6,13 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrar Venta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- CSS de Tom Select -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+  <style>
+    body {
+      display: none;
+      /* Oculta toda la página inicialmente */
+    }
+  </style>
 </head>
 
-<style>
-       body { 
-            display: none; /* Oculta toda la página inicialmente */
-        }
-</style>
 <body>
   <?php include 'navbar.php'; ?>
 
@@ -33,16 +36,10 @@
         </div>
 
         <!-- Código de barras -->
-        <div class="col-md-4">
+        <div class="col-md-6">
           <label for="codigo_de_barras" class="visually-hidden">Código de barras</label>
           <input type="text" class="form-control" id="codigo_de_barras" placeholder="Escanear código de barras"
             autocomplete="off" aria-label="Escanear código de barras">
-        </div>
-
-        <!-- Botón Agregar -->
-        <div class="col-md-2 d-grid">
-          <button type="button" class="btn btn-primary" id="boton_agregar_producto"
-            aria-label="Agregar producto">Agregar</button>
         </div>
       </div>
     </div>
@@ -122,9 +119,12 @@
   </div>
 
   <!-- SCRIPTS -->
-   <script src="../js/config.js"></script>
+  <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- JS de Tom Select -->
+  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+  <!-- Tu JS de ventas -->
   <script src="../js/ventas.js"></script>
 </body>
 
