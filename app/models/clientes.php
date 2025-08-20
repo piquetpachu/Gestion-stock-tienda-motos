@@ -12,13 +12,12 @@ function obtenerClientePorId($pdo, $id) {
 }
 
 function crearCliente($pdo, $datos) {
-    $sql = "INSERT INTO cliente (nombre, apellido, dni, cuil_cuit, email, telefono, direccion) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO cliente (nombre, apellido, cuil_cuit, email, telefono, direccion) 
+            VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['nombre'],
         $datos['apellido'] ?? null,
-        $datos['dni'],
         $datos['cuil_cuit'] ?? null,
         $datos['email'],
         $datos['telefono'] ?? null,
@@ -31,7 +30,6 @@ function actualizarCliente($pdo, $id, $datos) {
     $sql = "UPDATE cliente SET 
             nombre = ?, 
             apellido = ?, 
-            dni = ?, 
             cuil_cuit = ?, 
             email = ?, 
             telefono = ?, 
@@ -41,7 +39,6 @@ function actualizarCliente($pdo, $id, $datos) {
     $stmt->execute([
         $datos['nombre'],
         $datos['apellido'] ?? null,
-        $datos['dni'],
         $datos['cuil_cuit'] ?? null,
         $datos['email'],
         $datos['telefono'] ?? null,

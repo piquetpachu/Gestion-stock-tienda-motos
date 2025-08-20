@@ -21,8 +21,8 @@ try {
         case $ruta === 'crear_cliente' && $metodo === 'POST':
             autorizar(['admin']);
             $datos = json_decode(file_get_contents('php://input'), true);
-            if (empty($datos['nombre']) || empty($datos['dni']) || empty($datos['email'])) {
-                throw new Exception("Nombre, DNI y Email son campos requeridos");
+            if (empty($datos['nombre']) || empty($datos['cuil_cuit']) || empty($datos['email'])) {
+                throw new Exception("Nombre, Cuil-Cuit y Email son campos requeridos");
             }
             echo json_encode(["id" => crearCliente($pdo, $datos)]);
             break;
@@ -30,8 +30,8 @@ try {
         case preg_match('/^actualizar_cliente\/(\d+)$/', $ruta, $matches) && $metodo === 'PUT':
             autorizar(['admin']);
             $datos = json_decode(file_get_contents('php://input'), true);
-            if (empty($datos['nombre']) || empty($datos['dni']) || empty($datos['email'])) {
-                throw new Exception("Nombre, DNI y Email son campos requeridos");
+            if (empty($datos['nombre']) || empty($datos['cuil_cuit']) || empty($datos['email'])) {
+                throw new Exception("Nombre, cuil-cuit y Email son campos requeridos");
             }
             echo json_encode(actualizarCliente($pdo, $matches[1], $datos));
             break;

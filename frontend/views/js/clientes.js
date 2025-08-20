@@ -47,7 +47,7 @@ function mostrarClientes() {
     .filter(c => 
       c.nombre.toLowerCase().includes(filtro) || 
       c.email.toLowerCase().includes(filtro) || 
-      c.dni.includes(filtro)
+      c.cuil_cuit.includes(filtro)
     )
     .sort((a, b) => {
       let A = a[campoOrden] || '', B = b[campoOrden] || '';
@@ -75,7 +75,7 @@ function mostrarClientes() {
         <td>${c.email}</td>
         <td>${c.telefono || '-'}</td>
         <td>${c.direccion || '-'}</td>
-        <td>${c.dni}</td>
+        <td>${c.cuil_cuit}</td>
         <td>${c.fecha_alta || '-'}</td>
         <td>${botones}</td>
       </tr>`;
@@ -104,7 +104,7 @@ function mostrarClientes() {
       document.getElementById('id_cliente').value = cliente.id_cliente;
       document.getElementById('nombre').value = cliente.nombre;
       document.getElementById('apellido').value = cliente.apellido || '';
-      document.getElementById('dni').value = cliente.dni;
+      document.getElementById('cuil_cuit').value = cliente.cuil_cuit;
       document.getElementById('cuil_cuit').value = cliente.cuil_cuit || '';
       document.getElementById('email').value = cliente.email;
       document.getElementById('telefono').value = cliente.telefono || '';
@@ -128,7 +128,7 @@ form.addEventListener('submit', e => {
         id_cliente: document.getElementById('id_cliente').value,
         nombre: document.getElementById('nombre').value,
         apellido: document.getElementById('apellido').value,
-        dni: document.getElementById('dni').value,
+        // dni: document.getElementById('dni').value,
         cuil_cuit: document.getElementById('cuil_cuit').value,
         email: document.getElementById('email').value,
         telefono: document.getElementById('telefono').value,
@@ -136,7 +136,7 @@ form.addEventListener('submit', e => {
     };
 
     // Validación básica
-    if (!datos.nombre || !datos.dni || !datos.email) {
+    if (!datos.nombre || !datos.cuil_cuit || !datos.email) {
         alert('Nombre, DNI y Email son campos requeridos');
         return;
     }
