@@ -40,7 +40,7 @@
         <select id="ordenarPor" class="form-select">
           <option value="nombre">Ordenar por: Nombre</option>
           <option value="fecha_alta">Fecha Alta</option>
-          <option value="dni">DNI</option>
+          <option value="cuil_cuit">Cuil-Cuit</option>
         </select>
       </div>
     </div>
@@ -55,7 +55,7 @@
             <th>Email</th>
             <th>Teléfono</th>
             <th>Dirección</th>
-            <th>DNI</th>
+            <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
             <th>Acciones</th>
           </tr>
@@ -87,10 +87,7 @@
             <input type="text" id="apellido" class="form-control" placeholder="Apellido" required />
           </div>
           <div class="col-md-6">
-            <input type="text" id="dni" class="form-control" placeholder="DNI" required />
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT" />
+            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT"  maxlength="11"/>
           </div>
           <div class="col-md-6">
             <input type="email" id="email" class="form-control" placeholder="Email" required />
