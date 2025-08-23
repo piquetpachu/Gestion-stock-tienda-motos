@@ -87,7 +87,7 @@ function mostrarProductos() {
         <td>${p.stock_minimo || 0}</td>
         <td>${p.codigo_barras || ''}</td>
         <td>${p.fecha_alta || ''}</td>
-        <td id='btnAgregarProducto' style="display: none;>${botones}</td>
+        <td>${botones}</td>
       </tr>`;
   }).join('');
 
@@ -263,7 +263,6 @@ fetch(API_URL+'usuario-info')
   .then(response => response.json())
   .then(data => {
     if (data.rol === 'admin') {
-      document.getElementById('btnAgregarProducto').style.display = 'block';
-      document.getElementById('btnAgregarProducto').style.display = 'block';
+      document.getElementById('agregarProducto').style.display = 'block';
     }
   });

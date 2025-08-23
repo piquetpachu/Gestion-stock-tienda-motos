@@ -70,7 +70,7 @@ body.dark-theme .btn-danger {
             <th>Mínimo</th>
             <th>Cód. Barras</th>
             <th>fecha</th>
-            <th id='btnAgregarProducto' style="display: none;">Acciones</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody id="tablaProductos"></tbody>
