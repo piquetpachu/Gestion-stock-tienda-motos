@@ -12,6 +12,7 @@
        body { 
             display: none; /* Oculta toda la página inicialmente */
         }
+        
 </style>
 <body>
   <?php include 'navbar.php'; ?>
@@ -48,10 +49,10 @@
     </div>
 
     <!-- TABLA DE PRODUCTOS -->
-    <div class="bg-white p-3 rounded shadow-sm mb-4">
+    <div class=" p-3 rounded shadow-sm mb-4">
       <table class="table table-bordered text-center align-middle" id="tabla_productos"
         aria-label="Tabla de productos añadidos a la venta">
-        <thead class="table-light">
+        <thead >
           <tr>
             <th>Código</th>
             <th>Producto</th>
@@ -122,6 +123,7 @@
   </div>
 
   <!-- SCRIPTS -->
+     <script src="../js/theme.js"></script>
    <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
