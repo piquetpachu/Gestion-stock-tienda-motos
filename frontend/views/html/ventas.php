@@ -1,3 +1,4 @@
+dame estilo con boostrap en dark
 <!DOCTYPE html>
 <html lang="es">
 
@@ -28,14 +29,11 @@
     <div class="mb-4">
       <label for="seleccionar_producto" class="form-label fw-bold">Agregar producto</label>
       <div class="row g-2">
-        <!-- Lista de productos -->
         <div class="col-md-6">
           <select class="form-select" id="seleccionar_producto" aria-label="Seleccionar producto">
             <option value="" disabled>Seleccionar producto</option>
           </select>
         </div>
-
-        <!-- Código de barras -->
         <div class="col-md-6">
           <label for="codigo_de_barras" class="visually-hidden">Código de barras</label>
           <input type="text" class="form-control" id="codigo_de_barras" placeholder="Escanear código de barras"
@@ -90,10 +88,18 @@
       <label for="metodo_de_pago" class="form-label fw-bold">Método de pago</label>
       <select class="form-select" id="metodo_de_pago" required aria-required="true" aria-label="Método de pago">
         <option value="" disabled selected>Seleccionar método de pago</option>
-        <option value="1">Efectivo</option>
-        <option value="2">Tarjeta</option>
-        <option value="3">Transferencia</option>
       </select>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="mb-4">
+      <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
+      <div class="input-group">
+        <select class="form-select" id="seleccionar_cliente" aria-label="Seleccionar cliente">
+          <option value="" disabled selected>Seleccionar cliente</option>
+        </select>
+        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
+      </div>
     </div>
 
     <!-- CAMPOS ADICIONALES SEGÚN EL MÉTODO DE PAGO -->
@@ -116,6 +122,50 @@
     <!-- RESULTADO -->
     <div id="mensaje_resultado" class="mt-4" role="alert" aria-live="polite"></div>
 
+  </div>
+
+  <!-- MODAL PARA AGREGAR CLIENTE -->
+  <div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalClienteLabel">Agregar Cliente</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form_cliente">
+            <div class="mb-3">
+              <label for="cliente_nombre" class="form-label">Nombre</label>
+              <input type="text" class="form-control" id="cliente_nombre" required>
+            </div>
+            <div class="mb-3">
+              <label for="cliente_apellido" class="form-label">Apellido</label>
+              <input type="text" class="form-control" id="cliente_apellido">
+            </div>
+            <div class="mb-3">
+              <label for="cliente_dni" class="form-label">DNI</label>
+              <input type="text" class="form-control" id="cliente_dni" required>
+            </div>
+            <div class="mb-3">
+              <label for="cliente_email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="cliente_email" required>
+            </div>
+            <div class="mb-3">
+              <label for="cliente_telefono" class="form-label">Teléfono</label>
+              <input type="text" class="form-control" id="cliente_telefono">
+            </div>
+            <div class="mb-3">
+              <label for="cliente_direccion" class="form-label">Dirección</label>
+              <input type="text" class="form-control" id="cliente_direccion">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="guardar_cliente">Guardar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- SCRIPTS -->

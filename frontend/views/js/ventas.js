@@ -17,15 +17,26 @@ const mensajeResultado = document.getElementById('mensaje_resultado');
 
 const botonImprimirRecibo = document.getElementById('btn_imprimir_recibo'); // Botón imprimir
 
+// CLIENTES
+const selectCliente = document.getElementById('seleccionar_cliente');
+const btnAgregarCliente = document.getElementById('btn_agregar_cliente');
+const modalCliente = new bootstrap.Modal(document.getElementById('modalCliente'));
+const guardarClienteBtn = document.getElementById('guardar_cliente');
+const formCliente = document.getElementById('form_cliente');
+
 // Estado interno
 let productosLista = [];
 let productosVenta = [];
 let metodosPagoLista = [];
 let reciboGuardado = null;
+let tomSelectCliente = null; // TomSelect para clientes
+let tomSelectProducto = null; // TomSelect para productos
 
 // Formateador de moneda
 const formatearMoneda = valor =>
     valor.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+
+// -------------------- CARGA DE DATOS --------------------
 
 // Cargar productos
 function cargarProductos() {
@@ -44,8 +55,24 @@ function cargarProductos() {
                 selectProducto.appendChild(opcion);
             });
 
-            // Inicializar Tom Select
-            new TomSelect(selectProducto, { create: false, sortField: { field: "text", direction: "asc" } });
+            if (!selectProducto.tomselect) {
+                tomSelectProducto = new TomSelect(selectProducto, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
+                // Agregar producto automáticamente al seleccionar con click o Enter
+                tomSelectProducto.on('item_add', function () {
+                    agregarProducto();
+                });
+                tomSelectProducto.on('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        agregarProducto();
+                    }
+                });
+            } else {
+                tomSelectProducto = selectProducto.tomselect;
+            }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
@@ -76,10 +103,94 @@ function cargarMetodosPago() {
         });
 }
 
+// Cargar clientes
+function cargarClientes(seleccionarId = null) {
+    fetch(API_URL + 'clientes')
+        .then(res => {
+            if (!res.ok) throw new Error('Error al obtener clientes');
+            return res.json();
+        })
+        .then(data => {
+            selectCliente.innerHTML = '<option value="" disabled selected>Seleccionar cliente</option>';
+            data.forEach(cliente => {
+                const opcion = document.createElement('option');
+                opcion.value = cliente.id_cliente;
+                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                selectCliente.appendChild(opcion);
+            });
+
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, { create: false, sortField: { field: "text", direction: "asc" } });
+            } else {
+                tomSelectCliente.clearOptions();
+                data.forEach(cliente => tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` }));
+                tomSelectCliente.refreshOptions();
+            }
+
+            if (seleccionarId) {
+                tomSelectCliente.addItem(seleccionarId);
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando clientes:', error);
+            alert('No se pudieron cargar los clientes. Revisa la consola.');
+        });
+}
+
+// -------------------- CLIENTES --------------------
+
+// Agregar cliente desde modal
+btnAgregarCliente.addEventListener('click', () => modalCliente.show());
+
+guardarClienteBtn.addEventListener('click', () => {
+    if (!formCliente.checkValidity()) {
+        formCliente.reportValidity();
+        return;
+    }
+
+    const nuevoCliente = {
+        nombre: document.getElementById('cliente_nombre').value.trim(),
+        apellido: document.getElementById('cliente_apellido').value.trim(),
+        dni: document.getElementById('cliente_dni').value.trim(),
+        email: document.getElementById('cliente_email').value.trim(),
+        telefono: document.getElementById('cliente_telefono').value.trim(),
+        direccion: document.getElementById('cliente_direccion').value.trim()
+    };
+
+    guardarClienteBtn.disabled = true;
+    guardarClienteBtn.textContent = 'Guardando...';
+
+    fetch(API_URL + 'crear_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoCliente)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error('Error al guardar el cliente');
+            return res.json();
+        })
+        .then(clienteCreado => {
+            modalCliente.hide();
+            formCliente.reset();
+            guardarClienteBtn.disabled = false;
+            guardarClienteBtn.textContent = 'Guardar';
+            cargarClientes(clienteCreado.id);
+        })
+        .catch(err => {
+            alert('Error al guardar cliente: ' + err.message);
+            guardarClienteBtn.disabled = false;
+            guardarClienteBtn.textContent = 'Guardar';
+        });
+});
+
+// -------------------- PRODUCTOS Y VENTA --------------------
+
+// Buscar producto por código
 function buscarProductoPorCodigo(codigo) {
     return productosLista.find(p => p.codigo_barras === codigo);
 }
 
+// Actualizar tabla de productos
 function actualizarTabla() {
     tablaProductosBody.innerHTML = '';
     productosVenta.forEach((prod, idx) => {
@@ -131,6 +242,7 @@ function actualizarTabla() {
     });
 }
 
+// Calcular totales
 function actualizarTotales() {
     const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
     inputPrecioUnitario.value = formatearMoneda(subtotal);
@@ -147,21 +259,16 @@ function actualizarTotales() {
 inputDescuento.addEventListener('input', actualizarTotales);
 inputIVA.addEventListener('input', actualizarTotales);
 
+// Agregar producto
 function agregarProducto() {
-    let codigoSeleccionado = selectProducto.value;
+    const codigoSeleccionado = tomSelectProducto ? tomSelectProducto.getValue() : selectProducto.value;
     let codigoEscaneado = inputCodigoBarras.value.trim();
     let codigo = codigoSeleccionado || codigoEscaneado;
 
-    if (!codigo) {
-        alert('Debe seleccionar un producto o ingresar un código de barras.');
-        return;
-    }
+    if (!codigo) return; // 🚀 Sin alert, solo salir
 
     const producto = buscarProductoPorCodigo(codigo);
-    if (!producto) {
-        alert('Producto no encontrado.');
-        return;
-    }
+    if (!producto) return; // 🚀 Sin alert
 
     const indexExistente = productosVenta.findIndex(p => p.codigo === codigo);
     if (indexExistente >= 0) {
@@ -179,14 +286,22 @@ function agregarProducto() {
     actualizarTabla();
     actualizarTotales();
 
-    selectProducto.value = '';
+    if (tomSelectProducto) {
+        tomSelectProducto.clear();
+        tomSelectProducto.focus();
+    } else {
+        selectProducto.value = '';
+        selectProducto.focus();
+    }
     inputCodigoBarras.value = '';
 }
 
-// Detectar Enter en selectProducto o inputCodigoBarras
-selectProducto.addEventListener('change', () => agregarProducto());
+// Detectar Enter/cambio
+selectProducto.addEventListener('change', agregarProducto);
 selectProducto.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
 inputCodigoBarras.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
+
+// -------------------- MÉTODO DE PAGO --------------------
 
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
@@ -196,21 +311,11 @@ function cambiarCamposMetodoPago() {
         divCamposAdicionalesPago.innerHTML = `
           <div class="mb-3">
             <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
-            <input
-              type="text"
-              class="form-control"
-              id="cuit_tarjeta"
-              placeholder="Ej: 20-12345678-9"
-              pattern="^\\d{2}-\\d{8}-\\d{1}$"
-              maxlength="13"
-              title="Formato válido: XX-XXXXXXXX-X (sólo números y guiones)"
-              autocomplete="off"
-              required
-            >
+            <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
             <div class="form-text">Formato: 20-12345678-9</div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Fecha actual (se asigna automáticamente)</label>
+            <label class="form-label">Fecha actual</label>
             <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
           </div>
         `;
@@ -231,6 +336,8 @@ function getNombreMetodoPago(id) {
     const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
     return metodo ? metodo.descripcion : 'Desconocido';
 }
+
+// -------------------- RECIBO --------------------
 
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
@@ -255,6 +362,7 @@ function mostrarRecibo(data) {
           <p><strong>Fecha:</strong> ${fechaActual}</p>
           <p><strong>Hora:</strong> ${horaActual}</p>
           <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
+          ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
         </div>
         <table>
           <thead>
@@ -309,6 +417,8 @@ botonImprimirRecibo.addEventListener('click', () => {
     ventanaRecibo.print();
 });
 
+// -------------------- VENTA --------------------
+
 function finalizarVenta() {
     if (productosVenta.length === 0) {
         alert('Debe agregar al menos un producto a la venta.');
@@ -327,7 +437,7 @@ function finalizarVenta() {
         cantidad: p.cantidad,
         precio_unitario: p.precio,
         descuento: 0,
-        iva: parseFloat(inputIVA.value) || 21 // Valor por defecto 21%
+        iva: parseFloat(inputIVA.value) || 21
     }));
 
     const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
@@ -347,6 +457,7 @@ function finalizarVenta() {
     }
 
     const data = {
+        id_cliente: selectCliente.value || null,
         items,
         pagos: [pago],
         monto_total: montoTotal,
@@ -384,6 +495,7 @@ function finalizarVenta() {
 
             selectMetodoPago.value = '';
             divCamposAdicionalesPago.innerHTML = '';
+            selectCliente.value = '';
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -395,36 +507,24 @@ function finalizarVenta() {
         });
 }
 
-function cancelarVenta() {
-    if (!confirm('¿Está seguro que desea cancelar la venta? Se perderán los datos ingresados.')) return;
-
-    productosVenta = [];
-    actualizarTabla();
-    actualizarTotales();
-
-    selectMetodoPago.value = '';
-    divCamposAdicionalesPago.innerHTML = '';
-
-    mensajeResultado.textContent = '';
-    botonImprimirRecibo.disabled = true;
-    botonImprimirRecibo.classList.remove('btn-success');
-    botonImprimirRecibo.classList.add('btn-secondary');
-
-    selectProducto.value = '';
-    inputCodigoBarras.value = '';
-    inputDescuento.value = '0';
-    inputIVA.value = '21';
-    inputPrecioUnitario.value = '';
-    inputTotalVenta.value = '';
-}
+// Cancelar venta
+botonCancelar.addEventListener('click', () => {
+    if (confirm('¿Desea cancelar la venta? Se perderán los datos ingresados.')) {
+        productosVenta = [];
+        actualizarTabla();
+        actualizarTotales();
+        selectMetodoPago.value = '';
+        divCamposAdicionalesPago.innerHTML = '';
+        selectCliente.value = '';
+        mensajeResultado.textContent = '';
+    }
+});
 
 // Eventos
 selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 botonFinalizar.addEventListener('click', finalizarVenta);
-botonCancelar.addEventListener('click', cancelarVenta);
 
-// Carga inicial
+// Inicialización
 cargarProductos();
 cargarMetodosPago();
-actualizarTotales();
-botonImprimirRecibo.disabled = true;
+cargarClientes();
