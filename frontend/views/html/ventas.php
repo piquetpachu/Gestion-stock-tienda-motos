@@ -1,4 +1,3 @@
-dame estilo con boostrap en dark
 <!DOCTYPE html>
 <html lang="es">
 
@@ -14,10 +13,35 @@ dame estilo con boostrap en dark
       display: none;
       /* Oculta toda la página inicialmente */
     }
+
+    body.bg-dark {
+      color: #f8f9fa;
+    }
+
+    .bg-white-dark {
+      background-color: #212529 !important;
+    }
+
+    .table-light-dark {
+      background-color: #343a40 !important;
+      color: #f8f9fa;
+    }
+
+    .form-control-dark {
+      background-color: #343a40;
+      color: #f8f9fa;
+      border: 1px solid #495057;
+    }
+
+    .form-select-dark {
+      background-color: #343a40;
+      color: #f8f9fa;
+      border: 1px solid #495057;
+    }
   </style>
 </head>
 
-<body>
+<body class="bg-dark">
   <?php include 'navbar.php'; ?>
 
   <div class="container my-5">
@@ -30,23 +54,23 @@ dame estilo con boostrap en dark
       <label for="seleccionar_producto" class="form-label fw-bold">Agregar producto</label>
       <div class="row g-2">
         <div class="col-md-6">
-          <select class="form-select" id="seleccionar_producto" aria-label="Seleccionar producto">
+          <select class="form-select form-select-dark" id="seleccionar_producto" aria-label="Seleccionar producto">
             <option value="" disabled>Seleccionar producto</option>
           </select>
         </div>
         <div class="col-md-6">
           <label for="codigo_de_barras" class="visually-hidden">Código de barras</label>
-          <input type="text" class="form-control" id="codigo_de_barras" placeholder="Escanear código de barras"
+          <input type="text" class="form-control form-control-dark" id="codigo_de_barras" placeholder="Escanear código de barras"
             autocomplete="off" aria-label="Escanear código de barras">
         </div>
       </div>
     </div>
 
     <!-- TABLA DE PRODUCTOS -->
-    <div class="bg-white p-3 rounded shadow-sm mb-4">
+    <div class="bg-white-dark p-3 rounded shadow-sm mb-4">
       <table class="table table-bordered text-center align-middle" id="tabla_productos"
         aria-label="Tabla de productos añadidos a la venta">
-        <thead class="table-light">
+        <thead class="table-light-dark">
           <tr>
             <th>Código</th>
             <th>Producto</th>
@@ -65,28 +89,28 @@ dame estilo con boostrap en dark
     <div class="row mb-4">
       <div class="col-md-3">
         <label for="precio_unitario" class="form-label">Precio unitario</label>
-        <input type="text" class="form-control text-end" id="precio_unitario" readonly aria-readonly="true">
+        <input type="text" class="form-control text-end form-control-dark" id="precio_unitario" readonly aria-readonly="true">
       </div>
       <div class="col-md-3">
         <label for="descuento" class="form-label">Descuento (%)</label>
-        <input type="number" class="form-control" id="descuento" min="0" value="0" aria-describedby="descuentoHelp">
-        <div id="descuentoHelp" class="form-text">Ingrese descuento en porcentaje</div>
+        <input type="number" class="form-control form-control-dark" id="descuento" min="0" value="0" aria-describedby="descuentoHelp">
+        <div id="descuentoHelp" class="form-text text-light">Ingrese descuento en porcentaje</div>
       </div>
       <div class="col-md-3">
         <label for="iva" class="form-label">IVA (%)</label>
-        <input type="number" class="form-control" id="iva" value="21" aria-describedby="ivaHelp">
-        <div id="ivaHelp" class="form-text">Ingrese porcentaje de IVA aplicado</div>
+        <input type="number" class="form-control form-control-dark" id="iva" value="21" aria-describedby="ivaHelp">
+        <div id="ivaHelp" class="form-text text-light">Ingrese porcentaje de IVA aplicado</div>
       </div>
       <div class="col-md-3">
         <label for="total_venta" class="form-label">Total</label>
-        <input type="text" class="form-control text-end" id="total_venta" readonly aria-readonly="true">
+        <input type="text" class="form-control text-end form-control-dark" id="total_venta" readonly aria-readonly="true">
       </div>
     </div>
 
     <!-- MÉTODO DE PAGO -->
     <div class="mb-4">
       <label for="metodo_de_pago" class="form-label fw-bold">Método de pago</label>
-      <select class="form-select" id="metodo_de_pago" required aria-required="true" aria-label="Método de pago">
+      <select class="form-select form-select-dark" id="metodo_de_pago" required aria-required="true" aria-label="Método de pago">
         <option value="" disabled selected>Seleccionar método de pago</option>
       </select>
     </div>
@@ -95,7 +119,7 @@ dame estilo con boostrap en dark
     <div class="mb-4">
       <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
       <div class="input-group">
-        <select class="form-select" id="seleccionar_cliente" aria-label="Seleccionar cliente">
+        <select class="form-select form-select-dark" id="seleccionar_cliente" aria-label="Seleccionar cliente">
           <option value="" disabled selected>Seleccionar cliente</option>
         </select>
         <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
@@ -127,36 +151,36 @@ dame estilo con boostrap en dark
   <!-- MODAL PARA AGREGAR CLIENTE -->
   <div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <div class="modal-content">
+      <div class="modal-content bg-dark text-light">
         <div class="modal-header">
           <h5 class="modal-title" id="modalClienteLabel">Agregar Cliente</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <form id="form_cliente">
             <div class="mb-3">
               <label for="cliente_nombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control" id="cliente_nombre" required>
+              <input type="text" class="form-control form-control-dark" id="cliente_nombre" required>
             </div>
             <div class="mb-3">
               <label for="cliente_apellido" class="form-label">Apellido</label>
-              <input type="text" class="form-control" id="cliente_apellido">
+              <input type="text" class="form-control form-control-dark" id="cliente_apellido">
             </div>
             <div class="mb-3">
-              <label for="cliente_dni" class="form-label">DNI</label>
-              <input type="text" class="form-control" id="cliente_dni" required>
+              <label for="cliente_cuit" class="form-label">CUIT/CUIL</label>
+              <input type="text" class="form-control form-control-dark" id="cliente_cuit" placeholder="20-12345678-9" required>
             </div>
             <div class="mb-3">
               <label for="cliente_email" class="form-label">Email</label>
-              <input type="email" class="form-control" id="cliente_email" required>
+              <input type="email" class="form-control form-control-dark" id="cliente_email" required>
             </div>
             <div class="mb-3">
               <label for="cliente_telefono" class="form-label">Teléfono</label>
-              <input type="text" class="form-control" id="cliente_telefono">
+              <input type="text" class="form-control form-control-dark" id="cliente_telefono">
             </div>
             <div class="mb-3">
               <label for="cliente_direccion" class="form-label">Dirección</label>
-              <input type="text" class="form-control" id="cliente_direccion">
+              <input type="text" class="form-control form-control-dark" id="cliente_direccion">
             </div>
           </form>
         </div>
@@ -177,5 +201,3 @@ dame estilo con boostrap en dark
   <!-- Tu JS de ventas -->
   <script src="../js/ventas.js"></script>
 </body>
-
-</html>

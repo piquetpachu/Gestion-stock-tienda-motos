@@ -142,6 +142,14 @@ function cargarClientes(seleccionarId = null) {
 // Agregar cliente desde modal
 btnAgregarCliente.addEventListener('click', () => modalCliente.show());
 
+// Limitar CUIT a 11 números reales en modal de cliente
+const inputCuitCliente = document.getElementById('cliente_cuit');
+inputCuitCliente.addEventListener('input', () => {
+    let val = inputCuitCliente.value.replace(/\D/g, ''); // solo números
+    if (val.length > 11) val = val.slice(0, 11);
+    inputCuitCliente.value = val;
+});
+
 guardarClienteBtn.addEventListener('click', () => {
     if (!formCliente.checkValidity()) {
         formCliente.reportValidity();
@@ -151,11 +159,16 @@ guardarClienteBtn.addEventListener('click', () => {
     const nuevoCliente = {
         nombre: document.getElementById('cliente_nombre').value.trim(),
         apellido: document.getElementById('cliente_apellido').value.trim(),
-        dni: document.getElementById('cliente_dni').value.trim(),
+        cuil_cuit: document.getElementById('cliente_cuit').value.trim(), // <-- CORRECCIÓN
         email: document.getElementById('cliente_email').value.trim(),
         telefono: document.getElementById('cliente_telefono').value.trim(),
         direccion: document.getElementById('cliente_direccion').value.trim()
     };
+
+    if (nuevoCliente.cuil_cuit.length !== 11) { // <-- CORRECCIÓN
+        alert('El CUIT/CUIL debe tener exactamente 11 números.');
+        return;
+    }
 
     guardarClienteBtn.disabled = true;
     guardarClienteBtn.textContent = 'Guardando...';
@@ -251,278 +264,110 @@ function actualizarTotales() {
     const ivaPerc = parseFloat(inputIVA.value) || 0;
 
     const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
-    const total = montoConDescuento * (1 + ivaPerc / 100);
-
-    inputTotalVenta.value = formatearMoneda(total);
+    const montoConIVA = montoConDescuento * (1 + ivaPerc / 100);
+    inputTotalVenta.value = formatearMoneda(montoConIVA);
 }
 
-inputDescuento.addEventListener('input', actualizarTotales);
-inputIVA.addEventListener('input', actualizarTotales);
-
-// Agregar producto
+// Agregar producto a la venta
 function agregarProducto() {
-    const codigoSeleccionado = tomSelectProducto ? tomSelectProducto.getValue() : selectProducto.value;
-    let codigoEscaneado = inputCodigoBarras.value.trim();
-    let codigo = codigoSeleccionado || codigoEscaneado;
+    const codigo = selectProducto.value || inputCodigoBarras.value;
+    if (!codigo) return;
 
-    if (!codigo) return; // 🚀 Sin alert, solo salir
+    const prod = buscarProductoPorCodigo(codigo);
+    if (!prod) {
+        alert('Producto no encontrado');
+        return;
+    }
 
-    const producto = buscarProductoPorCodigo(codigo);
-    if (!producto) return; // 🚀 Sin alert
-
-    const indexExistente = productosVenta.findIndex(p => p.codigo === codigo);
-    if (indexExistente >= 0) {
-        productosVenta[indexExistente].cantidad += 1;
+    const existente = productosVenta.find(p => p.codigo === prod.codigo_barras);
+    if (existente) {
+        existente.cantidad += 1;
     } else {
         productosVenta.push({
-            codigo: producto.codigo_barras,
-            id_producto: producto.id_producto,
-            nombre: producto.nombre,
-            cantidad: 1,
-            precio: parseFloat(producto.precio_venta) || 0
+            codigo: prod.codigo_barras,
+            nombre: prod.nombre,
+            precio: parseFloat(prod.precio),
+            cantidad: 1
         });
     }
 
     actualizarTabla();
     actualizarTotales();
 
-    if (tomSelectProducto) {
-        tomSelectProducto.clear();
-        tomSelectProducto.focus();
-    } else {
-        selectProducto.value = '';
-        selectProducto.focus();
-    }
+    selectProducto.value = '';
+    if (tomSelectProducto) tomSelectProducto.clear();
     inputCodigoBarras.value = '';
 }
 
-// Detectar Enter/cambio
-selectProducto.addEventListener('change', agregarProducto);
-selectProducto.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
-inputCodigoBarras.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
-
-// -------------------- MÉTODO DE PAGO --------------------
-
-function cambiarCamposMetodoPago() {
-    const metodo = selectMetodoPago.value;
-    divCamposAdicionalesPago.innerHTML = '';
-
-    if (metodo === '2') { // tarjeta
-        divCamposAdicionalesPago.innerHTML = `
-          <div class="mb-3">
-            <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
-            <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
-            <div class="form-text">Formato: 20-12345678-9</div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Fecha actual</label>
-            <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
-          </div>
-        `;
-
-        const inputCuit = document.getElementById('cuit_tarjeta');
-        inputCuit.addEventListener('input', () => {
-            let val = inputCuit.value;
-            val = val.replace(/[^0-9\-]/g, '');
-            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
-            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-            if (val.length > 13) val = val.slice(0, 13);
-            inputCuit.value = val;
-        });
-    }
-}
-
-function getNombreMetodoPago(id) {
-    const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
-    return metodo ? metodo.descripcion : 'Desconocido';
-}
-
-// -------------------- RECIBO --------------------
-
-function mostrarRecibo(data) {
-    const fechaActual = new Date().toLocaleDateString('es-AR');
-    const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
-
-    reciboGuardado = `
-    <html>
-      <head>
-        <title>Recibo de Venta</title>
-        <style>
-          body { font-family: monospace; padding: 20px; }
-          h2 { text-align: center; }
-          .info { margin-bottom: 15px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-          .totales { margin-top: 20px; font-weight: bold; }
-        </style>
-      </head>
-      <body>
-        <h2>Recibo de Venta</h2>
-        <div class="info">
-          <p><strong>Fecha:</strong> ${fechaActual}</p>
-          <p><strong>Hora:</strong> ${horaActual}</p>
-          <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
-          ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Precio Unitario</th>
-              <th>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-    `;
-
-    productosVenta.forEach(p => {
-        const totalProd = p.precio * p.cantidad;
-        reciboGuardado += `
-      <tr>
-        <td>${p.nombre}</td>
-        <td>${p.cantidad}</td>
-        <td>${formatearMoneda(p.precio)}</td>
-        <td>${formatearMoneda(totalProd)}</td>
-      </tr>`;
-    });
-
-    reciboGuardado += `
-          </tbody>
-        </table>
-        <div class="totales">
-          <p>Subtotal: ${inputPrecioUnitario.value}</p>
-          <p>Descuento: ${inputDescuento.value || 0}%</p>
-          <p>IVA: ${inputIVA.value || 0}%</p>
-          <p>Total Final: ${inputTotalVenta.value}</p>
-        </div>
-        <div style="text-align: center; margin-top: 30px;">
-          <p>¡Gracias por su compra!</p>
-        </div>
-      </body>
-    </html>
-  `;
-}
-
-botonImprimirRecibo.addEventListener('click', () => {
-    if (!reciboGuardado) {
-        alert('No hay recibo para imprimir. Finalice una venta primero.');
-        return;
-    }
-    const ventanaRecibo = window.open('', '_blank', 'width=600,height=800');
-    ventanaRecibo.document.open();
-    ventanaRecibo.document.write(reciboGuardado);
-    ventanaRecibo.document.close();
-    ventanaRecibo.focus();
-    ventanaRecibo.print();
-});
-
-// -------------------- VENTA --------------------
-
-function finalizarVenta() {
+// Finalizar venta
+botonFinalizar.addEventListener('click', () => {
     if (productosVenta.length === 0) {
-        alert('Debe agregar al menos un producto a la venta.');
+        alert('No hay productos en la venta');
         return;
     }
-
+    if (!selectCliente.value) {
+        alert('Debe seleccionar un cliente');
+        return;
+    }
     if (!selectMetodoPago.value) {
-        alert('Debe seleccionar un método de pago.');
+        alert('Debe seleccionar un método de pago');
         return;
     }
 
-    const metodoPago = selectMetodoPago.value;
-
-    const items = productosVenta.map(p => ({
-        id_producto: p.id_producto,
-        cantidad: p.cantidad,
-        precio_unitario: p.precio,
-        descuento: 0,
-        iva: parseFloat(inputIVA.value) || 21
-    }));
-
-    const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
-
-    const pago = {
-        id_medio_pago: parseInt(metodoPago),
-        monto: montoTotal
+    const datosVenta = {
+        cliente_id: selectCliente.value,
+        metodo_pago_id: selectMetodoPago.value,
+        productos: productosVenta.map(p => ({ codigo: p.codigo, cantidad: p.cantidad })),
+        descuento: parseFloat(inputDescuento.value) || 0,
+        iva: parseFloat(inputIVA.value) || 0,
+        total: inputTotalVenta.value
     };
 
-    if (metodoPago === '2') {
-        const cuitInput = document.getElementById('cuit_tarjeta');
-        if (!cuitInput || !cuitInput.value.match(/^\d{2}-\d{8}-\d{1}$/)) {
-            alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
-            return;
-        }
-        pago.cuil_cuit = cuitInput.value;
-    }
-
-    const data = {
-        id_cliente: selectCliente.value || null,
-        items,
-        pagos: [pago],
-        monto_total: montoTotal,
-        tipo_comprobante: 'TICKET',
-        nro_comprobante: Date.now().toString(),
-        id_iva: 1,
-        id_usuario: 1
-    };
-
-    botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
-
-    fetch(API_URL + 'crear_venta', {
+    fetch(API_URL + 'guardar_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(datosVenta)
     })
         .then(res => {
-            if (!res.ok) throw new Error('Error al crear la venta');
+            if (!res.ok) throw new Error('Error al guardar la venta');
             return res.json();
         })
-        .then(response => {
-            mensajeResultado.textContent = 'Venta registrada con éxito.';
-            mensajeResultado.className = 'alert alert-success';
-
-            mostrarRecibo(data);
-
-            botonImprimirRecibo.disabled = false;
-            botonImprimirRecibo.classList.remove('btn-secondary');
-            botonImprimirRecibo.classList.add('btn-success');
-
+        .then(resp => {
+            mensajeResultado.textContent = 'Venta registrada correctamente';
+            reciboGuardado = resp.recibo;
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
-
-            selectMetodoPago.value = '';
-            divCamposAdicionalesPago.innerHTML = '';
-            selectCliente.value = '';
         })
         .catch(err => {
-            mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
-            mensajeResultado.className = 'alert alert-danger';
-        })
-        .finally(() => {
-            botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar';
+            alert('Error al guardar la venta: ' + err.message);
         });
-}
+});
 
 // Cancelar venta
 botonCancelar.addEventListener('click', () => {
-    if (confirm('¿Desea cancelar la venta? Se perderán los datos ingresados.')) {
+    if (confirm('¿Desea cancelar la venta actual?')) {
         productosVenta = [];
         actualizarTabla();
         actualizarTotales();
-        selectMetodoPago.value = '';
-        divCamposAdicionalesPago.innerHTML = '';
-        selectCliente.value = '';
-        mensajeResultado.textContent = '';
     }
 });
 
-// Eventos
-selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
-botonFinalizar.addEventListener('click', finalizarVenta);
+// Cambiar método de pago
+selectMetodoPago.addEventListener('change', () => {
+    divCamposAdicionalesPago.innerHTML = '';
+});
+
+// Imprimir recibo
+botonImprimirRecibo.addEventListener('click', () => {
+    if (!reciboGuardado) {
+        alert('No hay recibo para imprimir');
+        return;
+    }
+    const ventana = window.open('', '_blank');
+    ventana.document.write('<pre>' + JSON.stringify(reciboGuardado, null, 2) + '</pre>');
+    ventana.print();
+});
 
 // Inicialización
 cargarProductos();
