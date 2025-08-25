@@ -38,7 +38,7 @@ body.dark-theme .btn-danger {
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>📦 Gestión de Productos</h1>
-      <button class="btn btn-success" onclick="nuevoProducto()" id="btnAgregarProducto" style="display: none;">➕ Agregar Producto</button>
+      <button class="btn btn-success" onclick="nuevoProducto()" id="btnAgregarProducto">➕ Agregar Producto</button>
     </div>
 
     <!-- Filtros -->
@@ -84,9 +84,9 @@ body.dark-theme .btn-danger {
   </div>
 
   <!-- Modal Producto -->
-  <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true" >
     <div class="modal-dialog modal-lg">
-      <form id="formProducto" class="modal-content">
+      <form id="formProducto" class="modal-content" autocomplete="off">
         <div class="modal-header">
           <h5 class="modal-title">Producto</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
