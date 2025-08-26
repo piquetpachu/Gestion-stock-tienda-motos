@@ -263,6 +263,6 @@ fetch(API_URL+'usuario-info')
   .then(response => response.json())
   .then(data => {
     if (data.rol === 'admin') {
-      document.getElementById('agregarProducto').style.display = 'block';
+      document.getElementById('btnAgregarProducto').style.display = 'block';
     }
   });

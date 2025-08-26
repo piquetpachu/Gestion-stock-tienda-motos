@@ -38,7 +38,7 @@ body.dark-theme .btn-danger {
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>📦 Gestión de Productos</h1>
-      <button class="btn btn-success" onclick="nuevoProducto()" id="btnAgregarProducto">➕ Agregar Producto</button>
+      <button class="btn btn-success" onclick="nuevoProducto()" id="btnAgregarProducto" style="display: none;">➕ Agregar Producto</button>
     </div>
 
     <!-- Filtros -->
