@@ -115,6 +115,11 @@
       </select>
     </div>
 
+    <!-- CAMPOS ADICIONALES SEGÚN EL MÉTODO DE PAGO -->
+    <div id="campos_adicionales_pago" class="mb-4" aria-live="polite" aria-atomic="true">
+      <!-- Este bloque se rellena con JavaScript -->
+    </div>
+
     <!-- CLIENTES -->
     <div class="mb-4">
       <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
@@ -124,11 +129,6 @@
         </select>
         <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
       </div>
-    </div>
-
-    <!-- CAMPOS ADICIONALES SEGÚN EL MÉTODO DE PAGO -->
-    <div id="campos_adicionales_pago" class="mb-4" aria-live="polite" aria-atomic="true">
-      <!-- Este bloque se rellena con JavaScript -->
     </div>
 
     <!-- BOTONES FINALES -->
@@ -201,3 +201,5 @@
   <!-- Tu JS de ventas -->
   <script src="../js/ventas.js"></script>
 </body>
+
+</html>
