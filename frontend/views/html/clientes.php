@@ -6,6 +6,7 @@
   <title>Gestión de Clientes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
   <style>
     body {
       background-color: #f8f9fa;
@@ -16,13 +17,27 @@
     .pagination {
       margin-top: 20px;
     }
+    /* style.css */
+body.dark-theme .btn {
+  background-color: #222;
+  color: #fff;
+  border-color: #444;
+}
+body.dark-theme .btn-warning {
+  background-color: #444;
+  color: #ffd700;
+}
+body.dark-theme .btn-danger {
+  background-color: #880000;
+  color: #fff;
+}
     body { 
             display: none; /* Oculta toda la página inicialmente */
         }
   </style>
 </head>
 
-<body class="bg-light">
+<body>
       <?php include 'navbar.php'; ?>
 
   <div class="container mt-5">
@@ -108,6 +123,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
