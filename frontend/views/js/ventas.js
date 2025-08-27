@@ -1,8 +1,9 @@
+
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
-const inputPrecioUnitario = document.getElementById('precio_unitario');
+// const inputPrecioUnitario = document.getElementById('precio_unitario');
 const inputDescuento = document.getElementById('descuento');
 const inputIVA = document.getElementById('iva');
 const inputTotalVenta = document.getElementById('total_venta');
@@ -420,11 +421,12 @@ function mostrarRecibo(data) {
           </tbody>
         </table>
         <div class="totales">
-          <p>Subtotal: ${inputPrecioUnitario.value}</p>
-          <p>Descuento: ${inputDescuento.value || 0}%</p>
-          <p>IVA: ${inputIVA.value || 0}%</p>
-          <p>Total Final: ${inputTotalVenta.value}</p>
+            <p>Subtotal: ${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</p>
+            <p>Descuento: ${inputDescuento.value || 0}%</p>
+            <p>IVA: ${inputIVA.value || 0}%</p>
+            <p>Total Final: ${inputTotalVenta.value}</p>
         </div>
+
         <div style="text-align: center; margin-top: 30px;">
           <p>¡Gracias por su compra!</p>
         </div>
@@ -502,11 +504,19 @@ function finalizarVenta() {
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
-
-    fetch(API_URL + 'ventas', {
+    const data = {
+        items,
+        pagos: [pago],
+        monto_total: montoTotal,
+        tipo_comprobante: 'TICKET', // Valor por defecto
+        nro_comprobante: Date.now().toString(), // Generar número único
+        id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
+        id_usuario: 1 // ID del usuario logueado (ajusta según tu sesión)
+    };
+    fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(venta)
+        body: JSON.stringify(data)
     })
         .then(res => {
             if (!res.ok) throw new Error('Error al procesar la venta');
@@ -556,5 +566,3 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
     actualizarTotales();
 });
-
-
