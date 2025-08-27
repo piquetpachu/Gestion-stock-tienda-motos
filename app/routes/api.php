@@ -93,6 +93,10 @@ switch ($recurso) {
         break;
     
     case 'proveedores';
+    case 'proveedor';
+    case 'crear_proveedor';
+    case (preg_match('/^actualizar_proveedor\/(\d+)$/', $ruta, $matches) ? true : false):
+    case (preg_match('/^borrar_proveedor\/(\d+)$/', $ruta, $matches) ? true : false):
         require_once __DIR__ . '/../controllers/proveedorController.php';
         break;
     
