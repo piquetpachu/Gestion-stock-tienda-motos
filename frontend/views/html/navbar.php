@@ -28,6 +28,10 @@
   <button id="logoutBtn" class="btn btn-danger">
     <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
 </button>
+<li class="nav-item">
+  <button id="btnTema" class="btn btn-sm btn-outline-light ms-3">🌙 Oscuro</button>
+</li>
+
 </nav>
 
 <script src="../js/logout.js"></script>

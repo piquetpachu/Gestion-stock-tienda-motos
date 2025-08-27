@@ -6,6 +6,7 @@
   <title>Gestión de Clientes</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
   <style>
     body {
       background-color: #f8f9fa;
@@ -16,10 +17,27 @@
     .pagination {
       margin-top: 20px;
     }
+    /* style.css */
+body.dark-theme .btn {
+  background-color: #222;
+  color: #fff;
+  border-color: #444;
+}
+body.dark-theme .btn-warning {
+  background-color: #444;
+  color: #ffd700;
+}
+body.dark-theme .btn-danger {
+  background-color: #880000;
+  color: #fff;
+}
+    body { 
+            display: none; /* Oculta toda la página inicialmente */
+        }
   </style>
 </head>
 
-<body class="bg-light">
+<body>
       <?php include 'navbar.php'; ?>
 
   <div class="container mt-5">
@@ -37,7 +55,7 @@
         <select id="ordenarPor" class="form-select">
           <option value="nombre">Ordenar por: Nombre</option>
           <option value="fecha_alta">Fecha Alta</option>
-          <option value="dni">DNI</option>
+          <option value="cuil_cuit">Cuil-Cuit</option>
         </select>
       </div>
     </div>
@@ -52,7 +70,7 @@
             <th>Email</th>
             <th>Teléfono</th>
             <th>Dirección</th>
-            <th>DNI</th>
+            <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
             <th>Acciones</th>
           </tr>
@@ -84,10 +102,7 @@
             <input type="text" id="apellido" class="form-control" placeholder="Apellido" required />
           </div>
           <div class="col-md-6">
-            <input type="text" id="dni" class="form-control" placeholder="DNI" required />
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT" />
+            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT"  maxlength="11"/>
           </div>
           <div class="col-md-6">
             <input type="email" id="email" class="form-control" placeholder="Email" required />
@@ -108,7 +123,9 @@
   </div>
 
   <!-- Scripts -->
-   <script src="../js/config.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/config.js"></script>
+  <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
     <script src="../js/clientes.js"></script>
