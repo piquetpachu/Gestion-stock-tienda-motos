@@ -1,6 +1,5 @@
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
-const inputCodigoBarras = document.getElementById('codigo_de_barras');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
 const inputPrecioUnitario = document.getElementById('precio_unitario');
@@ -39,6 +38,8 @@ const formatearMoneda = valor =>
 // -------------------- CARGA DE DATOS --------------------
 
 // Cargar productos
+
+// Cargar productos
 function cargarProductos() {
     fetch(API_URL + 'productos')
         .then(res => {
@@ -47,37 +48,49 @@ function cargarProductos() {
         })
         .then(data => {
             productosLista = data;
-            selectProducto.innerHTML = '<option value="" disabled selected>Seleccionar producto</option>';
-            data.forEach(prod => {
-                const opcion = document.createElement('option');
-                opcion.value = prod.codigo_barras || '';
-                opcion.textContent = prod.nombre || 'Sin nombre';
-                selectProducto.appendChild(opcion);
-            });
 
-            if (!selectProducto.tomselect) {
+            // Inicializamos TomSelect solo si no está creado
+            if (!tomSelectProducto) {
                 tomSelectProducto = new TomSelect(selectProducto, {
                     create: false,
-                    sortField: { field: "text", direction: "asc" }
-                });
-                tomSelectProducto.on('item_add', function () {
-                    agregarProducto();
-                });
-                tomSelectProducto.on('keydown', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        agregarProducto();
-                    }
+                    sortField: { field: "nombre", direction: "asc" },
+                    valueField: "codigo_barras",  // lo que usa internamente
+                    labelField: "nombre",         // lo que se muestra
+                    searchField: ["nombre", "codigo_barras"],  // permite búsqueda por ambos
+                    placeholder: "Seleccionar producto"
                 });
             } else {
-                tomSelectProducto = selectProducto.tomselect;
+                tomSelectProducto.clearOptions();
             }
+
+            // Agregar opciones a TomSelect
+            data.forEach(prod => {
+                tomSelectProducto.addOption({
+                    codigo_barras: prod.codigo_barras,
+                    nombre: prod.nombre
+                });
+            });
+
+            // Manejar selección de item
+            tomSelectProducto.on('item_add', function (value) {
+                agregarProducto(value);
+            });
+
+            // Manejar ENTER para agregar producto
+            tomSelectProducto.on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = tomSelectProducto.getValue();
+                    agregarProducto(val);
+                }
+            });
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
             alert('No se pudieron cargar los productos. Revisa la consola.');
         });
 }
+
 
 // Cargar métodos de pago
 function cargarMetodosPago() {
@@ -203,78 +216,8 @@ function buscarProductoPorCodigo(codigo) {
     return productosLista.find(p => p.codigo_barras === codigo);
 }
 
-function actualizarTabla() {
-    tablaProductosBody.innerHTML = '';
-    productosVenta.forEach((prod, idx) => {
-        const fila = document.createElement('tr');
-
-        const tdCodigo = document.createElement('td');
-        tdCodigo.textContent = prod.codigo;
-        fila.appendChild(tdCodigo);
-
-        const tdNombre = document.createElement('td');
-        tdNombre.textContent = prod.nombre;
-        fila.appendChild(tdNombre);
-
-        const tdCantidad = document.createElement('td');
-        const inputCant = document.createElement('input');
-        inputCant.type = 'number';
-        inputCant.min = '1';
-        inputCant.value = prod.cantidad;
-        inputCant.className = 'form-control form-control-sm text-center';
-        inputCant.addEventListener('change', e => {
-            const val = parseInt(e.target.value);
-            if (val >= 1) {
-                productosVenta[idx].cantidad = val;
-                actualizarTotales();
-            } else {
-                e.target.value = productosVenta[idx].cantidad;
-            }
-        });
-        tdCantidad.appendChild(inputCant);
-        fila.appendChild(tdCantidad);
-
-        const tdPrecio = document.createElement('td');
-        tdPrecio.textContent = formatearMoneda(prod.precio * prod.cantidad);
-        fila.appendChild(tdPrecio);
-
-        const tdAcciones = document.createElement('td');
-        const btnEliminar = document.createElement('button');
-        btnEliminar.className = 'btn btn-danger btn-sm';
-        btnEliminar.textContent = 'Eliminar';
-        btnEliminar.addEventListener('click', () => {
-            productosVenta.splice(idx, 1);
-            actualizarTabla();
-            actualizarTotales();
-        });
-        tdAcciones.appendChild(btnEliminar);
-        fila.appendChild(tdAcciones);
-
-        tablaProductosBody.appendChild(fila);
-    });
-}
-
-function actualizarTotales() {
-    const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
-    inputPrecioUnitario.value = formatearMoneda(subtotal);
-
-    const descuentoPerc = parseFloat(inputDescuento.value) || 0;
-    const ivaPerc = parseFloat(inputIVA.value) || 0;
-
-    const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
-    const total = montoConDescuento * (1 + ivaPerc / 100);
-
-    inputTotalVenta.value = formatearMoneda(total);
-}
-
-inputDescuento.addEventListener('input', actualizarTotales);
-inputIVA.addEventListener('input', actualizarTotales);
-
-function agregarProducto() {
-    const codigoSeleccionado = tomSelectProducto ? tomSelectProducto.getValue() : selectProducto.value;
-    let codigoEscaneado = inputCodigoBarras.value.trim();
-    let codigo = codigoSeleccionado || codigoEscaneado;
-
+function agregarProducto(codigoSeleccionado = null) {
+    let codigo = codigoSeleccionado || tomSelectProducto.getValue();
     if (!codigo) return;
 
     const producto = buscarProductoPorCodigo(codigo);
@@ -299,16 +242,93 @@ function agregarProducto() {
     if (tomSelectProducto) {
         tomSelectProducto.clear();
         tomSelectProducto.focus();
-    } else {
-        selectProducto.value = '';
-        selectProducto.focus();
     }
-    inputCodigoBarras.value = '';
 }
 
-selectProducto.addEventListener('change', agregarProducto);
-selectProducto.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
-inputCodigoBarras.addEventListener('keydown', e => { if (e.key === 'Enter') agregarProducto(); });
+// -------------------- TABLA Y TOTALES --------------------
+// -------------------- TABLA Y TOTALES --------------------
+
+function actualizarTabla() {
+    tablaProductosBody.innerHTML = '';
+    productosVenta.forEach((prod, idx) => {
+        const fila = document.createElement('tr');
+
+        // Código
+        const tdCodigo = document.createElement('td');
+        tdCodigo.textContent = prod.codigo;
+        fila.appendChild(tdCodigo);
+
+        // Nombre
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = prod.nombre;
+        fila.appendChild(tdNombre);
+
+        // Cantidad
+        const tdCantidad = document.createElement('td');
+        const inputCant = document.createElement('input');
+        inputCant.type = 'number';
+        inputCant.min = '1';
+        inputCant.value = prod.cantidad;
+        inputCant.className = 'form-control form-control-sm text-center';
+        inputCant.addEventListener('input', e => {
+            let val = parseInt(e.target.value);
+            if (!isNaN(val) && val >= 1) {
+                productosVenta[idx].cantidad = val;
+                actualizarTotales();
+            } else {
+                e.target.value = productosVenta[idx].cantidad;
+            }
+        });
+        tdCantidad.appendChild(inputCant);
+        fila.appendChild(tdCantidad);
+
+        // Precio total por producto
+        const tdPrecio = document.createElement('td');
+        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        fila.appendChild(tdPrecio);
+
+        // Acciones
+        const tdAcciones = document.createElement('td');
+        const btnEliminar = document.createElement('button');
+        btnEliminar.className = 'btn btn-danger btn-sm';
+        btnEliminar.textContent = 'Eliminar';
+        btnEliminar.addEventListener('click', () => {
+            productosVenta.splice(idx, 1);
+            actualizarTabla();
+            actualizarTotales();
+        });
+        tdAcciones.appendChild(btnEliminar);
+        fila.appendChild(tdAcciones);
+
+        tablaProductosBody.appendChild(fila);
+    });
+}
+
+function actualizarTotales() {
+    // Calcular subtotal
+    const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+
+    // Leer descuento e IVA
+    const descuentoPerc = parseFloat(inputDescuento.value) || 0;
+    const ivaPerc = parseFloat(inputIVA.value) || 0;
+
+    // Aplicar descuento
+    const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
+
+    // Aplicar IVA
+    const totalFinal = montoConDescuento * (1 + ivaPerc / 100);
+
+    // Actualizar campo total en formato moneda
+    if (inputTotalVenta) {
+        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+    }
+}
+
+// Listener para recalcular total al cambiar descuento
+if (inputDescuento) {
+    inputDescuento.addEventListener('input', actualizarTotales);
+}
+
 
 // -------------------- MÉTODO DE PAGO --------------------
 
@@ -470,73 +490,64 @@ function finalizarVenta() {
 
     if (metodoPago === '2') {
         const cuitInput = document.getElementById('cuit_tarjeta');
-        if (!cuitInput || !cuitInput.value.match(/^\d{2}-\d{8}-\d{1}$/)) {
-            alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
+        if (!cuitInput || !cuitInput.value) {
+            alert('Debe ingresar un CUIT válido para tarjeta.');
             return;
         }
         pago.cuil_cuit = cuitInput.value;
     }
-     const data = {
-        id_cliente: selectCliente.value || null,
-        items,
-        pagos: [pago],
-        monto_total: montoTotal,
-        tipo_comprobante: 'TICKET',
-        nro_comprobante: Date.now().toString(),
-        id_iva: 1,
-        id_usuario: 1
-    };
+
+    venta.pagos = [pago];
+    venta.id_cliente = selectCliente.value || null;
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
 
-    fetch(API_URL + 'crear_venta', {
+    fetch(API_URL + 'ventas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(venta)
     })
         .then(res => {
-            if (!res.ok) throw new Error('Error al crear la venta');
+            if (!res.ok) throw new Error('Error al procesar la venta');
             return res.json();
         })
-        .then(response => {
-            mensajeResultado.textContent = 'Venta registrada con éxito.';
-            mensajeResultado.className = 'alert alert-success';
-
-            mostrarRecibo(data);
-
-            botonImprimirRecibo.disabled = false;
-            botonImprimirRecibo.classList.remove('btn-secondary');
-            botonImprimirRecibo.classList.add('btn-success');
+        .then(res => {
+            mensajeResultado.textContent = 'Venta registrada con éxito';
+            mensajeResultado.classList.remove('text-danger');
+            mensajeResultado.classList.add('text-success');
 
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
-
             selectMetodoPago.value = '';
-            divCamposAdicionalesPago.innerHTML = '';
-            selectCliente.value = '';
+            cambiarCamposMetodoPago();
+            mostrarRecibo(res);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
-            mensajeResultado.className = 'alert alert-danger';
+            mensajeResultado.classList.remove('text-success');
+            mensajeResultado.classList.add('text-danger');
+            console.error(err);
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar';
+            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 
-
-// -------------------- EVENTOS --------------------
-
-selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 botonFinalizar.addEventListener('click', finalizarVenta);
 botonCancelar.addEventListener('click', () => {
     productosVenta = [];
     actualizarTabla();
     actualizarTotales();
+    selectMetodoPago.value = '';
+    cambiarCamposMetodoPago();
+    mensajeResultado.textContent = '';
 });
+
+// Cambios en método de pago
+selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 
 // -------------------- INICIALIZACIÓN --------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -545,3 +556,5 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
     actualizarTotales();
 });
+
+

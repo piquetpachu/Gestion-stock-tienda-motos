@@ -11,7 +11,6 @@
   <style>
     body {
       display: none;
-      /* Oculta toda la página inicialmente */
     }
 
     body.bg-dark {
@@ -52,18 +51,9 @@
     <!-- AGREGAR PRODUCTO -->
     <div class="mb-4">
       <label for="seleccionar_producto" class="form-label fw-bold">Agregar producto</label>
-      <div class="row g-2">
-        <div class="col-md-6">
-          <select class="form-select form-select-dark" id="seleccionar_producto" aria-label="Seleccionar producto">
-            <option value="" disabled>Seleccionar producto</option>
-          </select>
-        </div>
-        <div class="col-md-6">
-          <label for="codigo_de_barras" class="visually-hidden">Código de barras</label>
-          <input type="text" class="form-control form-control-dark" id="codigo_de_barras" placeholder="Escanear código de barras"
-            autocomplete="off" aria-label="Escanear código de barras">
-        </div>
-      </div>
+      <select class="form-select form-select-dark" id="seleccionar_producto" aria-label="Seleccionar producto">
+        <option value="" disabled selected>Seleccionar producto</option>
+      </select>
     </div>
 
     <!-- TABLA DE PRODUCTOS -->
@@ -85,32 +75,11 @@
       </table>
     </div>
 
-    <!-- CAMPOS DE TOTALES -->
-    <div class="row mb-4">
-      <div class="col-md-3">
-        <label for="precio_unitario" class="form-label">Precio unitario</label>
-        <input type="text" class="form-control text-end form-control-dark" id="precio_unitario" readonly aria-readonly="true">
-      </div>
-      <div class="col-md-3">
-        <label for="descuento" class="form-label">Descuento (%)</label>
-        <input type="number" class="form-control form-control-dark" id="descuento" min="0" value="0" aria-describedby="descuentoHelp">
-        <div id="descuentoHelp" class="form-text text-light">Ingrese descuento en porcentaje</div>
-      </div>
-      <div class="col-md-3">
-        <label for="iva" class="form-label">IVA (%)</label>
-        <input type="number" class="form-control form-control-dark" id="iva" value="21" aria-describedby="ivaHelp">
-        <div id="ivaHelp" class="form-text text-light">Ingrese porcentaje de IVA aplicado</div>
-      </div>
-      <div class="col-md-3">
-        <label for="total_venta" class="form-label">Total</label>
-        <input type="text" class="form-control text-end form-control-dark" id="total_venta" readonly aria-readonly="true">
-      </div>
-    </div>
-
     <!-- MÉTODO DE PAGO -->
     <div class="mb-4">
       <label for="metodo_de_pago" class="form-label fw-bold">Método de pago</label>
-      <select class="form-select form-select-dark" id="metodo_de_pago" required aria-required="true" aria-label="Método de pago">
+      <select class="form-select form-select-dark" id="metodo_de_pago" required aria-required="true"
+        aria-label="Método de pago">
         <option value="" disabled selected>Seleccionar método de pago</option>
       </select>
     </div>
@@ -127,9 +96,28 @@
         <select class="form-select form-select-dark" id="seleccionar_cliente" aria-label="Seleccionar cliente">
           <option value="" disabled selected>Seleccionar cliente</option>
         </select>
-        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
+        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente"
+          aria-label="Agregar cliente">+</button>
       </div>
     </div>
+
+    <!-- CAMPOS DE TOTALES AL FINAL -->
+    <div class="d-flex justify-content-end gap-3 mb-4">
+      <div class="col-md-2">
+        <label for="descuento" class="form-label">Descuento (%)</label>
+        <input type="number" class="form-control text-end form-control-dark" id="descuento" min="0" value="0"
+          aria-describedby="descuentoHelp">
+        <div id="descuentoHelp" class="form-text text-light">Ingrese descuento en porcentaje</div>
+      </div>
+      <div class="col-md-2">
+        <label for="total_venta" class="form-label">Total</label>
+        <input type="text" class="form-control text-end form-control-dark" id="total_venta" readonly
+          aria-readonly="true">
+      </div>
+    </div>
+
+    <!-- Campo IVA oculto -->
+    <input type="hidden" id="iva" value="21">
 
     <!-- BOTONES FINALES -->
     <div class="d-flex justify-content-between">
@@ -168,7 +156,8 @@
             </div>
             <div class="mb-3">
               <label for="cliente_cuit" class="form-label">CUIT/CUIL</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_cuit" placeholder="20-12345678-9" required>
+              <input type="text" class="form-control form-control-dark" id="cliente_cuit" placeholder="20-12345678-9"
+                required>
             </div>
             <div class="mb-3">
               <label for="cliente_email" class="form-label">Email</label>
@@ -196,9 +185,7 @@
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- JS de Tom Select -->
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-  <!-- Tu JS de ventas -->
   <script src="../js/ventas.js"></script>
 </body>
 
