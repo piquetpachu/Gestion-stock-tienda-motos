@@ -266,3 +266,15 @@ fetch(API_URL+'usuario-info')
       document.getElementById('btnAgregarProducto').style.display = 'block';
     }
   });
+  
+  fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'admin') {
+      document.getElementById('colAcciones').style.display = '';
+      document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = '');
+    } else {
+      document.getElementById('colAcciones').style.display = 'none';
+      document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = 'none');
+    }
+  });

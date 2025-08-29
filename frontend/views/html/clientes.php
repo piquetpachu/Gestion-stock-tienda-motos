@@ -72,7 +72,8 @@ body.dark-theme .btn-danger {
             <th>Dirección</th>
             <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
-            <th>Acciones</th>
+            <th id="colAcciones" style="display: none;">Acciones</th>
+            <!-- <th>Acciones</th> -->
           </tr>
         </thead>
         <tbody id="tablaClientes"></tbody>
