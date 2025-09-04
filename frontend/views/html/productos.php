@@ -112,15 +112,6 @@ body.dark-theme .btn-danger {
 </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
-  <form id="form-nuevo-rubro" class="form-grid">
-        <div class="form-field">
-          <label for="rubro-nombre">Nombre del rubro</label>
-          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Añadir rubro</button>
-        </div>
-  </form>
   <select id="id_rubro" class="form-select">
     <option value="">Seleccione rubro</option>
     <!-- Se cargará con JS -->
