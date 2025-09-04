@@ -230,6 +230,19 @@ async function cargarProveedores() {
     console.error('Error al cargar proveedores:', error);
   }
 }
+
+document.getElementById('form-nuevo-rubro').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nombre = e.target.rubro_nombre.value;
+  await fetch(API.replace('rubros', 'crear_rubro'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nombre, descripcion })
+  });
+  e.target.reset();
+  cargarRubros();
+});
+
 async function cargarRubros() {
   const select = document.getElementById('id_rubro');
   select.innerHTML = '<option value="">Seleccione rubro</option>';

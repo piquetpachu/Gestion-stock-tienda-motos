@@ -110,6 +110,19 @@ body.dark-theme .btn-danger {
     <!-- Las opciones se agregan dinámicamente -->
   </select>
 </div>
+<div class="form-field">
+          <label for="rubro-nombre">Nombre del rubro</label>
+          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Añadir rubro</button>
+        <div class="form-field">
+          <label for="rubro-nombre">Nombre del rubro</label>
+          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Añadir rubro</button>
+        </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
   <select id="id_rubro" class="form-select">

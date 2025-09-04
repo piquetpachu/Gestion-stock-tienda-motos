@@ -56,7 +56,6 @@ async function cargarRubros() {
 document.getElementById('form-nuevo-rubro').addEventListener('submit', async e => {
   e.preventDefault();
   const nombre = e.target.rubro_nombre.value;
-  const descripcion = e.target.rubro_descripcion.value;
   await fetch(API.replace('rubros', 'crear_rubro'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
