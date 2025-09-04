@@ -136,7 +136,7 @@ body.dark-theme .btn-danger {
   </div>
 
   <!-- Modal para nuevo rubro -->
-<div class="modal fade" id="modalNuevoRubro" tabindex="-1" aria-hidden="true">
+<div style="z-index: 99;" class="modal fade" id="modalNuevoRubro" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <form id="form-nuevo-rubro" class="modal-content">
       <div class="modal-header">
