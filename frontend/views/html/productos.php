@@ -14,7 +14,7 @@
 </head>
 
 <style>
-       body { 
+      body { 
             display: none; /* Oculta toda la página inicialmente */
         }
             /* style.css */
