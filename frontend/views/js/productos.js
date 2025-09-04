@@ -234,10 +234,10 @@ async function cargarProveedores() {
 document.getElementById('form-nuevo-rubro').addEventListener('submit', async e => {
   e.preventDefault();
   const nombre = e.target.rubro_nombre.value;
-  await fetch(API.replace('rubros', 'crear_rubro'), {
+  await fetch(API_URL + 'crear_rubro', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre, descripcion })
+    body: JSON.stringify({ nombre})
   });
   e.target.reset();
   cargarRubros();
@@ -291,3 +291,11 @@ fetch(API_URL+'usuario-info')
       document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = 'none');
     }
   });
+
+// Mostrar el modal de nuevo rubro al hacer clic en el botón +
+document.getElementById('btnNuevoRubro').addEventListener('click', () => {
+  document.getElementById('form-nuevo-rubro').reset();
+  new bootstrap.Modal(document.getElementById('modalNuevoRubro')).show();
+});
+
+// El submit del form-nuevo-rubro ya está conectado y funcional

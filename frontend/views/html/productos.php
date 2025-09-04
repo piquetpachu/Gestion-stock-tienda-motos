@@ -110,25 +110,15 @@ body.dark-theme .btn-danger {
     <!-- Las opciones se agregan dinámicamente -->
   </select>
 </div>
-<div class="form-field">
-          <label for="rubro-nombre">Nombre del rubro</label>
-          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Añadir rubro</button>
-        <div class="form-field">
-          <label for="rubro-nombre">Nombre del rubro</label>
-          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
-        </div>
-        <div class="form-actions">
-          <button type="submit" class="btn primary">Añadir rubro</button>
-        </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
-  <select id="id_rubro" class="form-select">
-    <option value="">Seleccione rubro</option>
-    <!-- Se cargará con JS -->
-  </select>
+  <div class="input-group">
+    <select id="id_rubro" class="form-select">
+      <option value="">Seleccione rubro</option>
+      <!-- Se cargará con JS -->
+    </select>
+    <button type="button" class="btn btn-outline-primary" id="btnNuevoRubro" title="Agregar rubro">+</button>
+  </div>
 </div>
           <div class="col-md-6">
             <select id="activo" class="form-select">
@@ -144,6 +134,25 @@ body.dark-theme .btn-danger {
       </form>
     </div>
   </div>
+
+  <!-- Modal para nuevo rubro -->
+<div class="modal fade" id="modalNuevoRubro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="form-nuevo-rubro" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Rubro</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="rubro_nombre" class="form-control" placeholder="Nombre del rubro" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
 
   <!-- Scripts -->
   <script src="../js/theme.js"></script>
