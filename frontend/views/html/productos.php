@@ -104,6 +104,7 @@ body.dark-theme .btn-danger {
           <!-- <div class="col-md-4"><input type="date" id="fecha_alta" class="form-control" /></div> -->
 <div class="col-md-6">
   <label for="id_proveedor" class="form-label">Proveedor</label>
+  <button type="submit" class="btn primary">añadir proveedor</button>
   <select id="id_proveedor" class="form-select"  style="width: 100%">
     <option value="">Seleccione proveedor</option>
     <!-- Las opciones se agregan dinámicamente -->
@@ -111,6 +112,15 @@ body.dark-theme .btn-danger {
 </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
+  <form id="form-nuevo-rubro" class="form-grid">
+        <div class="form-field">
+          <label for="rubro-nombre">Nombre del rubro</label>
+          <input id="rubro-nombre" name="rubro_nombre" type="text" placeholder="Ej: Ferretería" required />
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Añadir rubro</button>
+        </div>
+  </form>
   <select id="id_rubro" class="form-select">
     <option value="">Seleccione rubro</option>
     <!-- Se cargará con JS -->
@@ -133,10 +143,11 @@ body.dark-theme .btn-danger {
 
   <!-- Scripts -->
   <script src="../js/theme.js"></script>
-   <script src="../js/config.js"></script>
+  <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/productos.js"></script>
   <script src="../js/index.js"></script>
+  <script src="../js/rubro.js"></script>
 </body>
 </html>

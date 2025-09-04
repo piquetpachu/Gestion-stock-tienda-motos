@@ -8,10 +8,6 @@
 </head>
 <?php include 'navbar.php'; ?>
 <body>
-  <header class="app-header">
-    <h1>Gestión de Rubros</h1>
-    <p class="subtitle">Frontend — HTML + CSS + JS</p>
-  </header>
 
   <main class="container">
     <!-- AÑADIR RUBRO -->
@@ -24,7 +20,6 @@
         </div>
         <div class="form-actions">
           <button type="submit" class="btn primary">Añadir rubro</button>
-          <button type="reset" class="btn ghost">Limpiar</button>
         </div>
       </form>
     </section>
