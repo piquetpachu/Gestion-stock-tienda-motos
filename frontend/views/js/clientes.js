@@ -1,3 +1,15 @@
+// Mostrar/ocultar columna Acciones según el rol
+fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'admin') {
+      document.getElementById('colAcciones').style.display = '';
+      document.querySelectorAll('#tablaClientes td:last-child').forEach(td => td.style.display = '');
+    } else {
+      document.getElementById('colAcciones').style.display = 'none';
+      document.querySelectorAll('#tablaClientes td:last-child').forEach(td => td.style.display = 'none');
+    }
+  });
     const form = document.getElementById('formCliente');
     const tabla = document.getElementById('tablaClientes');
     const paginacion = document.getElementById('paginacion');
@@ -62,11 +74,15 @@ function mostrarClientes() {
 
   tabla.innerHTML = clientesPagina.map(c => {
     let botones = '';
+    let tdAcciones = '';
     if (usuarioRol === 'admin') {
       botones = `
         <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
         <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
       `;
+      tdAcciones = `<td>${botones}</td>`;
+    } else {
+      tdAcciones = `<td style='display:none'></td>`;
     }
     return `
       <tr>
@@ -77,7 +93,7 @@ function mostrarClientes() {
         <td>${c.direccion || '-'}</td>
         <td>${c.cuil_cuit}</td>
         <td>${c.fecha_alta || '-'}</td>
-        <td>${botones}</td>
+        ${tdAcciones}
       </tr>`;
   }).join('');
 
@@ -171,5 +187,16 @@ fetch(API_URL+'usuario-info')
   .then(data => {
     if (data.rol === 'admin') {
       document.getElementById('btnAgregarCliente').style.display = 'block';
+    }
+  });
+  fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'admin') {
+      document.getElementById('colAcciones').style.display = '';
+      document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = '');
+    } else {
+      document.getElementById('colAcciones').style.display = 'none';
+      document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = 'none');
     }
   });
