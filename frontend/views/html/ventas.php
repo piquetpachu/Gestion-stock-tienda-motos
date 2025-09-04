@@ -94,12 +94,14 @@
       <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
       <div class="input-group">
         <select class="form-select form-select-dark" id="seleccionar_cliente" aria-label="Seleccionar cliente">
-          <option value="" disabled selected>Seleccionar cliente</option>
+          <!-- Opción fija -->
+          <option value="0" selected>Consumidor Final</option>
+          <!-- El resto de los clientes se cargan con JS -->
         </select>
-        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente"
-          aria-label="Agregar cliente">+</button>
+        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
       </div>
     </div>
+
 
     <!-- CAMPOS DE TOTALES AL FINAL -->
     <div class="d-flex justify-content-end gap-3 mb-4">

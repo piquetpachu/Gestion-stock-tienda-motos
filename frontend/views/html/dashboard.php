@@ -114,7 +114,7 @@
       <div class="row g-4">
         <!-- Tarjetas resumen -->
         <div class="col-md-3 col-sm-6">
-          <div class="card text-bg-light border-start border-primary border-5 shadow-sm h-100">
+          <div class="card  border-start border-primary border-5 shadow-sm h-100">
             <div class="card-body">
               <h6 class="card-title text-muted">Ganancia Hoy</h6>
               <p class="h5 fw-bold mb-0" id="gananciaHoy">$0</p>
@@ -122,7 +122,7 @@
           </div>
         </div>
         <div class="col-md-3 col-sm-6">
-          <div class="card text-bg-light border-start border-success border-5 shadow-sm h-100">
+          <div class="card  border-start border-success border-5 shadow-sm h-100">
             <div class="card-body">
               <h6 class="card-title text-muted">Ganancia del Mes</h6>
               <p class="h5 fw-bold mb-0" id="gananciaMes">$0</p>
@@ -130,7 +130,7 @@
           </div>
         </div>
         <div class="col-md-3 col-sm-6">
-          <div class="card text-bg-light border-start border-warning border-5 shadow-sm h-100">
+          <div class="card  border-start border-warning border-5 shadow-sm h-100">
             <div class="card-body">
               <h6 class="card-title text-muted">Ganancia del Año</h6>
               <p class="h5 fw-bold mb-0" id="gananciaAnio">$0</p>
@@ -138,7 +138,7 @@
           </div>
         </div>
         <div class="col-md-3 col-sm-6">
-          <div class="card text-bg-light border-start border-danger border-5 shadow-sm h-100">
+          <div class="card  border-start border-danger border-5 shadow-sm h-100">
             <div class="card-body">
               <h6 class="card-title text-muted">Más Vendido</h6>
               <p class="h6 fw-semibold mb-0" id="productoMasVendido">---</p>
@@ -155,7 +155,7 @@
     </div>
   </div>
 </div>
-
+  <script src="../js/theme.js"></script>
 <script src="../js/config.js"></script>
 <script src="../js/dashboard-proteccion.js"></script>
 <script src="../js/estadisticas.js"></script>

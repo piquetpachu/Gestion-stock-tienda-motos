@@ -259,3 +259,10 @@ async function cargarRubros() {
     console.error('Error al cargar rubros:', error);
   }
 }
+fetch(API_URL+'usuario-info')
+  .then(response => response.json())
+  .then(data => {
+    if (data.rol === 'admin') {
+      document.getElementById('btnAgregarProducto').style.display = 'block';
+    }
+  });

@@ -353,3 +353,9 @@ IF NOT EXISTS `total_final` DECIMAL
 ADD COLUMN
 IF NOT EXISTS `cerrada` TINYINT
 (1) DEFAULT 0;
+
+
+-- Cliente genérico por defecto
+INSERT INTO cliente (id_cliente, nombre, apellido, dni, cuil_cuit, email, telefono, direccion, fecha_alta)
+VALUES (0, 'Consumidor', 'Final', NULL, NULL, NULL, NULL, NULL, CURDATE())
+ON DUPLICATE KEY UPDATE nombre = 'Consumidor', apellido = 'Final';

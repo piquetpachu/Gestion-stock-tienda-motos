@@ -149,6 +149,53 @@ function cargarClientes(seleccionarId = null) {
             alert('No se pudieron cargar los clientes. Revisa la consola.');
         });
 }
+function cargarClientes(seleccionarId = null) {
+    fetch(API_URL + 'clientes')
+        .then(res => {
+            if (!res.ok) throw new Error('Error al obtener clientes');
+            return res.json();
+        })
+        .then(data => {
+            // Siempre incluir "Consumidor Final" al inicio
+            selectCliente.innerHTML = `
+                <option value="0" selected>Consumidor Final</option>
+            `;
+
+            // Agregar los clientes que vienen de la BD
+            data.forEach(cliente => {
+                const opcion = document.createElement('option');
+                opcion.value = cliente.id_cliente;
+                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                selectCliente.appendChild(opcion);
+            });
+
+            // Refrescar TomSelect
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
+            } else {
+                tomSelectCliente.clearOptions();
+                tomSelectCliente.addOption({ value: "0", text: "Consumidor Final" });
+                data.forEach(cliente =>
+                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` })
+                );
+                tomSelectCliente.refreshOptions();
+            }
+
+            if (seleccionarId) {
+                tomSelectCliente.addItem(seleccionarId);
+            } else {
+                tomSelectCliente.addItem("0"); // Consumidor Final por defecto
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando clientes:', error);
+            alert('No se pudieron cargar los clientes. Revisa la consola.');
+        });
+}
+
 
 // -------------------- CLIENTES --------------------
 
@@ -460,6 +507,13 @@ function finalizarVenta() {
         alert('Debe seleccionar un método de pago.');
         return;
     }
+
+    const idUsuario = localStorage.getItem('id_usuario');
+    if (!idUsuario) {
+        alert('No se encontró usuario logueado. Por favor inicia sesión de nuevo.');
+        return;
+    }
+
     const metodoPago = selectMetodoPago.value;
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
@@ -473,7 +527,7 @@ function finalizarVenta() {
         monto_total: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
         tipo_comprobante: 'A', // o el que corresponda
         nro_comprobante: '0001-00000001', // generar dinámicamente si quieres
-        id_usuario: 1, // reemplazar con tu usuario actual
+        id_usuario: Number(idUsuario), // ahora toma el valor correcto
         id_iva: parseFloat(inputIVA.value) || 0,
         items: items,
         pagos: [{
@@ -511,7 +565,8 @@ function finalizarVenta() {
         tipo_comprobante: 'TICKET', // Valor por defecto
         nro_comprobante: Date.now().toString(), // Generar número único
         id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
-        id_usuario: 1 // ID del usuario logueado (ajusta según tu sesión)
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+        id_usuario: Number(idUsuario) // ahora toma el valor correcto
     };
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
@@ -545,6 +600,7 @@ function finalizarVenta() {
             botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
+
 
 botonFinalizar.addEventListener('click', finalizarVenta);
 botonCancelar.addEventListener('click', () => {
