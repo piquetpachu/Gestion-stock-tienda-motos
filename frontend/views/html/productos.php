@@ -104,7 +104,6 @@ body.dark-theme .btn-danger {
           <!-- <div class="col-md-4"><input type="date" id="fecha_alta" class="form-control" /></div> -->
 <div class="col-md-6">
   <label for="id_proveedor" class="form-label">Proveedor</label>
-  <button type="submit" class="btn primary">añadir proveedor</button>
   <select id="id_proveedor" class="form-select"  style="width: 100%">
     <option value="">Seleccione proveedor</option>
     <!-- Las opciones se agregan dinámicamente -->
