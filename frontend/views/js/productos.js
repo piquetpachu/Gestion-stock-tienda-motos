@@ -294,8 +294,10 @@ fetch(API_URL+'usuario-info')
 
 // Mostrar el modal de nuevo rubro al hacer clic en el botón +
 document.getElementById('btnNuevoRubro').addEventListener('click', () => {
+  console.log('Botón de nuevo rubro clickeado');
   const modalProducto = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
   if (modalProducto) modalProducto.hide();
+  console.log('Modal de producto encontrado');
   document.getElementById('form-nuevo-rubro').reset();
   new bootstrap.Modal(document.getElementById('modalNuevoRubro')).show();
 });
