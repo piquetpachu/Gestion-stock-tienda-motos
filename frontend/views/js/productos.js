@@ -333,23 +333,56 @@ document.getElementById('btnNuevoProveedor').addEventListener('click', () => {
 
 // El submit del form-nuevo-rubro ya está conectado y funcional
 
-// Nuevo: manejar creación de proveedor (igual que rubro)
+// Nuevo: manejar creación de proveedor (igual que rubro), ahora con varios campos
 document.getElementById('form-nuevo-proveedor').addEventListener('submit', async e => {
   e.preventDefault();
-  const nombre = e.target.proveedor_nombre.value;
+  const nombre = (e.target.proveedor_nombre.value || '').trim();
+  const cuit = (e.target.proveedor_cuit?.value || '').trim();
+  const telefono = (e.target.proveedor_telefono?.value || '').trim();
+  const email = (e.target.proveedor_email?.value || '').trim();
+  const direccion = (e.target.proveedor_direccion?.value || '').trim();
+
+  // Validación: nombre no puede ser null/ vacío
+  if (!nombre) {
+    alert('El nombre del proveedor es obligatorio.');
+    return;
+  }
+
+  const payload = {
+    nombre,
+    cuit: cuit || null,
+    telefono: telefono || null,
+    email: email || null,
+    direccion: direccion || null
+  };
+
   try {
     const res = await fetch(API_URL + 'crear_proveedor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre })
+      body: JSON.stringify(payload)
     });
-    // opcional: comprobar respuesta
-    await res.json().catch(()=>({}));
+    const json = await res.json().catch(()=>null);
+
     // recargar proveedores y cerrar modalNuevoProveedor
     await cargarProveedores();
+
+    // si el backend devolvió el id del proveedor creado, seleccionarlo en el select
     const modalNuevoProveedorEl = document.getElementById('modalNuevoProveedor');
     bootstrap.Modal.getInstance(modalNuevoProveedorEl)?.hide();
     e.target.reset();
+
+    if (json && (json.id_proveedor || json.id)) {
+      const newId = String(json.id_proveedor ?? json.id);
+      const select = document.getElementById('id_proveedor');
+      if (select.tomselect) {
+        select.tomselect.addOption({ value: newId, text: nombre });
+        select.tomselect.setValue(newId);
+      } else {
+        select.value = newId;
+      }
+    }
+
     // si el modal de producto estaba abierto antes, reabrirlo
     if (productoModalPrevio) {
       new bootstrap.Modal(document.getElementById('modalProducto')).show();
@@ -357,5 +390,6 @@ document.getElementById('form-nuevo-proveedor').addEventListener('submit', async
     }
   } catch (error) {
     console.error('Error al crear proveedor:', error);
+    alert('Ocurrió un error al crear el proveedor.');
   }
 });

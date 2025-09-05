@@ -165,7 +165,26 @@ body.dark-theme .btn-danger {
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <input type="text" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
+        <div class="mb-2">
+          <label class="form-label">Nombre <span class="text-danger">*</span></label>
+          <input type="text" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">CUIT</label>
+          <input type="text" name="proveedor_cuit" class="form-control" placeholder="CUIT (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" name="proveedor_telefono" class="form-control" placeholder="Teléfono (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Email</label>
+          <input type="email" name="proveedor_email" class="form-control" placeholder="Email (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Dirección</label>
+          <input type="text" name="proveedor_direccion" class="form-control" placeholder="Dirección (opcional)" />
+        </div>
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Guardar</button>
