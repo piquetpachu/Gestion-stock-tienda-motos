@@ -242,13 +242,28 @@ document.getElementById('form-nuevo-rubro').addEventListener('submit', async e =
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nombre })
     });
-    // opcional: comprobar respuesta
     const json = await res.json().catch(()=>({}));
+
     // recargar rubros y cerrar modalNuevoRubro
-    await cargarRubros();
+    await cargarRubros(); // ahora devuelve cuando TomSelect ya está actualizado
+
     const modalNuevoRubroEl = document.getElementById('modalNuevoRubro');
     bootstrap.Modal.getInstance(modalNuevoRubroEl)?.hide();
     e.target.reset();
+
+    // si el backend devolvió el id del rubro creado, seleccionarlo en el select
+    if (json && (json.id_rubro || json.id)) {
+      const newId = String(json.id_rubro ?? json.id);
+      const select = document.getElementById('id_rubro');
+      if (select.tomselect) {
+        // asegurar que la opción exista en TomSelect y seleccionarla
+        select.tomselect.addOption({ value: newId, text: nombre });
+        select.tomselect.setValue(newId);
+      } else {
+        select.value = newId;
+      }
+    }
+
     // si el modal de producto estaba abierto antes, reabrirlo
     if (productoModalPrevio) {
       new bootstrap.Modal(document.getElementById('modalProducto')).show();
@@ -261,21 +276,31 @@ document.getElementById('form-nuevo-rubro').addEventListener('submit', async e =
 
 async function cargarRubros() {
   const select = document.getElementById('id_rubro');
-  select.innerHTML = '<option value="">Seleccione rubro</option>';
 
   try {
     const res = await fetch(API_URL + 'rubros');
     const rubros = await res.json();
 
-    rubros.forEach(r => {
-      const option = document.createElement('option');
-      option.value = r.id_rubro;
-      option.textContent = r.nombre;
-      select.appendChild(option);
-    });
+    if (select.tomselect) {
+      // Si TomSelect ya está inicializado, actualizar sus opciones de forma segura
+      select.tomselect.clearOptions();
+      // Añadir una opción vacía opcional
+      select.tomselect.addOption({ value: '', text: 'Seleccione rubro', disabled: true });
+      rubros.forEach(r => {
+        select.tomselect.addOption({ value: String(r.id_rubro), text: r.nombre });
+      });
+      // mantener el valor actual (o vacío)
+      select.tomselect.setValue(select.value || '');
+    } else {
+      // Si no hay TomSelect, rellenar el select y luego inicializarlo
+      select.innerHTML = '<option value="">Seleccione rubro</option>';
+      rubros.forEach(r => {
+        const option = document.createElement('option');
+        option.value = r.id_rubro;
+        option.textContent = r.nombre;
+        select.appendChild(option);
+      });
 
-    // Inicializar Tom Select si no está ya
-    if (!select.tomselect) {
       new TomSelect('#id_rubro', {
         placeholder: 'Seleccione rubro',
         allowEmptyOption: true,
@@ -283,7 +308,6 @@ async function cargarRubros() {
         closeAfterSelect: true
       });
     }
-
   } catch (error) {
     console.error('Error al cargar rubros:', error);
   }
