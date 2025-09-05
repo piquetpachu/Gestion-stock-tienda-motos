@@ -10,6 +10,7 @@ let paginaActual = 1;
 const porPagina = 30;
 
 let usuarioRol = null;
+let productoModalPrevio = false; // <-- nueva bandera
 // Obtener el rol del usuario al cargar la página
 fetch(API_URL+'usuario-info')
   .then(response => response.json())
@@ -235,13 +236,27 @@ async function cargarProveedores() {
 document.getElementById('form-nuevo-rubro').addEventListener('submit', async e => {
   e.preventDefault();
   const nombre = e.target.rubro_nombre.value;
-  await fetch(API_URL + 'crear_rubro', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ nombre})
-  });
-  e.target.reset();
-  cargarRubros();
+  try {
+    const res = await fetch(API_URL + 'crear_rubro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre })
+    });
+    // opcional: comprobar respuesta
+    const json = await res.json().catch(()=>({}));
+    // recargar rubros y cerrar modalNuevoRubro
+    await cargarRubros();
+    const modalNuevoRubroEl = document.getElementById('modalNuevoRubro');
+    bootstrap.Modal.getInstance(modalNuevoRubroEl)?.hide();
+    e.target.reset();
+    // si el modal de producto estaba abierto antes, reabrirlo
+    if (productoModalPrevio) {
+      new bootstrap.Modal(document.getElementById('modalProducto')).show();
+      productoModalPrevio = false;
+    }
+  } catch (error) {
+    console.error('Error al crear rubro:', error);
+  }
 });
 
 async function cargarRubros() {
@@ -295,10 +310,12 @@ fetch(API_URL+'usuario-info')
 
 // Mostrar el modal de nuevo rubro al hacer clic en el botón +
 document.getElementById('btnNuevoRubro').addEventListener('click', () => {
-  console.log('Botón de nuevo rubro clickeado');
-  const modalProducto = bootstrap.Modal.getInstance(document.getElementById('modalProducto'));
-  if (modalProducto) modalProducto.hide();
-  console.log('Modal de producto encontrado');
+  // recordar si el modal de producto está visible y ocultarlo
+  const modalProductoEl = document.getElementById('modalProducto');
+  productoModalPrevio = modalProductoEl.classList.contains('show');
+  if (productoModalPrevio) {
+    bootstrap.Modal.getInstance(modalProductoEl)?.hide();
+  }
   document.getElementById('form-nuevo-rubro').reset();
   new bootstrap.Modal(document.getElementById('modalNuevoRubro')).show();
 });
