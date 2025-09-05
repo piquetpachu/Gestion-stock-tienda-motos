@@ -320,4 +320,42 @@ document.getElementById('btnNuevoRubro').addEventListener('click', () => {
   new bootstrap.Modal(document.getElementById('modalNuevoRubro')).show();
 });
 
+// Nuevo: mostrar modal para agregar proveedor
+document.getElementById('btnNuevoProveedor').addEventListener('click', () => {
+  const modalProductoEl = document.getElementById('modalProducto');
+  productoModalPrevio = modalProductoEl.classList.contains('show');
+  if (productoModalPrevio) {
+    bootstrap.Modal.getInstance(modalProductoEl)?.hide();
+  }
+  document.getElementById('form-nuevo-proveedor').reset();
+  new bootstrap.Modal(document.getElementById('modalNuevoProveedor')).show();
+});
+
 // El submit del form-nuevo-rubro ya está conectado y funcional
+
+// Nuevo: manejar creación de proveedor (igual que rubro)
+document.getElementById('form-nuevo-proveedor').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nombre = e.target.proveedor_nombre.value;
+  try {
+    const res = await fetch(API_URL + 'crear_proveedor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre })
+    });
+    // opcional: comprobar respuesta
+    await res.json().catch(()=>({}));
+    // recargar proveedores y cerrar modalNuevoProveedor
+    await cargarProveedores();
+    const modalNuevoProveedorEl = document.getElementById('modalNuevoProveedor');
+    bootstrap.Modal.getInstance(modalNuevoProveedorEl)?.hide();
+    e.target.reset();
+    // si el modal de producto estaba abierto antes, reabrirlo
+    if (productoModalPrevio) {
+      new bootstrap.Modal(document.getElementById('modalProducto')).show();
+      productoModalPrevio = false;
+    }
+  } catch (error) {
+    console.error('Error al crear proveedor:', error);
+  }
+});

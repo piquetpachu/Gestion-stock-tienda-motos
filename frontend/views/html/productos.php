@@ -104,10 +104,13 @@ body.dark-theme .btn-danger {
           <!-- <div class="col-md-4"><input type="date" id="fecha_alta" class="form-control" /></div> -->
 <div class="col-md-6">
   <label for="id_proveedor" class="form-label">Proveedor</label>
-  <select id="id_proveedor" class="form-select"  style="width: 100%">
-    <option value="">Seleccione proveedor</option>
-    <!-- Las opciones se agregan dinámicamente -->
-  </select>
+  <div class="input-group">
+    <select id="id_proveedor" class="form-select" style="width: 100%">
+      <option value="">Seleccione proveedor</option>
+      <!-- Las opciones se agregan dinámicamente -->
+    </select>
+    <button type="button" class="btn btn-outline-primary" id="btnNuevoProveedor" title="Agregar proveedor">+</button>
+  </div>
 </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
@@ -144,6 +147,25 @@ body.dark-theme .btn-danger {
       </div>
       <div class="modal-body">
         <input type="text" name="rubro_nombre" class="form-control" placeholder="Nombre del rubro" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para nuevo proveedor -->
+<div class="modal fade" id="modalNuevoProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="form-nuevo-proveedor" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Guardar</button>
