@@ -136,7 +136,7 @@ function nuevoProducto() {
   document.getElementById('id_rubro').tomselect.clear();
 }
 
-
+  console.log('Abriendo modal de nuevo producto');
   new bootstrap.Modal(document.getElementById('modalProducto')).show();
 }
 
@@ -191,6 +191,7 @@ form.addEventListener('submit', e => {
     if (resp.error) {
       alert('Error: ' + resp.error);
     } else {
+      console.log('Producto guardado:', resp);
       bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
       form.reset();
       cargarProductos();
