@@ -10,6 +10,7 @@ let paginaActual = 1;
 const porPagina = 30;
 
 let usuarioRol = null;
+let productoModalPrevio = false; // <-- nueva bandera
 // Obtener el rol del usuario al cargar la página
 fetch(API_URL+'usuario-info')
   .then(response => response.json())
@@ -136,7 +137,7 @@ function nuevoProducto() {
   document.getElementById('id_rubro').tomselect.clear();
 }
 
-
+  console.log('Abriendo modal de nuevo producto');
   new bootstrap.Modal(document.getElementById('modalProducto')).show();
 }
 
@@ -191,6 +192,7 @@ form.addEventListener('submit', e => {
     if (resp.error) {
       alert('Error: ' + resp.error);
     } else {
+      console.log('Producto guardado:', resp);
       bootstrap.Modal.getInstance(document.getElementById('modalProducto')).hide();
       form.reset();
       cargarProductos();
@@ -230,23 +232,75 @@ async function cargarProveedores() {
     console.error('Error al cargar proveedores:', error);
   }
 }
+
+document.getElementById('form-nuevo-rubro').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nombre = e.target.rubro_nombre.value;
+  try {
+    const res = await fetch(API_URL + 'crear_rubro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nombre })
+    });
+    const json = await res.json().catch(()=>({}));
+
+    // recargar rubros y cerrar modalNuevoRubro
+    await cargarRubros(); // ahora devuelve cuando TomSelect ya está actualizado
+
+    const modalNuevoRubroEl = document.getElementById('modalNuevoRubro');
+    bootstrap.Modal.getInstance(modalNuevoRubroEl)?.hide();
+    e.target.reset();
+
+    // si el backend devolvió el id del rubro creado, seleccionarlo en el select
+    if (json && (json.id_rubro || json.id)) {
+      const newId = String(json.id_rubro ?? json.id);
+      const select = document.getElementById('id_rubro');
+      if (select.tomselect) {
+        // asegurar que la opción exista en TomSelect y seleccionarla
+        select.tomselect.addOption({ value: newId, text: nombre });
+        select.tomselect.setValue(newId);
+      } else {
+        select.value = newId;
+      }
+    }
+
+    // si el modal de producto estaba abierto antes, reabrirlo
+    if (productoModalPrevio) {
+      new bootstrap.Modal(document.getElementById('modalProducto')).show();
+      productoModalPrevio = false;
+    }
+  } catch (error) {
+    console.error('Error al crear rubro:', error);
+  }
+});
+
 async function cargarRubros() {
   const select = document.getElementById('id_rubro');
-  select.innerHTML = '<option value="">Seleccione rubro</option>';
 
   try {
     const res = await fetch(API_URL + 'rubros');
     const rubros = await res.json();
 
-    rubros.forEach(r => {
-      const option = document.createElement('option');
-      option.value = r.id_rubro;
-      option.textContent = r.nombre;
-      select.appendChild(option);
-    });
+    if (select.tomselect) {
+      // Si TomSelect ya está inicializado, actualizar sus opciones de forma segura
+      select.tomselect.clearOptions();
+      // Añadir una opción vacía opcional
+      select.tomselect.addOption({ value: '', text: 'Seleccione rubro', disabled: true });
+      rubros.forEach(r => {
+        select.tomselect.addOption({ value: String(r.id_rubro), text: r.nombre });
+      });
+      // mantener el valor actual (o vacío)
+      select.tomselect.setValue(select.value || '');
+    } else {
+      // Si no hay TomSelect, rellenar el select y luego inicializarlo
+      select.innerHTML = '<option value="">Seleccione rubro</option>';
+      rubros.forEach(r => {
+        const option = document.createElement('option');
+        option.value = r.id_rubro;
+        option.textContent = r.nombre;
+        select.appendChild(option);
+      });
 
-    // Inicializar Tom Select si no está ya
-    if (!select.tomselect) {
       new TomSelect('#id_rubro', {
         placeholder: 'Seleccione rubro',
         allowEmptyOption: true,
@@ -254,7 +308,6 @@ async function cargarRubros() {
         closeAfterSelect: true
       });
     }
-
   } catch (error) {
     console.error('Error al cargar rubros:', error);
   }
@@ -278,3 +331,89 @@ fetch(API_URL+'usuario-info')
       document.querySelectorAll('#tablaProductos td:last-child').forEach(td => td.style.display = 'none');
     }
   });
+
+// Mostrar el modal de nuevo rubro al hacer clic en el botón +
+document.getElementById('btnNuevoRubro').addEventListener('click', () => {
+  // recordar si el modal de producto está visible y ocultarlo
+  const modalProductoEl = document.getElementById('modalProducto');
+  productoModalPrevio = modalProductoEl.classList.contains('show');
+  if (productoModalPrevio) {
+    bootstrap.Modal.getInstance(modalProductoEl)?.hide();
+  }
+  document.getElementById('form-nuevo-rubro').reset();
+  new bootstrap.Modal(document.getElementById('modalNuevoRubro')).show();
+});
+
+// Nuevo: mostrar modal para agregar proveedor
+document.getElementById('btnNuevoProveedor').addEventListener('click', () => {
+  const modalProductoEl = document.getElementById('modalProducto');
+  productoModalPrevio = modalProductoEl.classList.contains('show');
+  if (productoModalPrevio) {
+    bootstrap.Modal.getInstance(modalProductoEl)?.hide();
+  }
+  document.getElementById('form-nuevo-proveedor').reset();
+  new bootstrap.Modal(document.getElementById('modalNuevoProveedor')).show();
+});
+
+// El submit del form-nuevo-rubro ya está conectado y funcional
+
+// Nuevo: manejar creación de proveedor (igual que rubro), ahora con varios campos
+document.getElementById('form-nuevo-proveedor').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nombre = (e.target.proveedor_nombre.value || '').trim();
+  const cuit = (e.target.proveedor_cuit?.value || '').trim();
+  const telefono = (e.target.proveedor_telefono?.value || '').trim();
+  const email = (e.target.proveedor_email?.value || '').trim();
+  const direccion = (e.target.proveedor_direccion?.value || '').trim();
+
+  // Validación: nombre no puede ser null/ vacío
+  if (!nombre) {
+    alert('El nombre del proveedor es obligatorio.');
+    return;
+  }
+
+  const payload = {
+    nombre,
+    cuit: cuit || null,
+    telefono: telefono || null,
+    email: email || null,
+    direccion: direccion || null
+  };
+
+  try {
+    const res = await fetch(API_URL + 'crear_proveedor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json().catch(()=>null);
+
+    // recargar proveedores y cerrar modalNuevoProveedor
+    await cargarProveedores();
+
+    // si el backend devolvió el id del proveedor creado, seleccionarlo en el select
+    const modalNuevoProveedorEl = document.getElementById('modalNuevoProveedor');
+    bootstrap.Modal.getInstance(modalNuevoProveedorEl)?.hide();
+    e.target.reset();
+
+    if (json && (json.id_proveedor || json.id)) {
+      const newId = String(json.id_proveedor ?? json.id);
+      const select = document.getElementById('id_proveedor');
+      if (select.tomselect) {
+        select.tomselect.addOption({ value: newId, text: nombre });
+        select.tomselect.setValue(newId);
+      } else {
+        select.value = newId;
+      }
+    }
+
+    // si el modal de producto estaba abierto antes, reabrirlo
+    if (productoModalPrevio) {
+      new bootstrap.Modal(document.getElementById('modalProducto')).show();
+      productoModalPrevio = false;
+    }
+  } catch (error) {
+    console.error('Error al crear proveedor:', error);
+    alert('Ocurrió un error al crear el proveedor.');
+  }
+});
