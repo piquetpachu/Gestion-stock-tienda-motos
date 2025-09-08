@@ -3,6 +3,29 @@
 body {
   display: none;
 }
+body.bg-dark {
+  color: #f8f9fa;
+}
+.bg-white-dark {
+  background-color: #212529 !important;
+}
+
+.table-light-dark {
+  background-color: #343a40 !important;
+  color: #f8f9fa;
+}
+
+.form-control-dark {
+  background-color: #343a40;
+  color: #f8f9fa;
+  border: 1px solid #495057;
+}
+
+.form-select-dark {
+  background-color: #343a40;
+  color: #f8f9fa;
+  border: 1px solid #495057;
+}
 /* Estilos para modo claro */
 :root, [data-bs-theme="light"] {
   --custom-bg-th: #e9ecef;

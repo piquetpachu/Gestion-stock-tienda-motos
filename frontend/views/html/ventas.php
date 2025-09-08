@@ -8,36 +8,8 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- CSS de Tom Select -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-  <style>
-    body {
-      display: none;
-    }
+  <link rel="stylesheet" href="../css/style.css">
 
-    body.bg-dark {
-      color: #f8f9fa;
-    }
-
-    .bg-white-dark {
-      background-color: #212529 !important;
-    }
-
-    .table-light-dark {
-      background-color: #343a40 !important;
-      color: #f8f9fa;
-    }
-
-    .form-control-dark {
-      background-color: #343a40;
-      color: #f8f9fa;
-      border: 1px solid #495057;
-    }
-
-    .form-select-dark {
-      background-color: #343a40;
-      color: #f8f9fa;
-      border: 1px solid #495057;
-    }
-  </style>
 </head>
 
 <body class="bg-dark">
