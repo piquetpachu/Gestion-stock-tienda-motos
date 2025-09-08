@@ -317,3 +317,45 @@ ALTER TABLE venta_medio_pago
   ADD COLUMN cuil_cuit VARCHAR
 (20) DEFAULT NULL,
 ADD COLUMN fecha DATE DEFAULT NULL;
+
+
+-- Crear tabla caja_retiro
+CREATE TABLE
+IF NOT EXISTS `caja_retiro`
+(
+  `id_retiro` INT
+(11) NOT NULL AUTO_INCREMENT,
+  `id_caja` INT
+(11) NOT NULL,
+  `monto` DECIMAL
+(10,2) NOT NULL,
+  `motivo` VARCHAR
+(255) DEFAULT NULL,
+  `fecha` DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY
+(`id_retiro`),
+  FOREIGN KEY
+(`id_caja`) REFERENCES `caja`
+(`id_caja`)
+);
+
+-- Agregar columnas  a la tabla caja
+ALTER TABLE `caja`
+ADD COLUMN
+IF NOT EXISTS `total_ventas` DECIMAL
+(10,2) DEFAULT 0,
+ADD COLUMN
+IF NOT EXISTS `total_retiros` DECIMAL
+(10,2) DEFAULT 0,
+ADD COLUMN
+IF NOT EXISTS `total_final` DECIMAL
+(10,2) DEFAULT 0,
+ADD COLUMN
+IF NOT EXISTS `cerrada` TINYINT
+(1) DEFAULT 0;
+
+
+-- Cliente genérico por defecto
+INSERT INTO cliente (id_cliente, nombre, apellido, dni, cuil_cuit, email, telefono, direccion, fecha_alta)
+VALUES (0, 'Consumidor', 'Final', NULL, NULL, NULL, NULL, NULL, CURDATE())
+ON DUPLICATE KEY UPDATE nombre = 'Consumidor', apellido = 'Final';

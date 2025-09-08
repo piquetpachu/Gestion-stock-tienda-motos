@@ -38,16 +38,19 @@ function crearVenta($pdo, $datos)
     $pdo->beginTransaction();
 
     try {
-        // Insertar en tabla venta
-        $stmt = $pdo->prepare("INSERT INTO venta (fecha, monto_total, tipo_comprobante, nro_comprobante, id_iva, id_usuario) 
-                               VALUES (NOW(), ?, ?, ?, ?, ?)");
+        // Insertar en tabla venta (ahora también guardamos id_cliente)
+        $stmt = $pdo->prepare("INSERT INTO venta (fecha, monto_total, tipo_comprobante, nro_comprobante, id_iva, id_usuario, id_cliente) 
+                       VALUES (NOW(), ?, ?, ?, ?, ?, ?)");
         $stmt->execute([
             $datos['monto_total'],
             $datos['tipo_comprobante'],
             $datos['nro_comprobante'],
             $datos['id_iva'],
-            $datos['id_usuario']
+            $datos['id_usuario'],
+            // Asegurarnos de que si no viene id_cliente o es null, se guarde NULL
+            isset($datos['id_cliente']) && $datos['id_cliente'] !== '' ? $datos['id_cliente'] : null
         ]);
+
 
         $idVenta = $pdo->lastInsertId();
 

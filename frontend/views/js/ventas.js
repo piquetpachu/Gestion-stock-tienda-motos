@@ -1,10 +1,9 @@
+
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
-const inputCodigoBarras = document.getElementById('codigo_de_barras');
-const botonAgregar = document.getElementById('boton_agregar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
-const inputPrecioUnitario = document.getElementById('precio_unitario');
+// const inputPrecioUnitario = document.getElementById('precio_unitario');
 const inputDescuento = document.getElementById('descuento');
 const inputIVA = document.getElementById('iva');
 const inputTotalVenta = document.getElementById('total_venta');
@@ -18,15 +17,28 @@ const mensajeResultado = document.getElementById('mensaje_resultado');
 
 const botonImprimirRecibo = document.getElementById('btn_imprimir_recibo'); // Botón imprimir
 
+// CLIENTES
+const selectCliente = document.getElementById('seleccionar_cliente');
+const btnAgregarCliente = document.getElementById('btn_agregar_cliente');
+const modalCliente = new bootstrap.Modal(document.getElementById('modalCliente'));
+const guardarClienteBtn = document.getElementById('guardar_cliente');
+const formCliente = document.getElementById('form_cliente');
+
 // Estado interno
 let productosLista = [];
 let productosVenta = [];
 let metodosPagoLista = [];
 let reciboGuardado = null;
+let tomSelectCliente = null; // TomSelect para clientes
+let tomSelectProducto = null; // TomSelect para productos
 
 // Formateador de moneda
 const formatearMoneda = valor =>
     valor.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+
+// -------------------- CARGA DE DATOS --------------------
+
+// Cargar productos
 
 // Cargar productos
 function cargarProductos() {
@@ -37,12 +49,41 @@ function cargarProductos() {
         })
         .then(data => {
             productosLista = data;
-            selectProducto.innerHTML = '<option value="" disabled selected>Seleccionar producto</option>';
+
+            // Inicializamos TomSelect solo si no está creado
+            if (!tomSelectProducto) {
+                tomSelectProducto = new TomSelect(selectProducto, {
+                    create: false,
+                    sortField: { field: "nombre", direction: "asc" },
+                    valueField: "codigo_barras",  // lo que usa internamente
+                    labelField: "nombre",         // lo que se muestra
+                    searchField: ["nombre", "codigo_barras"],  // permite búsqueda por ambos
+                    placeholder: "Seleccionar producto"
+                });
+            } else {
+                tomSelectProducto.clearOptions();
+            }
+
+            // Agregar opciones a TomSelect
             data.forEach(prod => {
-                const opcion = document.createElement('option');
-                opcion.value = prod.codigo_barras || '';
-                opcion.textContent = prod.nombre || 'Sin nombre';
-                selectProducto.appendChild(opcion);
+                tomSelectProducto.addOption({
+                    codigo_barras: prod.codigo_barras,
+                    nombre: prod.nombre
+                });
+            });
+
+            // Manejar selección de item
+            tomSelectProducto.on('item_add', function (value) {
+                agregarProducto(value);
+            });
+
+            // Manejar ENTER para agregar producto
+            tomSelectProducto.on('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const val = tomSelectProducto.getValue();
+                    agregarProducto(val);
+                }
             });
         })
         .catch(error => {
@@ -51,9 +92,10 @@ function cargarProductos() {
         });
 }
 
+
 // Cargar métodos de pago
 function cargarMetodosPago() {
-    fetch(API_URL+'medios_pago')
+    fetch(API_URL + 'medios_pago')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener métodos de pago');
             return res.json();
@@ -74,92 +116,160 @@ function cargarMetodosPago() {
         });
 }
 
+// Cargar clientes
+function cargarClientes(seleccionarId = null) {
+    fetch(API_URL + 'clientes')
+        .then(res => {
+            if (!res.ok) throw new Error('Error al obtener clientes');
+            return res.json();
+        })
+        .then(data => {
+            selectCliente.innerHTML = '<option value="" disabled selected>Seleccionar cliente</option>';
+            data.forEach(cliente => {
+                const opcion = document.createElement('option');
+                opcion.value = cliente.id_cliente;
+                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                selectCliente.appendChild(opcion);
+            });
+
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, { create: false, sortField: { field: "text", direction: "asc" } });
+            } else {
+                tomSelectCliente.clearOptions();
+                data.forEach(cliente => tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` }));
+                tomSelectCliente.refreshOptions();
+            }
+
+            if (seleccionarId) {
+                tomSelectCliente.addItem(seleccionarId);
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando clientes:', error);
+            alert('No se pudieron cargar los clientes. Revisa la consola.');
+        });
+}
+function cargarClientes(seleccionarId = null) {
+    fetch(API_URL + 'clientes')
+        .then(res => {
+            if (!res.ok) throw new Error('Error al obtener clientes');
+            return res.json();
+        })
+        .then(data => {
+            // Siempre incluir "Consumidor Final" al inicio
+            selectCliente.innerHTML = `
+                <option value="0" selected>Consumidor Final</option>
+            `;
+
+            // Agregar los clientes que vienen de la BD
+            data.forEach(cliente => {
+                const opcion = document.createElement('option');
+                opcion.value = cliente.id_cliente;
+                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                selectCliente.appendChild(opcion);
+            });
+
+            // Refrescar TomSelect
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
+            } else {
+                tomSelectCliente.clearOptions();
+                tomSelectCliente.addOption({ value: "0", text: "Consumidor Final" });
+                data.forEach(cliente =>
+                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` })
+                );
+                tomSelectCliente.refreshOptions();
+            }
+
+            if (seleccionarId) {
+                tomSelectCliente.addItem(seleccionarId);
+            } else {
+                tomSelectCliente.addItem("0"); // Consumidor Final por defecto
+            }
+        })
+        .catch(error => {
+            console.error('Error cargando clientes:', error);
+            alert('No se pudieron cargar los clientes. Revisa la consola.');
+        });
+}
+
+
+// -------------------- CLIENTES --------------------
+
+// Agregar cliente desde modal
+btnAgregarCliente.addEventListener('click', () => modalCliente.show());
+
+guardarClienteBtn.addEventListener('click', () => {
+    if (!formCliente.checkValidity()) {
+        formCliente.reportValidity();
+        return;
+    }
+
+    const nuevoCliente = {
+        nombre: document.getElementById('cliente_nombre').value.trim(),
+        apellido: document.getElementById('cliente_apellido').value.trim(),
+        cuil_cuit: document.getElementById('cliente_cuit').value.trim(),
+        email: document.getElementById('cliente_email').value.trim(),
+        telefono: document.getElementById('cliente_telefono').value.trim(),
+        direccion: document.getElementById('cliente_direccion').value.trim()
+    };
+
+    guardarClienteBtn.disabled = true;
+    guardarClienteBtn.textContent = 'Guardando...';
+
+    fetch(API_URL + 'crear_cliente', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoCliente)
+    })
+        .then(res => {
+            if (!res.ok) throw new Error('Error al guardar el cliente');
+            return res.json();
+        })
+        .then(clienteCreado => {
+            modalCliente.hide();
+            formCliente.reset();
+            guardarClienteBtn.disabled = false;
+            guardarClienteBtn.textContent = 'Guardar';
+            cargarClientes(clienteCreado.id);
+        })
+        .catch(err => {
+            alert('Error al guardar cliente: ' + err.message);
+            guardarClienteBtn.disabled = false;
+            guardarClienteBtn.textContent = 'Guardar';
+        });
+});
+
+// 🚀 Limitador CUIT también en modal de cliente
+document.addEventListener('DOMContentLoaded', () => {
+    const inputCuitCliente = document.getElementById('cliente_cuit');
+    if (inputCuitCliente) {
+        inputCuitCliente.addEventListener('input', () => {
+            let val = inputCuitCliente.value;
+            val = val.replace(/[^0-9\-]/g, '');
+            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
+            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
+            if (val.length > 13) val = val.slice(0, 13);
+            inputCuitCliente.value = val;
+        });
+    }
+});
+
+// -------------------- PRODUCTOS Y VENTA --------------------
+
 function buscarProductoPorCodigo(codigo) {
     return productosLista.find(p => p.codigo_barras === codigo);
 }
 
-function actualizarTabla() {
-    tablaProductosBody.innerHTML = '';
-    productosVenta.forEach((prod, idx) => {
-        const fila = document.createElement('tr');
-
-        const tdCodigo = document.createElement('td');
-        tdCodigo.textContent = prod.codigo;
-        fila.appendChild(tdCodigo);
-
-        const tdNombre = document.createElement('td');
-        tdNombre.textContent = prod.nombre;
-        fila.appendChild(tdNombre);
-
-        const tdCantidad = document.createElement('td');
-        const inputCant = document.createElement('input');
-        inputCant.type = 'number';
-        inputCant.min = '1';
-        inputCant.value = prod.cantidad;
-        inputCant.className = 'form-control form-control-sm text-center';
-        inputCant.addEventListener('change', e => {
-            const val = parseInt(e.target.value);
-            if (val >= 1) {
-                productosVenta[idx].cantidad = val;
-                actualizarTotales();
-            } else {
-                e.target.value = productosVenta[idx].cantidad;
-            }
-        });
-        tdCantidad.appendChild(inputCant);
-        fila.appendChild(tdCantidad);
-
-        const tdPrecio = document.createElement('td');
-        tdPrecio.textContent = formatearMoneda(prod.precio * prod.cantidad);
-        fila.appendChild(tdPrecio);
-
-        const tdAcciones = document.createElement('td');
-        const btnEliminar = document.createElement('button');
-        btnEliminar.className = 'btn btn-danger btn-sm';
-        btnEliminar.textContent = 'Eliminar';
-        btnEliminar.addEventListener('click', () => {
-            productosVenta.splice(idx, 1);
-            actualizarTabla();
-            actualizarTotales();
-        });
-        tdAcciones.appendChild(btnEliminar);
-        fila.appendChild(tdAcciones);
-
-        tablaProductosBody.appendChild(fila);
-    });
-}
-
-function actualizarTotales() {
-    const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
-    inputPrecioUnitario.value = formatearMoneda(subtotal);
-
-    const descuentoPerc = parseFloat(inputDescuento.value) || 0;
-    const ivaPerc = parseFloat(inputIVA.value) || 0;
-
-    const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
-    const total = montoConDescuento * (1 + ivaPerc / 100);
-
-    inputTotalVenta.value = formatearMoneda(total);
-}
-
-inputDescuento.addEventListener('input', actualizarTotales);
-inputIVA.addEventListener('input', actualizarTotales);
-
-function agregarProducto() {
-    let codigoSeleccionado = selectProducto.value;
-    let codigoEscaneado = inputCodigoBarras.value.trim();
-    let codigo = codigoSeleccionado || codigoEscaneado;
-
-    if (!codigo) {
-        alert('Debe seleccionar un producto o ingresar un código de barras.');
-        return;
-    }
+function agregarProducto(codigoSeleccionado = null) {
+    let codigo = codigoSeleccionado || tomSelectProducto.getValue();
+    if (!codigo) return;
 
     const producto = buscarProductoPorCodigo(codigo);
-    if (!producto) {
-        alert('Producto no encontrado.');
-        return;
-    }
+    if (!producto) return;
 
     const indexExistente = productosVenta.findIndex(p => p.codigo === codigo);
     if (indexExistente >= 0) {
@@ -177,9 +287,98 @@ function agregarProducto() {
     actualizarTabla();
     actualizarTotales();
 
-    selectProducto.value = '';
-    inputCodigoBarras.value = '';
+    if (tomSelectProducto) {
+        tomSelectProducto.clear();
+        tomSelectProducto.focus();
+    }
 }
+
+// -------------------- TABLA Y TOTALES --------------------
+// -------------------- TABLA Y TOTALES --------------------
+
+function actualizarTabla() {
+    tablaProductosBody.innerHTML = '';
+    productosVenta.forEach((prod, idx) => {
+        const fila = document.createElement('tr');
+
+        // Código
+        const tdCodigo = document.createElement('td');
+        tdCodigo.textContent = prod.codigo;
+        fila.appendChild(tdCodigo);
+
+        // Nombre
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = prod.nombre;
+        fila.appendChild(tdNombre);
+
+        // Cantidad
+        const tdCantidad = document.createElement('td');
+        const inputCant = document.createElement('input');
+        inputCant.type = 'number';
+        inputCant.min = '1';
+        inputCant.value = prod.cantidad;
+        inputCant.className = 'form-control form-control-sm text-center';
+        inputCant.addEventListener('input', e => {
+            let val = parseInt(e.target.value);
+            if (!isNaN(val) && val >= 1) {
+                productosVenta[idx].cantidad = val;
+                actualizarTotales();
+            } else {
+                e.target.value = productosVenta[idx].cantidad;
+            }
+        });
+        tdCantidad.appendChild(inputCant);
+        fila.appendChild(tdCantidad);
+
+        // Precio total por producto
+        const tdPrecio = document.createElement('td');
+        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        fila.appendChild(tdPrecio);
+
+        // Acciones
+        const tdAcciones = document.createElement('td');
+        const btnEliminar = document.createElement('button');
+        btnEliminar.className = 'btn btn-danger btn-sm';
+        btnEliminar.textContent = 'Eliminar';
+        btnEliminar.addEventListener('click', () => {
+            productosVenta.splice(idx, 1);
+            actualizarTabla();
+            actualizarTotales();
+        });
+        tdAcciones.appendChild(btnEliminar);
+        fila.appendChild(tdAcciones);
+
+        tablaProductosBody.appendChild(fila);
+    });
+}
+
+function actualizarTotales() {
+    // Calcular subtotal
+    const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
+
+    // Leer descuento e IVA
+    const descuentoPerc = parseFloat(inputDescuento.value) || 0;
+    const ivaPerc = parseFloat(inputIVA.value) || 0;
+
+    // Aplicar descuento
+    const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
+
+    // Aplicar IVA
+    const totalFinal = montoConDescuento * (1 + ivaPerc / 100);
+
+    // Actualizar campo total en formato moneda
+    if (inputTotalVenta) {
+        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+    }
+}
+
+// Listener para recalcular total al cambiar descuento
+if (inputDescuento) {
+    inputDescuento.addEventListener('input', actualizarTotales);
+}
+
+
+// -------------------- MÉTODO DE PAGO --------------------
 
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
@@ -189,21 +388,11 @@ function cambiarCamposMetodoPago() {
         divCamposAdicionalesPago.innerHTML = `
           <div class="mb-3">
             <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
-            <input
-              type="text"
-              class="form-control"
-              id="cuit_tarjeta"
-              placeholder="Ej: 20-12345678-9"
-              pattern="^\\d{2}-\\d{8}-\\d{1}$"
-              maxlength="13"
-              title="Formato válido: XX-XXXXXXXX-X (sólo números y guiones)"
-              autocomplete="off"
-              required
-            >
+            <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
             <div class="form-text">Formato: 20-12345678-9</div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Fecha actual (se asigna automáticamente)</label>
+            <label class="form-label">Fecha actual</label>
             <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
           </div>
         `;
@@ -212,12 +401,9 @@ function cambiarCamposMetodoPago() {
         inputCuit.addEventListener('input', () => {
             let val = inputCuit.value;
             val = val.replace(/[^0-9\-]/g, '');
-
             if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
             if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-
             if (val.length > 13) val = val.slice(0, 13);
-
             inputCuit.value = val;
         });
     }
@@ -227,6 +413,8 @@ function getNombreMetodoPago(id) {
     const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
     return metodo ? metodo.descripcion : 'Desconocido';
 }
+
+// -------------------- RECIBO --------------------
 
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
@@ -251,6 +439,7 @@ function mostrarRecibo(data) {
           <p><strong>Fecha:</strong> ${fechaActual}</p>
           <p><strong>Hora:</strong> ${horaActual}</p>
           <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
+          ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
         </div>
         <table>
           <thead>
@@ -279,11 +468,12 @@ function mostrarRecibo(data) {
           </tbody>
         </table>
         <div class="totales">
-          <p>Subtotal: ${inputPrecioUnitario.value}</p>
-          <p>Descuento: ${inputDescuento.value || 0}%</p>
-          <p>IVA: ${inputIVA.value || 0}%</p>
-          <p>Total Final: ${inputTotalVenta.value}</p>
+            <p>Subtotal: ${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</p>
+            <p>Descuento: ${inputDescuento.value || 0}%</p>
+            <p>IVA: ${inputIVA.value || 0}%</p>
+            <p>Total Final: ${inputTotalVenta.value}</p>
         </div>
+
         <div style="text-align: center; margin-top: 30px;">
           <p>¡Gracias por su compra!</p>
         </div>
@@ -305,6 +495,8 @@ botonImprimirRecibo.addEventListener('click', () => {
     ventanaRecibo.print();
 });
 
+// -------------------- VENTA --------------------
+
 function finalizarVenta() {
     if (productosVenta.length === 0) {
         alert('Debe agregar al menos un producto a la venta.');
@@ -316,18 +508,35 @@ function finalizarVenta() {
         return;
     }
 
-    const metodoPago = selectMetodoPago.value;
+    const idUsuario = localStorage.getItem('id_usuario');
+    if (!idUsuario) {
+        alert('No se encontró usuario logueado. Por favor inicia sesión de nuevo.');
+        return;
+    }
 
+    const metodoPago = selectMetodoPago.value;
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
         cantidad: p.cantidad,
         precio_unitario: p.precio,
-        descuento: 0,
-
-        iva: parseFloat(inputIVA.value) || 21 // Valor por defecto 21%
+        descuento: parseFloat(inputDescuento.value) || 0,
+        iva: parseFloat(inputIVA.value) || 0
     }));
 
-    // Calcular total
+    const venta = {
+        monto_total: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
+        tipo_comprobante: 'A', // o el que corresponda
+        nro_comprobante: '0001-00000001', // generar dinámicamente si quieres
+        id_usuario: Number(idUsuario), // ahora toma el valor correcto
+        id_iva: parseFloat(inputIVA.value) || 0,
+        items: items,
+        pagos: [{
+            id_medio_pago: selectMetodoPago.value,
+            monto: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
+            cuil_cuit: selectMetodoPago.value === '2' ? document.getElementById('cuit_tarjeta')?.value || null : null
+        }]
+    };
+
     const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
 
     const pago = {
@@ -335,17 +544,20 @@ function finalizarVenta() {
         monto: montoTotal
     };
 
-    // Si método es tarjeta, validar CUIT
     if (metodoPago === '2') {
         const cuitInput = document.getElementById('cuit_tarjeta');
-        if (!cuitInput || !cuitInput.value.match(/^\d{2}-\d{8}-\d{1}$/)) {
-            alert('Debe ingresar un CUIT válido con formato XX-XXXXXXXX-X');
+        if (!cuitInput || !cuitInput.value) {
+            alert('Debe ingresar un CUIT válido para tarjeta.');
             return;
         }
-        pago.cuil_cuit = cuitInput.value; // ✅ Campo corregido
+        pago.cuil_cuit = cuitInput.value;
     }
 
-    // Preparar datos para enviar - Incluir TODOS los campos requeridos
+    venta.pagos = [pago];
+    venta.id_cliente = selectCliente.value || null;
+
+    botonFinalizar.disabled = true;
+    botonFinalizar.textContent = 'Procesando...';
     const data = {
         items,
         pagos: [pago],
@@ -353,89 +565,60 @@ function finalizarVenta() {
         tipo_comprobante: 'TICKET', // Valor por defecto
         nro_comprobante: Date.now().toString(), // Generar número único
         id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
-        id_usuario: 1 // ID del usuario logueado (ajusta según tu sesión)
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+        id_usuario: Number(idUsuario) // ahora toma el valor correcto
     };
-
-    botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
-
-
-    botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
-
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
         .then(res => {
-            if (!res.ok) throw new Error('Error al crear la venta');
+            if (!res.ok) throw new Error('Error al procesar la venta');
             return res.json();
         })
-        .then(response => {
-            mensajeResultado.textContent = 'Venta registrada con éxito.';
-            mensajeResultado.className = 'alert alert-success';
+        .then(res => {
+            mensajeResultado.textContent = 'Venta registrada con éxito';
+            mensajeResultado.classList.remove('text-danger');
+            mensajeResultado.classList.add('text-success');
 
-            // Mostrar recibo
-            mostrarRecibo(data);
-
-            // Activar botón imprimir y cambiar color
-            botonImprimirRecibo.disabled = false;
-            botonImprimirRecibo.classList.remove('btn-secondary');
-            botonImprimirRecibo.classList.add('btn-success');
-
-            // Limpiar formulario y tabla
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
-
             selectMetodoPago.value = '';
-            divCamposAdicionalesPago.innerHTML = '';
+            cambiarCamposMetodoPago();
+            mostrarRecibo(res);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
-            mensajeResultado.className = 'alert alert-danger';
+            mensajeResultado.classList.remove('text-success');
+            mensajeResultado.classList.add('text-danger');
+            console.error(err);
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar';
+            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 
-function cancelarVenta() {
-    if (!confirm('¿Está seguro que desea cancelar la venta? Se perderán los datos ingresados.')) return;
 
+botonFinalizar.addEventListener('click', finalizarVenta);
+botonCancelar.addEventListener('click', () => {
     productosVenta = [];
     actualizarTabla();
     actualizarTotales();
-
     selectMetodoPago.value = '';
-    divCamposAdicionalesPago.innerHTML = '';
-
+    cambiarCamposMetodoPago();
     mensajeResultado.textContent = '';
-    botonImprimirRecibo.disabled = true;
-    botonImprimirRecibo.classList.remove('btn-success');
-    botonImprimirRecibo.classList.add('btn-secondary');
+});
 
-    selectProducto.value = '';
-    inputCodigoBarras.value = '';
-    inputDescuento.value = '0';
-    inputIVA.value = '21';
-    inputPrecioUnitario.value = '';
-    inputTotalVenta.value = '';
-}
-
-// Eventos
-botonAgregar.addEventListener('click', agregarProducto);
-
+// Cambios en método de pago
 selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 
-botonFinalizar.addEventListener('click', finalizarVenta);
-
-botonCancelar.addEventListener('click', cancelarVenta);
-
-// Carga inicial
-cargarProductos();
-cargarMetodosPago();
-actualizarTotales();
-botonImprimirRecibo.disabled = true;
+// -------------------- INICIALIZACIÓN --------------------
+document.addEventListener('DOMContentLoaded', () => {
+    cargarProductos();
+    cargarMetodosPago();
+    cargarClientes();
+    actualizarTotales();
+});

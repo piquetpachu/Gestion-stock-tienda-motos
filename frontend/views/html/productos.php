@@ -31,6 +31,10 @@ body.dark-theme .btn-danger {
   background-color: #880000;
   color: #fff;
 }
+/* Alinear Tom Select con el botón en d-flex */
+.d-flex .ts-wrapper {
+  flex-grow: 1;
+}
 </style> 
   <?php include 'navbar.php'; ?>
 
@@ -105,7 +109,7 @@ body.dark-theme .btn-danger {
 <div class="col-md-6">
   <label for="id_proveedor" class="form-label">Proveedor</label>
   <div class="input-group">
-    <select id="id_proveedor" class="form-select" style="width: 100%">
+    <select id="id_proveedor" class="form-select">
       <option value="">Seleccione proveedor</option>
       <!-- Las opciones se agregan dinámicamente -->
     </select>
