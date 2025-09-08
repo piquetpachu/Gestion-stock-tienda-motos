@@ -30,7 +30,7 @@
       color: #343a40;
     }
 
-       body { 
+      body { 
             display: none; /* Oculta toda la página inicialmente */
         }
 

@@ -1,5 +1,8 @@
 /* Agregar estas reglas CSS a tu archivo de estilos */
 
+body {
+  display: none;
+}
 /* Estilos para modo claro */
 :root, [data-bs-theme="light"] {
   --custom-bg-th: #e9ecef;
