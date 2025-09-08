@@ -10,32 +10,9 @@
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <link rel="stylesheet" href="../css/style.css">
-
+0000000000000000000000000000000000000
 </head>
 
-<style>
-      body { 
-            display: none; /* Oculta toda la página inicialmente */
-        }
-            /* style.css */
-body.dark-theme .btn {
-  background-color: #222;
-  color: #fff;
-  border-color: #444;
-}
-body.dark-theme .btn-warning {
-  background-color: #444;
-  color: #ffd700;
-}
-body.dark-theme .btn-danger {
-  background-color: #880000;
-  color: #fff;
-}
-/* Alinear Tom Select con el botón en d-flex */
-.d-flex .ts-wrapper {
-  flex-grow: 1;
-}
-</style> 
   <?php include 'navbar.php'; ?>
 
 <body >

@@ -1,11 +1,32 @@
 /* Agregar estas reglas CSS a tu archivo de estilos */
 
+.d-flex .ts-wrapper {
+  flex-grow: 1;
+}
+
 body {
   display: none;
 }
 body.bg-dark {
   color: #f8f9fa;
 }
+
+body.dark-theme .btn {
+  background-color: #222;
+  color: #fff;
+  border-color: #444;
+}
+
+body.dark-theme .btn-warning {
+  background-color: #444;
+  color: #ffd700;
+}
+
+body.dark-theme .btn-danger {
+  background-color: #880000;
+  color: #fff;
+}
+
 .bg-white-dark {
   background-color: #212529 !important;
 }
