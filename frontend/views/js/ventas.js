@@ -117,38 +117,7 @@ function cargarMetodosPago() {
 }
 
 // Cargar clientes
-function cargarClientes(seleccionarId = null) {
-    fetch(API_URL + 'clientes')
-        .then(res => {
-            if (!res.ok) throw new Error('Error al obtener clientes');
-            return res.json();
-        })
-        .then(data => {
-            selectCliente.innerHTML = '<option value="" disabled selected>Seleccionar cliente</option>';
-            data.forEach(cliente => {
-                const opcion = document.createElement('option');
-                opcion.value = cliente.id_cliente;
-                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
-                selectCliente.appendChild(opcion);
-            });
 
-            if (!tomSelectCliente) {
-                tomSelectCliente = new TomSelect(selectCliente, { create: false, sortField: { field: "text", direction: "asc" } });
-            } else {
-                tomSelectCliente.clearOptions();
-                data.forEach(cliente => tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` }));
-                tomSelectCliente.refreshOptions();
-            }
-
-            if (seleccionarId) {
-                tomSelectCliente.addItem(seleccionarId);
-            }
-        })
-        .catch(error => {
-            console.error('Error cargando clientes:', error);
-            alert('No se pudieron cargar los clientes. Revisa la consola.');
-        });
-}
 function cargarClientes(seleccionarId = null) {
     fetch(API_URL + 'clientes')
         .then(res => {
@@ -420,6 +389,7 @@ function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
     const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
 
+    // Generar el contenido del recibo
     reciboGuardado = `
     <html>
       <head>
@@ -473,14 +443,25 @@ function mostrarRecibo(data) {
             <p>IVA: ${inputIVA.value || 0}%</p>
             <p>Total Final: ${inputTotalVenta.value}</p>
         </div>
-
         <div style="text-align: center; margin-top: 30px;">
           <p>¡Gracias por su compra!</p>
         </div>
       </body>
     </html>
   `;
+
+    // ✅ Habilitar el botón de imprimir solo después de generar el recibo
+    botonImprimirRecibo.disabled = false;
+    // Cambiar la clase de color de gris a verde
+    botonImprimirRecibo.classList.remove('btn-secondary');
+    botonImprimirRecibo.classList.add('btn-success');
+
+    // 🔹 Forzar colores para evitar que el estilo de "disabled" lo deje gris
+    botonImprimirRecibo.style.backgroundColor = '#198754';
+    botonImprimirRecibo.style.borderColor = '#198754';
+    botonImprimirRecibo.style.color = '#fff';
 }
+
 
 botonImprimirRecibo.addEventListener('click', () => {
     if (!reciboGuardado) {
@@ -582,12 +563,15 @@ function finalizarVenta() {
             mensajeResultado.classList.remove('text-danger');
             mensajeResultado.classList.add('text-success');
 
+
+            mostrarRecibo(data);
+
+
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-            mostrarRecibo(res);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
