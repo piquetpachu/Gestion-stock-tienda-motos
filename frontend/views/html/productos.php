@@ -14,7 +14,7 @@
 </head>
 
 <style>
-       body { 
+      body { 
             display: none; /* Oculta toda la página inicialmente */
         }
             /* style.css */
@@ -30,6 +30,10 @@ body.dark-theme .btn-warning {
 body.dark-theme .btn-danger {
   background-color: #880000;
   color: #fff;
+}
+/* Alinear Tom Select con el botón en d-flex */
+.d-flex .ts-wrapper {
+  flex-grow: 1;
 }
 </style> 
   <?php include 'navbar.php'; ?>
@@ -104,17 +108,23 @@ body.dark-theme .btn-danger {
           <!-- <div class="col-md-4"><input type="date" id="fecha_alta" class="form-control" /></div> -->
 <div class="col-md-6">
   <label for="id_proveedor" class="form-label">Proveedor</label>
-  <select id="id_proveedor" class="form-select"  style="width: 100%">
-    <option value="">Seleccione proveedor</option>
-    <!-- Las opciones se agregan dinámicamente -->
-  </select>
+  <div class="input-group">
+    <select id="id_proveedor" class="form-select">
+      <option value="">Seleccione proveedor</option>
+      <!-- Las opciones se agregan dinámicamente -->
+    </select>
+    <button type="button" class="btn btn-outline-primary" id="btnNuevoProveedor" title="Agregar proveedor">+</button>
+  </div>
 </div>
 <div class="col-md-6">
   <label for="id_rubro" class="form-label">Rubro</label>
-  <select id="id_rubro" class="form-select">
-    <option value="">Seleccione rubro</option>
-    <!-- Se cargará con JS -->
-  </select>
+  <div class="input-group">
+    <select id="id_rubro" class="form-select">
+      <option value="">Seleccione rubro</option>
+      <!-- Se cargará con JS -->
+    </select>
+    <button type="button" class="btn btn-outline-primary" id="btnNuevoRubro" title="Agregar rubro">+</button>
+  </div>
 </div>
           <div class="col-md-6">
             <select id="activo" class="form-select">
@@ -131,12 +141,68 @@ body.dark-theme .btn-danger {
     </div>
   </div>
 
+  <!-- Modal para nuevo rubro -->
+<div class="modal fade" id="modalNuevoRubro" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="form-nuevo-rubro" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Rubro</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" name="rubro_nombre" class="form-control" placeholder="Nombre del rubro" required />
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal para nuevo proveedor -->
+<div class="modal fade" id="modalNuevoProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="form-nuevo-proveedor" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Proveedor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-2">
+          <label class="form-label">Nombre <span class="text-danger">*</span></label>
+          <input type="text" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">CUIT</label>
+          <input type="text" name="proveedor_cuit" class="form-control" placeholder="CUIT (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" name="proveedor_telefono" class="form-control" placeholder="Teléfono (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Email</label>
+          <input type="email" name="proveedor_email" class="form-control" placeholder="Email (opcional)" />
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Dirección</label>
+          <input type="text" name="proveedor_direccion" class="form-control" placeholder="Dirección (opcional)" />
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
   <!-- Scripts -->
   <script src="../js/theme.js"></script>
-   <script src="../js/config.js"></script>
+  <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/productos.js"></script>
-  <script src="../js/index.js"></script>
 </body>
 </html>
