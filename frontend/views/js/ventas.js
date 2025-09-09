@@ -606,3 +606,20 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
     actualizarTotales();
 });
+
+
+    // -------------------- BOTÓN VARIOS MÉTODOS --------------------
+    const bloqueVariosMetodos = document.getElementById('bloque_varios_metodos');
+    const btnVariosMetodos = document.getElementById('btn_varios_metodos');
+
+    // Ocultar bloque al inicio
+    bloqueVariosMetodos.style.display = 'none';
+
+    // Listener del botón
+    btnVariosMetodos.addEventListener('click', () => {
+        bloqueVariosMetodos.style.display =
+            (bloqueVariosMetodos.style.display === 'none' || bloqueVariosMetodos.style.display === '')
+                ? 'block'
+                : 'none';
+    });
+
