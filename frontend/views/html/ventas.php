@@ -56,8 +56,8 @@
       </select>
     </div>
 
-    <!-- TABLA DE PRODUCTOS -->
-    <div class="bg-white-dark p-3 rounded shadow-sm mb-4">
+    <!-- TABLA DE PRODUCTOS CON SCROLL -->
+    <div class="bg-white-dark p-3 rounded shadow-sm mb-4" style="max-height: 330px; overflow-y: auto;">
       <table class="table table-bordered text-center align-middle" id="tabla_productos"
         aria-label="Tabla de productos añadidos a la venta">
         <thead class="table-light-dark">
@@ -94,14 +94,11 @@
       <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
       <div class="input-group">
         <select class="form-select form-select-dark" id="seleccionar_cliente" aria-label="Seleccionar cliente">
-          <!-- Opción fija -->
           <option value="0" selected>Consumidor Final</option>
-          <!-- El resto de los clientes se cargan con JS -->
         </select>
         <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
       </div>
     </div>
-
 
     <!-- CAMPOS DE TOTALES AL FINAL -->
     <div class="d-flex justify-content-end gap-3 mb-4">
