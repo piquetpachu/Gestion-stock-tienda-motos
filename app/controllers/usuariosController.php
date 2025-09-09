@@ -60,6 +60,15 @@ switch ($recurso) {
         if ($metodo === 'PUT') {
             $id = $matches[1];
             $datos = json_decode(file_get_contents("php://input"), true);
+            // Validación: no permitir que el admin cambie su propio rol
+            if (isset($_SESSION['usuario']) && $_SESSION['usuario']['id'] == $id && isset($datos['rol'])) {
+                // Si el rol enviado es distinto al actual, rechazar
+                if ($datos['rol'] !== $_SESSION['usuario']['rol']) {
+                    http_response_code(403);
+                    echo json_encode(["error" => "No puedes modificar tu propio rol."]);
+                    break;
+                }
+            }
             echo json_encode(actualizarUsuario($pdo, $id, $datos));
         }
         break;
