@@ -32,19 +32,12 @@
       border: 1px solid #495057;
     }
 
-    /* Contenedor principal estilo tablero */
-    .venta-container {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 1.5rem;
-    }
-
-    /* Cards con altura pareja */
     .venta-card {
       background: #212529;
       border-radius: 12px;
       padding: 1.2rem;
       box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+      height: 100%;
     }
 
     .venta-card h5 {
@@ -70,113 +63,118 @@
   <div class="container my-4">
     <h1 class="text-center mb-4">Registrar venta</h1>
 
-    <div class="venta-container">
+    <!-- Usamos grid de Bootstrap en vez de CSS fijo -->
+    <div class="row g-3">
       <!-- Columna izquierda -->
-      <div class="venta-card">
-        <h5>Productos</h5>
-        <div class="mb-3">
-          <label for="seleccionar_producto" class="form-label">Agregar producto</label>
-          <select class="form-select form-select-dark" id="seleccionar_producto">
-            <option value="" disabled selected>Seleccionar producto</option>
-          </select>
-        </div>
-        <div class="bg-white-dark p-2 rounded" style="max-height: 250px; overflow-y:auto;">
-          <table class="table table-sm table-bordered text-center align-middle" id="tabla_productos">
-            <thead class="table-light-dark">
-              <tr>
-                <th>Cód.</th>
-                <th>Producto</th>
-                <th>Cant.</th>
-                <th>Precio</th>
-                <th>Acc.</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- filas dinámicas -->
-            </tbody>
-          </table>
+      <div class="col-12 col-lg-8">
+        <div class="venta-card">
+          <h5>Productos</h5>
+          <div class="mb-3">
+            <label for="seleccionar_producto" class="form-label">Agregar producto</label>
+            <select class="form-select form-select-dark" id="seleccionar_producto">
+              <option value="" disabled selected>Seleccionar producto</option>
+            </select>
+          </div>
+          <div class="bg-white-dark p-2 rounded" style="max-height: 250px; overflow-y:auto;">
+            <table class="table table-sm table-bordered text-center align-middle" id="tabla_productos">
+              <thead class="table-light-dark">
+                <tr>
+                  <th>Cód.</th>
+                  <th>Producto</th>
+                  <th>Cant.</th>
+                  <th>Precio</th>
+                  <th>Acc.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- filas dinámicas -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       <!-- Columna derecha -->
-      <div class="venta-card">
-        <h5>Detalles de venta</h5>
+      <div class="col-12 col-lg-4">
+        <div class="venta-card">
+          <h5>Detalles de venta</h5>
 
-        <!-- Cliente -->
-        <div class="mb-3">
-          <label for="seleccionar_cliente" class="form-label">Cliente</label>
-          <div class="input-group">
-            <select class="form-select form-select-dark" id="seleccionar_cliente">
-              <option value="0" selected>Consumidor Final</option>
-            </select>
-            <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente">+</button>
-          </div>
-        </div>
-
-        <!-- Pago -->
-        <div class="mb-3">
-          <label for="metodo_de_pago" class="form-label">Método de pago</label>
-          <div class="d-flex gap-2">
-            <select class="form-select form-select-dark" id="metodo_de_pago">
-              <option value="" disabled selected>Seleccionar método</option>
-              <option value="efectivo">Efectivo</option>
-              <option value="tarjeta">Tarjeta</option>
-              <option value="transferencia">Transferencia</option>
-            </select>
-            <button class="btn btn-secondary" type="button" id="btn_varios_metodos">Varios</button>
-          </div>
-        </div>
-
-        <div id="bloque_varios_metodos" class="mb-3 p-2 bg-white-dark rounded">
-          <label class="form-label">Varios métodos</label>
-          <div class="small">
-            <div class="form-check mb-1">
-              <input class="form-check-input" type="checkbox" id="varios_efectivo">
-              <label class="form-check-label" for="varios_efectivo">Efectivo</label>
-              <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
-            </div>
-            <div class="form-check mb-1">
-              <input class="form-check-input" type="checkbox" id="varios_tarjeta">
-              <label class="form-check-label" for="varios_tarjeta">Tarjeta</label>
-              <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="varios_transferencia">
-              <label class="form-check-label" for="varios_transferencia">Transferencia</label>
-              <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+          <!-- Cliente -->
+          <div class="mb-3">
+            <label for="seleccionar_cliente" class="form-label">Cliente</label>
+            <div class="input-group">
+              <select class="form-select form-select-dark" id="seleccionar_cliente">
+                <option value="0" selected>Consumidor Final</option>
+              </select>
+              <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente">+</button>
             </div>
           </div>
-        </div>
 
-        <div id="campos_adicionales_pago"></div>
-
-        <!-- Totales -->
-        <div class="row g-2 mb-3">
-          <div class="col-6">
-            <label for="descuento" class="form-label">Descuento (%)</label>
-            <input type="number" class="form-control form-control-dark text-end" id="descuento" min="0" value="0">
+          <!-- Pago -->
+          <div class="mb-3">
+            <label for="metodo_de_pago" class="form-label">Método de pago</label>
+            <div class="d-flex flex-wrap gap-2">
+              <select class="form-select form-select-dark flex-grow-1" id="metodo_de_pago">
+                <option value="" disabled selected>Seleccionar método</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
+              <button class="btn btn-secondary" type="button" id="btn_varios_metodos">Varios</button>
+            </div>
           </div>
-          <div class="col-6">
-            <label for="total_venta" class="form-label">Total</label>
-            <input type="text" class="form-control form-control-dark text-end" id="total_venta" readonly>
+
+          <div id="bloque_varios_metodos" class="mb-3 p-2 bg-white-dark rounded">
+            <label class="form-label">Varios métodos</label>
+            <div class="small">
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="varios_efectivo">
+                <label class="form-check-label" for="varios_efectivo">Efectivo</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="varios_tarjeta">
+                <label class="form-check-label" for="varios_tarjeta">Tarjeta</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="varios_transferencia">
+                <label class="form-check-label" for="varios_transferencia">Transferencia</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+            </div>
           </div>
+
+          <div id="campos_adicionales_pago"></div>
+
+          <!-- Totales -->
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label for="descuento" class="form-label">Descuento (%)</label>
+              <input type="number" class="form-control form-control-dark text-end" id="descuento" min="0" value="0">
+            </div>
+            <div class="col-6">
+              <label for="total_venta" class="form-label">Total</label>
+              <input type="text" class="form-control form-control-dark text-end" id="total_venta" readonly>
+            </div>
+          </div>
+
+          <input type="hidden" id="iva" value="21">
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Finalizar</button>
+            <button class="btn btn-danger flex-grow-1" id="boton_cancelar">Cancelar</button>
+          </div>
+
+          <!-- Recibo -->
+          <div class="d-flex align-items-center gap-2">
+            <h6 class="mb-0">Recibo</h6>
+            <button id="btn_imprimir_recibo" class="btn btn-secondary btn-sm" disabled>Imprimir</button>
+          </div>
+
+          <div id="mensaje_resultado" class="mt-3"></div>
         </div>
-
-        <input type="hidden" id="iva" value="21">
-
-        <!-- Botones -->
-        <div class="d-flex justify-content-between mb-3">
-          <button class="btn btn-success" id="boton_finalizar">Finalizar</button>
-          <button class="btn btn-danger" id="boton_cancelar">Cancelar</button>
-        </div>
-
-        <!-- Recibo -->
-        <div class="d-flex align-items-center gap-2">
-          <h6 class="mb-0">Recibo</h6>
-          <button id="btn_imprimir_recibo" class="btn btn-secondary btn-sm" disabled>Imprimir</button>
-        </div>
-
-        <div id="mensaje_resultado" class="mt-3"></div>
       </div>
     </div>
   </div>
