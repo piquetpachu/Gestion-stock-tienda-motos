@@ -55,12 +55,19 @@ function mostrarClientes() {
   const filtro = busqueda.value.toLowerCase();
   const campoOrden = ordenarPor.value;
 
-  const filtrados = clientes
-    .filter(c => 
-      c.nombre.toLowerCase().includes(filtro) || 
-      c.email.toLowerCase().includes(filtro) || 
-      c.cuil_cuit.includes(filtro)
-    )
+// Reemplaza el filtro actual en clientes.js por este:
+const filtrados = clientes
+  .filter(c => {
+    const term = filtro.toLowerCase();
+    return (
+      (c.nombre && c.nombre.toLowerCase().includes(term)) ||
+      (c.email && c.email.toLowerCase().includes(term)) ||
+      (c.cuil_cuit && c.cuil_cuit.toString().toLowerCase().includes(term)) ||
+      (c.telefono && c.telefono.toString().toLowerCase().includes(term)) ||
+      (c.direccion && c.direccion.toLowerCase().includes(term)) ||
+      (c.fecha_alta && c.fecha_alta.toLowerCase().includes(term))
+    );
+  })
     .sort((a, b) => {
       let A = a[campoOrden] || '', B = b[campoOrden] || '';
       if (typeof A === 'string') A = A.toLowerCase();
