@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrar Venta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <!-- CSS de Tom Select -->
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
   <style>
     body {
@@ -26,16 +25,34 @@
       color: #f8f9fa;
     }
 
-    .form-control-dark {
+    .form-control-dark,
+    .form-select-dark {
       background-color: #343a40;
       color: #f8f9fa;
       border: 1px solid #495057;
     }
 
-    .form-select-dark {
-      background-color: #343a40;
-      color: #f8f9fa;
-      border: 1px solid #495057;
+    .venta-card {
+      background: #212529;
+      border-radius: 12px;
+      padding: 1.2rem;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.3);
+      height: 100%;
+    }
+
+    .venta-card h5 {
+      margin-bottom: 1rem;
+      font-weight: 600;
+      border-bottom: 1px solid #495057;
+      padding-bottom: .5rem;
+    }
+
+    #tabla_productos {
+      font-size: 0.9rem;
+    }
+
+    #tabla_productos td input {
+      max-width: 70px;
     }
   </style>
 </head>
@@ -43,147 +60,152 @@
 <body class="bg-dark">
   <?php include 'navbar.php'; ?>
 
-  <div class="container my-5">
-
-    <!-- TÍTULO -->
+  <div class="container my-4">
     <h1 class="text-center mb-4">Registrar venta</h1>
 
-    <!-- AGREGAR PRODUCTO -->
-    <div class="mb-4">
-      <label for="seleccionar_producto" class="form-label fw-bold">Agregar producto</label>
-      <select class="form-select form-select-dark" id="seleccionar_producto" aria-label="Seleccionar producto">
-        <option value="" disabled selected>Seleccionar producto</option>
-      </select>
-    </div>
+    <!-- Usamos grid de Bootstrap en vez de CSS fijo -->
+    <div class="row g-3">
+      <!-- Columna izquierda -->
+      <div class="col-12 col-lg-8">
+        <div class="venta-card">
+          <h5>Productos</h5>
+          <div class="mb-3">
+            <label for="seleccionar_producto" class="form-label">Agregar producto</label>
+            <select class="form-select form-select-dark" id="seleccionar_producto">
+              <option value="" disabled selected>Seleccionar producto</option>
+            </select>
+          </div>
+          <div class="bg-white-dark p-2 rounded" style="max-height: 250px; overflow-y:auto;">
+            <table class="table table-sm table-bordered text-center align-middle" id="tabla_productos">
+              <thead class="table-light-dark">
+                <tr>
+                  <th>Cód.</th>
+                  <th>Producto</th>
+                  <th>Cant.</th>
+                  <th>Precio</th>
+                  <th>Acc.</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- filas dinámicas -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-    <!-- TABLA DE PRODUCTOS -->
-    <div class="bg-white-dark p-3 rounded shadow-sm mb-4">
-      <table class="table table-bordered text-center align-middle" id="tabla_productos"
-        aria-label="Tabla de productos añadidos a la venta">
-        <thead class="table-light-dark">
-          <tr>
-            <th>Código</th>
-            <th>Producto</th>
-            <th>Cantidad</th>
-            <th>Precio</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Filas se agregan con JavaScript -->
-        </tbody>
-      </table>
-    </div>
+      <!-- Columna derecha -->
+      <div class="col-12 col-lg-4">
+        <div class="venta-card">
+          <h5>Detalles de venta</h5>
 
-    <!-- MÉTODO DE PAGO -->
-    <div class="mb-4">
-      <label for="metodo_de_pago" class="form-label fw-bold">Método de pago</label>
-      <select class="form-select form-select-dark" id="metodo_de_pago" required aria-required="true"
-        aria-label="Método de pago">
-        <option value="" disabled selected>Seleccionar método de pago</option>
-      </select>
-    </div>
+          <!-- Cliente -->
+          <div class="mb-3">
+            <label for="seleccionar_cliente" class="form-label">Cliente</label>
+            <div class="input-group">
+              <select class="form-select form-select-dark" id="seleccionar_cliente">
+                <option value="0" selected>Consumidor Final</option>
+              </select>
+              <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente">+</button>
+            </div>
+          </div>
 
-    <!-- CAMPOS ADICIONALES SEGÚN EL MÉTODO DE PAGO -->
-    <div id="campos_adicionales_pago" class="mb-4" aria-live="polite" aria-atomic="true">
-      <!-- Este bloque se rellena con JavaScript -->
-    </div>
+          <!-- Pago -->
+          <div class="mb-3">
+            <label for="metodo_de_pago" class="form-label">Método de pago</label>
+            <div class="d-flex flex-wrap gap-2">
+              <select class="form-select form-select-dark flex-grow-1" id="metodo_de_pago">
+                <option value="" disabled selected>Seleccionar método</option>
+                <option value="efectivo">Efectivo</option>
+                <option value="tarjeta">Tarjeta</option>
+                <option value="transferencia">Transferencia</option>
+              </select>
+              <button class="btn btn-secondary" type="button" id="btn_varios_metodos">Varios</button>
+            </div>
+          </div>
 
-    <!-- CLIENTES -->
-    <div class="mb-4">
-      <label for="seleccionar_cliente" class="form-label fw-bold">Cliente</label>
-      <div class="input-group">
-        <select class="form-select form-select-dark" id="seleccionar_cliente" aria-label="Seleccionar cliente">
-          <!-- Opción fija -->
-          <option value="0" selected>Consumidor Final</option>
-          <!-- El resto de los clientes se cargan con JS -->
-        </select>
-        <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente" aria-label="Agregar cliente">+</button>
+          <div id="bloque_varios_metodos" class="mb-3 p-2 bg-white-dark rounded">
+            <label class="form-label">Varios métodos</label>
+            <div class="small">
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="varios_efectivo">
+                <label class="form-check-label" for="varios_efectivo">Efectivo</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" id="varios_tarjeta">
+                <label class="form-check-label" for="varios_tarjeta">Tarjeta</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="varios_transferencia">
+                <label class="form-check-label" for="varios_transferencia">Transferencia</label>
+                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+              </div>
+            </div>
+          </div>
+
+          <div id="campos_adicionales_pago"></div>
+
+          <!-- Totales -->
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label for="descuento" class="form-label">Descuento (%)</label>
+              <input type="number" class="form-control form-control-dark text-end" id="descuento" min="0" value="0">
+            </div>
+            <div class="col-6">
+              <label for="total_venta" class="form-label">Total</label>
+              <input type="text" class="form-control form-control-dark text-end" id="total_venta" readonly>
+            </div>
+          </div>
+
+          <input type="hidden" id="iva" value="21">
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
+            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Finalizar</button>
+            <button class="btn btn-danger flex-grow-1" id="boton_cancelar">Cancelar</button>
+          </div>
+
+          <!-- Recibo -->
+          <div class="d-flex align-items-center gap-2">
+            <h6 class="mb-0">Recibo</h6>
+            <button id="btn_imprimir_recibo" class="btn btn-secondary btn-sm" disabled>Imprimir</button>
+          </div>
+
+          <div id="mensaje_resultado" class="mt-3"></div>
+        </div>
       </div>
     </div>
-
-
-    <!-- CAMPOS DE TOTALES AL FINAL -->
-    <div class="d-flex justify-content-end gap-3 mb-4">
-      <div class="col-md-2">
-        <label for="descuento" class="form-label">Descuento (%)</label>
-        <input type="number" class="form-control text-end form-control-dark" id="descuento" min="0" value="0"
-          aria-describedby="descuentoHelp">
-        <div id="descuentoHelp" class="form-text text-light">Ingrese descuento en porcentaje</div>
-      </div>
-      <div class="col-md-2">
-        <label for="total_venta" class="form-label">Total</label>
-        <input type="text" class="form-control text-end form-control-dark" id="total_venta" readonly
-          aria-readonly="true">
-      </div>
-    </div>
-
-    <!-- Campo IVA oculto -->
-    <input type="hidden" id="iva" value="21">
-
-    <!-- BOTONES FINALES -->
-    <div class="d-flex justify-content-between">
-      <button type="button" class="btn btn-success" id="boton_finalizar" aria-label="Finalizar venta">Finalizar</button>
-      <button type="button" class="btn btn-danger" id="boton_cancelar" aria-label="Cancelar venta">Cancelar</button>
-    </div>
-
-    <!-- SECCIÓN RECIBO E IMPRESIÓN -->
-    <div class="mt-4 d-flex align-items-center gap-3">
-      <h4 class="mb-0">Recibo</h4>
-      <button id="btn_imprimir_recibo" class="btn btn-secondary" disabled>Imprimir Recibo</button>
-    </div>
-
-    <!-- RESULTADO -->
-    <div id="mensaje_resultado" class="mt-4" role="alert" aria-live="polite"></div>
-
   </div>
 
-  <!-- MODAL PARA AGREGAR CLIENTE -->
-  <div class="modal fade" id="modalCliente" tabindex="-1" aria-labelledby="modalClienteLabel" aria-hidden="true">
+  <!-- Modal cliente -->
+  <div class="modal fade" id="modalCliente" tabindex="-1">
     <div class="modal-dialog">
       <div class="modal-content bg-dark text-light">
         <div class="modal-header">
-          <h5 class="modal-title" id="modalClienteLabel">Agregar Cliente</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <h5 class="modal-title">Agregar Cliente</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="form_cliente">
-            <div class="mb-3">
-              <label for="cliente_nombre" class="form-label">Nombre</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_nombre" required>
-            </div>
-            <div class="mb-3">
-              <label for="cliente_apellido" class="form-label">Apellido</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_apellido">
-            </div>
-            <div class="mb-3">
-              <label for="cliente_cuit" class="form-label">CUIT/CUIL</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_cuit" placeholder="20-12345678-9"
-                required>
-            </div>
-            <div class="mb-3">
-              <label for="cliente_email" class="form-label">Email</label>
-              <input type="email" class="form-control form-control-dark" id="cliente_email" required>
-            </div>
-            <div class="mb-3">
-              <label for="cliente_telefono" class="form-label">Teléfono</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_telefono">
-            </div>
-            <div class="mb-3">
-              <label for="cliente_direccion" class="form-label">Dirección</label>
-              <input type="text" class="form-control form-control-dark" id="cliente_direccion">
-            </div>
+            <div class="mb-2"><label class="form-label">Nombre</label><input type="text" class="form-control form-control-dark" id="cliente_nombre" required></div>
+            <div class="mb-2"><label class="form-label">Apellido</label><input type="text" class="form-control form-control-dark" id="cliente_apellido"></div>
+            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control form-control-dark" id="cliente_cuit" required></div>
+            <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control form-control-dark" id="cliente_email" required></div>
+            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control form-control-dark" id="cliente_telefono"></div>
+            <div class="mb-2"><label class="form-label">Dirección</label><input type="text" class="form-control form-control-dark" id="cliente_direccion"></div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-primary" id="guardar_cliente">Guardar</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" id="guardar_cliente">Guardar</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- Scripts -->
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
