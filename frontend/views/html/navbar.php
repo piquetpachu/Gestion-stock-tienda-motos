@@ -6,7 +6,6 @@
   <link href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-</head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">

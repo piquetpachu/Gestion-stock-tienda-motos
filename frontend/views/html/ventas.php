@@ -10,9 +10,11 @@
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 
-</head>
-<body class="bg-dark">
+<head>
   <?php include 'navbar.php'; ?>
+</head>
+
+<body class="bg-dark">
 
   <div class="container my-5">
 

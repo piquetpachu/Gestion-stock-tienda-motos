@@ -7,6 +7,12 @@
 body {
   display: none;
 }
+
+.bodyclientes {
+  background-color: #f8f9fa;
+  display: none;
+}
+
 body.bg-dark {
   color: #f8f9fa;
 }
@@ -48,7 +54,7 @@ body.dark-theme .btn-danger {
   border: 1px solid #495057;
 }
 
-    .icon-card {
+.icon-card {
   text-align: center;
   padding: 20px;
   border-radius: 15px;
@@ -144,3 +150,8 @@ body.dark-theme .btn-danger {
     font-weight: 500;
     color: #343a40;
 }
+
+.table-responsive {
+  margin-top: 20px;
+}
+

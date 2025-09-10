@@ -11,9 +11,10 @@
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <link rel="stylesheet" href="../css/style.css">
-</head>
 
+<head>
   <?php include 'navbar.php'; ?>
+</head>
 
 <body >
   <div class="container mt-5">

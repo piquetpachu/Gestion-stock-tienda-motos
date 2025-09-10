@@ -7,38 +7,14 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .table-responsive {
-      margin-top: 20px;
-    }
-    .pagination {
-      margin-top: 20px;
-    }
-    /* style.css */
-body.dark-theme .btn {
-  background-color: #222;
-  color: #fff;
-  border-color: #444;
-}
-body.dark-theme .btn-warning {
-  background-color: #444;
-  color: #ffd700;
-}
-body.dark-theme .btn-danger {
-  background-color: #880000;
-  color: #fff;
-}
-    body { 
-            display: none; /* Oculta toda la página inicialmente */
-        }
-  </style>
+
+<head>
+
+  <?php include 'navbar.php'; ?>
+
 </head>
 
-<body>
-      <?php include 'navbar.php'; ?>
+<body class="bodyclientes">
 
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
