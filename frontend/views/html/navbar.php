@@ -3,19 +3,22 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Navbar con Modal Caja</title>
-  <link href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Iconos opcionales -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 
 <body>
 
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="dashboard.php">"LOGO"</a>
+      <a class="navbar-brand" href="dashboard.php">LOGO</a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
 
@@ -29,7 +32,8 @@
 
           <!-- Dropdown Caja -->
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+              aria-expanded="false">
               Caja
             </a>
             <ul class="dropdown-menu">
@@ -55,7 +59,8 @@
       <div class="modal-content">
         <div class="modal-header bg-success text-white">
           <h5 class="modal-title">Ingreso de Dinero</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <form id="formIngreso">
@@ -80,7 +85,8 @@
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title">Cierre de Caja</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <form id="formCierre">
@@ -103,15 +109,49 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Tu JS de logout -->
   <script src="../js/logout.js"></script>
+
   <script>
-    // Ocultar el enlace de usuarios si no es admin
-    fetch('/Gestion-stock-tienda-motos/app/usuario-info')
-      .then(res => res.ok ? res.json() : null)
-      .then(user => {
-        if (!user || user.rol !== 'admin') {
-          document.getElementById('navUsuarios').style.display = 'none';
+    document.addEventListener('DOMContentLoaded', function () {
+      // Toggle manual del navbar
+      const btnToggle = document.querySelector('.navbar-toggler');
+      const collapseEl = document.getElementById('navbarContenido');
+      const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+
+      btnToggle.addEventListener('click', function () {
+        if (collapseEl.classList.contains('show')) {
+          bsCollapse.hide();
+        } else {
+          bsCollapse.show();
         }
       });
+
+      // Cerrar navbar al hacer click en un enlace del menú
+      document.querySelectorAll('#navbarContenido .nav-link').forEach(link => {
+        link.addEventListener('click', function () {
+          if (collapseEl.classList.contains('show')) {
+            bsCollapse.hide();
+          }
+        });
+      });
+
+      // Cerrar navbar al abrir un modal
+      document.querySelectorAll('[data-bs-toggle="modal"]').forEach(trigger => {
+        trigger.addEventListener('click', function () {
+          if (collapseEl.classList.contains('show')) {
+            bsCollapse.hide();
+          }
+        });
+      });
+
+      // Ocultar el enlace de usuarios si no es admin
+      fetch('/Gestion-stock-tienda-motos/app/usuario-info')
+        .then(res => res.ok ? res.json() : null)
+        .then(user => {
+          if (!user || user.rol !== 'admin') {
+            document.getElementById('navUsuarios').style.display = 'none';
+          }
+        });
+    });
   </script>
 
 </body>
