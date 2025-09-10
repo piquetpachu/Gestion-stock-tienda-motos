@@ -72,7 +72,7 @@
           <div class="mb-3">
             <label for="seleccionar_producto" class="form-label">Agregar producto</label>
             <select class="form-select form-select-dark" id="seleccionar_producto">
-              <option value="" disabled selected>Seleccionar producto</option>
+              <option value="" selected>Seleccionar producto</option>
             </select>
           </div>
           <div class="bg-white-dark p-2 rounded" style="max-height: 250px; overflow-y:auto;">

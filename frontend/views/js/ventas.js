@@ -125,20 +125,29 @@ function cargarClientes(seleccionarId = null) {
             return res.json();
         })
         .then(data => {
-            // Siempre incluir "Consumidor Final" al inicio
-            selectCliente.innerHTML = `
-                <option value="0" selected>Consumidor Final</option>
-            `;
+            // Limpiamos select
+            selectCliente.innerHTML = '';
 
-            // Agregar los clientes que vienen de la BD
-            data.forEach(cliente => {
+            // Tomamos el primer cliente que sea "Consumidor Final" de la BD
+            const consumidorFinal = data.find(c => c.id_cliente == 9);
+            if (consumidorFinal) {
                 const opcion = document.createElement('option');
-                opcion.value = cliente.id_cliente;
-                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                opcion.value = consumidorFinal.id_cliente;
+                opcion.textContent = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
                 selectCliente.appendChild(opcion);
+            }
+
+            // Agregamos el resto de clientes
+            data.forEach(cliente => {
+                if (cliente.id_cliente != 0) {
+                    const opcion = document.createElement('option');
+                    opcion.value = cliente.id_cliente;
+                    opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                    selectCliente.appendChild(opcion);
+                }
             });
 
-            // Refrescar TomSelect
+            // Inicializamos o refrescamos TomSelect
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
@@ -146,17 +155,19 @@ function cargarClientes(seleccionarId = null) {
                 });
             } else {
                 tomSelectCliente.clearOptions();
-                tomSelectCliente.addOption({ value: "0", text: "Consumidor Final" });
-                data.forEach(cliente =>
-                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` })
-                );
+                data.forEach(cliente => {
+                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
+                });
                 tomSelectCliente.refreshOptions();
             }
 
+            // Seleccionamos por defecto
             if (seleccionarId) {
-                tomSelectCliente.addItem(seleccionarId);
-            } else {
-                tomSelectCliente.addItem("0"); // Consumidor Final por defecto
+                tomSelectCliente.addItem(seleccionarId, true);
+            } else if (consumidorFinal) {
+                tomSelectCliente.addItem(consumidorFinal.id_cliente, true);
+            } else if (data.length > 0) {
+                tomSelectCliente.addItem(data[0].id_cliente, true); // Primer cliente de la lista si no hay Consumidor Final
             }
         })
         .catch(error => {
@@ -229,9 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // -------------------- PRODUCTOS Y VENTA --------------------
 
-function buscarProductoPorCodigo(codigo) {
-    return productosLista.find(p => p.codigo_barras === codigo);
-}
+
 
 function agregarProducto(codigoSeleccionado = null) {
     let codigo = codigoSeleccionado || tomSelectProducto.getValue();
@@ -265,7 +274,7 @@ function agregarProducto(codigoSeleccionado = null) {
 }
 
 // -------------------- TABLA Y TOTALES --------------------
-// -------------------- TABLA Y TOTALES --------------------
+
 
 function actualizarTabla() {
     tablaProductosBody.innerHTML = '';
@@ -361,7 +370,8 @@ function cambiarCamposMetodoPago() {
             <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
             <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
             <div class="form-text">Formato: 20-12345678-9</div>
-          </div>
+
+            </div>
           <div class="mb-3">
             <label class="form-label">Fecha actual</label>
             <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
