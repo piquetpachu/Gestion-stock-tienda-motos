@@ -65,7 +65,6 @@ body.dark-theme .btn-danger {
       <table class="table table-striped table-hover table-bordered align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Descripción</th>
             <th>Venta</th>

@@ -93,7 +93,6 @@ const filtrados = clientes
     }
     return `
       <tr>
-        <td>${c.id_cliente}</td>
         <td>${c.nombre} ${c.apellido || ''}</td>
         <td>${c.email}</td>
         <td>${c.telefono || '-'}</td>
