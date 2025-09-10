@@ -257,9 +257,11 @@ function agregarProducto(codigoSeleccionado = null) {
     actualizarTotales();
 
     if (tomSelectProducto) {
-        tomSelectProducto.clear();
-        tomSelectProducto.focus();
+        tomSelectProducto.clear();          // Limpiar el input
+        setTimeout(() => tomSelectProducto.close(), 50);  // Esperar 50ms y cerrar el dropdown
+        tomSelectProducto.focus();          // Volver a enfocar para seguir agregando productos
     }
+
 }
 
 // -------------------- TABLA Y TOTALES --------------------
