@@ -8,6 +8,11 @@
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+<?php
+// Mostrar errores durante el desarrollo para ver problemas de include/u otros errores PHP
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+?>
     <?php include 'navbar.php'; ?>
 
     <div class="container my-5">
@@ -65,8 +70,12 @@
     <a href="app/models/rubros.php">app/models/rubros.php</a>.
     </p>
 
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="../js/AdmRubroProveedores.js"></script>
+<!-- definir API_URL global antes de cargar el script -->
+<script>
+    // Ajusta la URL según cómo sirvas la API en tu servidor local.
+    // Ejemplo para XAMPP si el proyecto está en htdocs/Gestion-stock-tienda-motos:
+    window.API_URL = '/Gestion-stock-tienda-motos/app/routes/api.php/';
+</script>
+<script src="../views/js/AdmRubroProveedores.js"></script>
 </body>
 </html>

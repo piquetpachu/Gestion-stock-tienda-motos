@@ -1,9 +1,3 @@
-/*
-Gestión combinada de Rubros y Proveedores (frontend).
-Usa las mismas convenciones que otros scripts del proyecto:
-- API_URL (definido globalmente en los demás js)
-- Endpoints: 'rubros', 'crear_rubro', 'borrar_rubro', 'proveedores', 'crear_proveedor', 'borrar_proveedor'
-*/
 (() => {
     const API_RUBROS = API_URL + 'rubros';
     const API_CREAR_RUBRO = API_URL + 'crear_rubro';
