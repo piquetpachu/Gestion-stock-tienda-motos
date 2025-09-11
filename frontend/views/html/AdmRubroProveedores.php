@@ -1,83 +1,105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Administrar Rubros y Proveedores</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <title>Administrar Rubros</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-<?php
-// Mostrar errores durante el desarrollo para ver problemas de include/u otros errores PHP
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-?>
-    <?php include 'navbar.php'; ?>
-
-    <div class="container my-5">
-    <h1 class="mb-4">Administrar Rubros y Proveedores</h1>
-
-    <div class="row">
-    <div class="col-md-6">
-        <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Rubros</span>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#nuevoRubroCollapse">Nuevo Rubro</button>
+<div class="container mt-5">
+    <h2>Administrar Rubros</h2>
+    <!-- Formulario para añadir/editar rubro -->
+    <form id="rubroForm" class="mb-4">
+        <input type="hidden" id="rubroId">
+        <div class="mb-3">
+            <label for="nombreRubro" class="form-label">Nombre del Rubro</label>
+            <input type="text" class="form-control" id="nombreRubro" required>
         </div>
-        <div class="card-body">
-            <div id="nuevoRubroCollapse" class="collapse mb-3">
-            <form id="form-nuevo-rubro-adm" class="d-flex gap-2">
-                <input name="rubro_nombre" class="form-control" placeholder="Nombre del rubro" required>
-                <button class="btn btn-success">Agregar</button>
-            </form>
-            </div>
+        <button type="submit" class="btn btn-primary" id="btnGuardar">Añadir Rubro</button>
+        <button type="button" class="btn btn-secondary d-none" id="btnCancelar">Cancelar</button>
+    </form>
 
-            <div id="listaRubros" aria-live="polite"></div>
-        </div>
-        </div>
-    </div>
+    <!-- Tabla de rubros -->
+    <table class="table table-bordered" id="tablaRubros">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rubros se mostrarán aquí -->
+        </tbody>
+    </table>
+</div>
 
-    <div class="col-md-6">
-        <div class="card mb-3">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Proveedores</span>
-            <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#nuevoProveedorCollapse">Nuevo Proveedor</button>
-        </div>
-        <div class="card-body">
-            <div id="nuevoProveedorCollapse" class="collapse mb-3">
-            <form id="form-nuevo-proveedor-adm" class="row g-2">
-                <div class="col-6">
-                <input name="proveedor_nombre" class="form-control" placeholder="Nombre" required>
-                </div>
-                <div class="col-4">
-                <input name="proveedor_email" class="form-control" placeholder="Email (opcional)">
-                </div>
-                <div class="col-2">
-                <button class="btn btn-success w-100">Agregar</button>
-                </div>
-            </form>
-            </div>
-
-            <div id="listaProveedores" aria-live="polite"></div>
-        </div>
-        </div>
-    </div>
-    </div>
-
-    <p class="text-muted small">
-    <a href="app/routes/api.php">app/routes/api.php</a>.
-    <a href="app/models/rubros.php">app/models/rubros.php</a>.
-    </p>
-
-<!-- definir API_URL global antes de cargar el script -->
 <script>
-  // Preferir el mismo mecanismo que otras páginas: usar config.js
-  // Fallback si no se definió en config.js
-    window.API_URL = window.API_URL || (location.origin + '/Gestion-stock-tienda-motos/app/');
-    if (!window.API_URL.endsWith('/')) window.API_URL += '/';
-    console.log('API_URL usada en AdmRubroProveedores:', window.API_URL);
+let rubros = [];
+let editando = false;
+
+// Mostrar rubros en la tabla
+function mostrarRubros() {
+    const tbody = document.querySelector("#tablaRubros tbody");
+    tbody.innerHTML = "";
+    rubros.forEach((rubro, idx) => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${rubro.id}</td>
+                <td>${rubro.nombre}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning" onclick="editarRubro(${idx})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="borrarRubro(${idx})">Borrar</button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+// Añadir o editar rubro
+document.getElementById("rubroForm").onsubmit = function(e) {
+    e.preventDefault();
+    const nombre = document.getElementById("nombreRubro").value.trim();
+    if (!nombre) return;
+    if (editando) {
+        const idx = document.getElementById("rubroId").value;
+        rubros[idx].nombre = nombre;
+        editando = false;
+        document.getElementById("btnGuardar").textContent = "Añadir Rubro";
+        document.getElementById("btnCancelar").classList.add("d-none");
+    } else {
+        rubros.push({ id: rubros.length + 1, nombre });
+    }
+    document.getElementById("rubroForm").reset();
+    mostrarRubros();
+};
+
+// Editar rubro
+window.editarRubro = function(idx) {
+    document.getElementById("rubroId").value = idx;
+    document.getElementById("nombreRubro").value = rubros[idx].nombre;
+    editando = true;
+    document.getElementById("btnGuardar").textContent = "Guardar Cambios";
+    document.getElementById("btnCancelar").classList.remove("d-none");
+};
+
+// Borrar rubro
+window.borrarRubro = function(idx) {
+    if (confirm("¿Seguro que desea borrar este rubro?")) {
+        rubros.splice(idx, 1);
+        mostrarRubros();
+    }
+};
+
+// Cancelar edición
+document.getElementById("btnCancelar").onclick = function() {
+    editando = false;
+    document.getElementById("rubroForm").reset();
+    document.getElementById("btnGuardar").textContent = "Añadir Rubro";
+    document.getElementById("btnCancelar").classList.add("d-none");
+};
+
+mostrarRubros();
 </script>
-<script src="../js/AdmRubroProveedores.js"></script>
 </body>
 </html>
