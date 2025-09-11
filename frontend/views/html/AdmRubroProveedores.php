@@ -76,6 +76,6 @@ error_reporting(E_ALL);
     // Ejemplo para XAMPP si el proyecto está en htdocs/Gestion-stock-tienda-motos:
     window.API_URL = '/Gestion-stock-tienda-motos/app/routes/api.php/';
 </script>
-<script src="../views/js/AdmRubroProveedores.js"></script>
+<script src="../js/AdmRubroProveedores.js"></script>
 </body>
 </html>
