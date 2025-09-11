@@ -72,9 +72,11 @@ error_reporting(E_ALL);
 
 <!-- definir API_URL global antes de cargar el script -->
 <script>
-    // Ajusta la URL según cómo sirvas la API en tu servidor local.
-    // Ejemplo para XAMPP si el proyecto está en htdocs/Gestion-stock-tienda-motos:
-    window.API_URL = '/Gestion-stock-tienda-motos/app/routes/api.php/';
+  // Preferir el mismo mecanismo que otras páginas: usar config.js
+  // Fallback si no se definió en config.js
+    window.API_URL = window.API_URL || (location.origin + '/Gestion-stock-tienda-motos/app/');
+    if (!window.API_URL.endsWith('/')) window.API_URL += '/';
+    console.log('API_URL usada en AdmRubroProveedores:', window.API_URL);
 </script>
 <script src="../js/AdmRubroProveedores.js"></script>
 </body>

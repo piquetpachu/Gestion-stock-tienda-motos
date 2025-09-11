@@ -1,11 +1,19 @@
 (() => {
-    const API_RUBROS = API_URL + 'rubros';
-    const API_CREAR_RUBRO = API_URL + 'crear_rubro';
-    const API_BORRAR_RUBRO = id => API_URL + 'borrar_rubro/' + id;
+    if (typeof API_URL === 'undefined') {
+        console.error('API_URL no definida. Define window.API_URL antes de este script.');
+        return;
+    }
+    const API_BASE = API_URL.endsWith('/') ? API_URL : API_URL + '/';
 
-    const API_PROVEEDORES = API_URL + 'proveedores';
-    const API_CREAR_PROVEEDOR = API_URL + 'crear_proveedor';
-    const API_BORRAR_PROVEEDOR = id => API_URL + 'borrar_proveedor/' + id;
+    const API_RUBROS = API_BASE + 'rubros';
+    const API_CREAR_RUBRO = API_BASE + 'crear_rubro';
+    const API_BORRAR_RUBRO = id => API_BASE + 'borrar_rubro/' + id;
+
+    const API_PROVEEDORES = API_BASE + 'proveedores';
+    const API_CREAR_PROVEEDOR = API_BASE + 'crear_proveedor';
+    const API_BORRAR_PROVEEDOR = id => API_BASE + 'borrar_proveedor/' + id;
+
+    console.log('Endpoints:', {API_RUBROS, API_PROVEEDORES});
 
   // DOM
     const contRubros = document.getElementById('listaRubros');
@@ -17,12 +25,16 @@
     async function cargarRubros() {
         try {
             const res = await fetch(API_RUBROS);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
             const rubros = await res.json();
+            if (!Array.isArray(rubros)) {
+                console.warn('Respuesta inesperada rubros:', rubros);
+            }
             renderRubros(rubros || []);
-        } 
-        catch (err) {
+        } catch (err) {
             console.error('Error cargando rubros:', err);
-            contRubros.innerHTML = '<div class="text-danger">No se pudieron cargar los rubros.</div>';
+            if (contRubros)
+              contRubros.innerHTML = '<div class="text-danger">No se pudieron cargar los rubros.</div>';
         }
     }
 
@@ -116,12 +128,14 @@
     // Proveedores
     async function cargarProveedores() {
         try {
-        const res = await fetch(API_PROVEEDORES);
-        const proveedores = await res.json();
-        renderProveedores(proveedores || []);
+            const res = await fetch(API_PROVEEDORES);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const proveedores = await res.json();
+            renderProveedores(proveedores || []);
         } catch (err) {
-        console.error('Error cargando proveedores:', err);
-        contProveedores.innerHTML = '<div class="text-danger">No se pudieron cargar los proveedores.</div>';
+            console.error('Error cargando proveedores:', err);
+            if (contProveedores)
+              contProveedores.innerHTML = '<div class="text-danger">No se pudieron cargar los proveedores.</div>';
         }
     }
 
