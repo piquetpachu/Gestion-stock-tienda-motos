@@ -184,7 +184,11 @@ form.addEventListener('submit', e => {
         cargarClientes();
     })
     .catch(error => {
-        alert('Error: ' + error.message);
+    if (error.message.includes('Duplicate entry') && error.message.includes('cuil_cuit')) {
+      alert('El CUIL/CUIT ingresado ya está registrado. Por favor ingrese uno diferente.');
+    } else {
+      alert('Error: ' + error.message);
+    }
     });
 });
 // Mostrar/ocultar botón de agregar según el rol
