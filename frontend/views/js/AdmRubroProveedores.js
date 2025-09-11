@@ -8,6 +8,7 @@
     const API_RUBROS = API_BASE + 'rubros';
     const API_CREAR_RUBRO = API_BASE + 'crear_rubro';
     const API_BORRAR_RUBRO = id => API_BASE + 'borrar_rubro/' + id;
+    const API_ACTUALIZAR_RUBRO = id => API_BASE + 'actualizar_rubro/' + id; // NUEVO
 
     const API_PROVEEDORES = API_BASE + 'proveedores';
     const API_CREAR_PROVEEDOR = API_BASE + 'crear_proveedor';
@@ -23,14 +24,14 @@
 
   // Cargar rubros
     async function cargarRubros() {
+        if (contRubros) contRubros.innerHTML = '<div class="text-muted">Cargando rubros...</div>';
         try {
-            const res = await fetch(API_RUBROS);
+            const res = await fetch(API_RUBROS, { headers: { 'Accept': 'application/json' }});
             if (!res.ok) throw new Error('HTTP ' + res.status);
-            const rubros = await res.json();
-            if (!Array.isArray(rubros)) {
-                console.warn('Respuesta inesperada rubros:', rubros);
-            }
-            renderRubros(rubros || []);
+            let rubros = await safeJson(res);
+            if (rubros && rubros.data && Array.isArray(rubros.data)) rubros = rubros.data;
+            if (!Array.isArray(rubros)) rubros = [];
+            renderRubros(rubros);
         } catch (err) {
             console.error('Error cargando rubros:', err);
             if (contRubros)
@@ -44,30 +45,30 @@
             contRubros.innerHTML = `<div class="alert alert-secondary">No hay rubros registrados.</div>`;
             return;
         }
-    contRubros.innerHTML = rubros
-    .map(
-        r => `
-    <div class="card mb-2">
-        <div class="card-body d-flex justify-content-between align-items-start">
-            <div>
-            <h5 class="card-title mb-1">${escapeHtml(r.nombre)}</h5>
-            <p class="card-text small text-muted">${r.descripcion || ''}</p>
-            <div class="mt-1">
-            <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('rubro_nombre_edit_${r.id_rubro}').classList.toggle('d-none')">Editar</button>
-            <button class="btn btn-sm btn-danger" onclick="AdmRubroProveedores.borrarRubro(${r.id_rubro})">Borrar</button>
-        </div>
-        <form id="rubro_form_edit_${r.id_rubro}" class="mt-2 d-none" onsubmit="return false;">
-            <div class="input-group">
-                <input id="rubro_nombre_edit_${r.id_rubro}" class="form-control" value="${escapeHtml(r.nombre)}" />
-                <button class="btn btn-success" type="button" onclick="AdmRubroProveedores.actualizarRubro(${r.id_rubro})">Guardar</button>
+        contRubros.innerHTML = rubros
+        .map(r => `
+            <div class="card mb-2">
+              <div class="card-body pt-2 pb-2">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div class="me-2">
+                    <h6 class="mb-1">${escapeHtml(r.nombre)}</h6>
+                    <p class="card-text small text-muted mb-1">${r.descripcion ? escapeHtml(r.descripcion) : ''}</p>
+                  </div>
+                  <div class="d-flex gap-2">
+                    <button class="btn btn-sm btn-outline-primary" onclick="AdmRubroProveedores.toggleEditarRubro(${r.id_rubro})">Editar</button>
+                    <button class="btn btn-sm btn-danger" onclick="AdmRubroProveedores.borrarRubro(${r.id_rubro})">Borrar</button>
+                  </div>
+                </div>
+                <form id="rubro_form_edit_${r.id_rubro}" class="mt-2 d-none" onsubmit="return false;">
+                  <div class="input-group input-group-sm">
+                    <input id="rubro_nombre_edit_${r.id_rubro}" class="form-control" value="${escapeHtml(r.nombre)}" />
+                    <button class="btn btn-success" type="button" onclick="AdmRubroProveedores.actualizarRubro(${r.id_rubro})">Guardar</button>
+                    <button class="btn btn-outline-secondary" type="button" onclick="AdmRubroProveedores.toggleEditarRubro(${r.id_rubro})">Cancelar</button>
+                  </div>
+                </form>
+              </div>
             </div>
-            </form>
-        </div>
-    </div>
-    </div>
-    `
-        )
-        .join('');
+        `).join('');
     }
 
   // CRUD rubro: crear
@@ -97,12 +98,22 @@
     async function borrarRubro(id) {
         if (!confirm('¿Eliminar rubro?')) return;
         try {
-        const res = await fetch(API_BORRAR_RUBRO(id), { method: 'DELETE' });
-        if (!res.ok) throw new Error('Error al borrar');
-        await cargarRubros();
+            let res = await fetch(API_BORRAR_RUBRO(id), { method: 'DELETE' });
+            if (!res.ok) {
+                // Fallback si el servidor no acepta DELETE
+                if (res.status === 405) {
+                    res = await fetch(API_BORRAR_RUBRO(id), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({_method:'DELETE'})
+                    });
+                }
+            }
+            if (!res.ok) throw new Error('Error al borrar');
+            await cargarRubros();
         } catch (err) {
-        console.error('Error borrando rubro:', err);
-        alert('No se pudo borrar el rubro.');
+            console.error('Error borrando rubro:', err);
+            alert('No se pudo borrar el rubro.');
         }
     }
 
@@ -112,26 +123,41 @@
         const valor = input.value.trim();
         if (!valor) return alert('El nombre no puede quedar vacío');
         try {
-        const res = await fetch(API_URL + 'actualizar_rubro/' + id, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre: valor })
-        });
-        if (!res.ok) throw new Error('Error al actualizar');
-        await cargarRubros();
+            const res = await fetch(API_ACTUALIZAR_RUBRO(id), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre: valor })
+            });
+            if (!res.ok) {
+                if (res.status === 405) {
+                    // Fallback PUT -> POST
+                    const res2 = await fetch(API_ACTUALIZAR_RUBRO(id), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nombre: valor, _method: 'PUT' })
+                    });
+                    if (!res2.ok) throw new Error('Error al actualizar (fallback)');
+                } else {
+                    throw new Error('Error al actualizar');
+                }
+            }
+            await cargarRubros();
         } catch (err) {
-        console.error('Error actualizando rubro:', err);
-        alert('No se pudo actualizar el rubro.');
+            console.error('Error actualizando rubro:', err);
+            alert('No se pudo actualizar el rubro.');
         }
     }
 
     // Proveedores
     async function cargarProveedores() {
+        if (contProveedores) contProveedores.innerHTML = '<div class="text-muted">Cargando proveedores...</div>';
         try {
-            const res = await fetch(API_PROVEEDORES);
+            const res = await fetch(API_PROVEEDORES, { headers: { 'Accept': 'application/json' }});
             if (!res.ok) throw new Error('HTTP ' + res.status);
-            const proveedores = await res.json();
-            renderProveedores(proveedores || []);
+            let proveedores = await safeJson(res);
+            if (proveedores && proveedores.data && Array.isArray(proveedores.data)) proveedores = proveedores.data;
+            if (!Array.isArray(proveedores)) proveedores = [];
+            renderProveedores(proveedores);
         } catch (err) {
             console.error('Error cargando proveedores:', err);
             if (contProveedores)
@@ -142,57 +168,60 @@
     function renderProveedores(items) {
         if (!contProveedores) return;
         if (!items.length) {
-        contProveedores.innerHTML = `<div class="alert alert-secondary">No hay proveedores registrados.</div>`;
-        return;
+            contProveedores.innerHTML = `<div class="alert alert-secondary">No hay proveedores registrados.</div>`;
+            return;
         }
-        contProveedores.innerHTML = items
-        .map(
-            p => `
-        <div class="d-flex justify-content-between align-items-center mb-2 border rounded p-2">
-        <div>
-            <strong>${escapeHtml(p.nombre)}</strong><br/>
-            <small class="text-muted">${p.email || ''} ${p.telefono ? '• ' + escapeHtml(p.telefono) : ''}</small>
-        </div>
-        <div>
-            <button class="btn btn-sm btn-danger" onclick="AdmRubroProveedores.borrarProveedor(${p.id_proveedor})">Borrar</button>
-        </div>
-        </div>
-        `
-        )
-        .join('');
+        contProveedores.innerHTML = items.map(p => `
+            <div class="d-flex justify-content-between align-items-center mb-2 border rounded p-2">
+              <div class="me-2">
+                <strong>${escapeHtml(p.nombre)}</strong><br/>
+                <small class="text-muted">${p.email ? escapeHtml(p.email) : ''}${p.telefono ? ' • ' + escapeHtml(p.telefono) : ''}</small>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-danger" onclick="AdmRubroProveedores.borrarProveedor(${p.id_proveedor})">Borrar</button>
+              </div>
+            </div>
+        `).join('');
     }
 
     if (formNuevoProveedor) {
         formNuevoProveedor.addEventListener('submit', async e => {
-        e.preventDefault();
-        const nombre = (formNuevoProveedor.proveedor_nombre.value || '').trim();
-        const email = (formNuevoProveedor.proveedor_email.value || '').trim();
-        if (!nombre) return alert('Ingrese nombre de proveedor');
-        try {
-            const res = await fetch(API_CREAR_PROVEEDOR, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ nombre, email, telefono: formNuevoProveedor.proveedor_telefono?.value })
-            });
-            if (!res.ok) throw new Error('Error del servidor');
-            await cargarProveedores();
-            formNuevoProveedor.reset();
-        } catch (err) {
-            console.error('Error creando proveedor:', err);
-            alert('No se pudo crear proveedor.');
-        }
+            e.preventDefault();
+            const nombre = (formNuevoProveedor.proveedor_nombre.value || '').trim();
+            const email = (formNuevoProveedor.proveedor_email.value || '').trim();
+            if (!nombre) return alert('Ingrese nombre de proveedor');
+            try {
+                const res = await fetch(API_CREAR_PROVEEDOR, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                    body: JSON.stringify({ nombre, email })
+                });
+                if (!res.ok) throw new Error('Error del servidor');
+                await cargarProveedores();
+                formNuevoProveedor.reset();
+            } catch (err) {
+                console.error('Error creando proveedor:', err);
+                alert('No se pudo crear proveedor.');
+            }
         });
     }
 
     async function borrarProveedor(id) {
         if (!confirm('¿Eliminar proveedor?')) return;
         try {
-        const res = await fetch(API_BORRAR_PROVEEDOR(id), { method: 'DELETE' });
-        if (!res.ok) throw new Error('Error al borrar proveedor');
-        await cargarProveedores();
+            let res = await fetch(API_BORRAR_PROVEEDOR(id), { method: 'DELETE' });
+            if (!res.ok && res.status === 405) {
+                res = await fetch(API_BORRAR_PROVEEDOR(id), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({_method:'DELETE'})
+                });
+            }
+            if (!res.ok) throw new Error('Error al borrar proveedor');
+            await cargarProveedores();
         } catch (err) {
-        console.error('Error borrando proveedor:', err);
-        alert('No se pudo borrar el proveedor.');
+            console.error('Error borrando proveedor:', err);
+            alert('No se pudo borrar el proveedor.');
         }
     }
 
@@ -207,16 +236,29 @@
         .replace(/'/g, '&#039;');
     }
 
+    async function safeJson(res) {
+        try { return await res.json(); } catch { return null; }
+    }
+
     // Exponer funciones para botones inline
     window.AdmRubroProveedores = {
         borrarRubro,
         borrarProveedor,
-        actualizarRubro
+        actualizarRubro,
+        toggleEditarRubro: id => {
+            const form = document.getElementById('rubro_form_edit_' + id);
+            if (form) form.classList.toggle('d-none');
+        }
     };
 
     // Inicialización
-    document.addEventListener('DOMContentLoaded', () => {
+    function initAdm() {
         cargarRubros();
-        cargarProveedores(); // reutiliza mismo endpoint que [`cargarProveedores`](frontend/views/js/productos.js)
-    });
+        cargarProveedores();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAdm);
+    } else {
+        initAdm();
+    }
 })();
