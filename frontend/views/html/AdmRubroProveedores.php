@@ -1,105 +1,180 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Administrar Rubros</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8">
+  <title>Administrar Rubros</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
 </head>
-<body>
-<div class="container mt-5">
-    <h2>Administrar Rubros</h2>
-    <!-- Formulario para añadir/editar rubro -->
-    <form id="rubroForm" class="mb-4">
-        <input type="hidden" id="rubroId">
-        <div class="mb-3">
-            <label for="nombreRubro" class="form-label">Nombre del Rubro</label>
-            <input type="text" class="form-control" id="nombreRubro" required>
-        </div>
-        <button type="submit" class="btn btn-primary" id="btnGuardar">Añadir Rubro</button>
-        <button type="button" class="btn btn-secondary d-none" id="btnCancelar">Cancelar</button>
-    </form>
+<body class="bg-dark text-light">
+  <?php include 'navbar.php'; ?>
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="h3 m-0">📂 Rubros</h1>
+      <button id="btnNuevo" class="btn btn-success d-none">➕ Nuevo Rubro</button>
+    </div>
 
-    <!-- Tabla de rubros -->
-    <table class="table table-bordered" id="tablaRubros">
+    <!-- Formulario (modal) -->
+    <div class="modal fade" id="modalRubro" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <form id="formRubro" class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tituloModal">Nuevo Rubro</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="id_rubro">
+            <div class="mb-3">
+              <label class="form-label">Nombre</label>
+              <input type="text" id="nombre" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tabla -->
+    <div class="table-responsive">
+      <table class="table table-striped table-bordered align-middle table-dark">
         <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Acciones</th>
-            </tr>
+          <tr>
+            <th style="width:80px">ID</th>
+            <th>Nombre</th>
+            <th id="thAcciones" style="width:160px; display:none;">Acciones</th>
+          </tr>
         </thead>
-        <tbody>
-            <!-- Rubros se mostrarán aquí -->
+        <tbody id="tbodyRubros">
+          <tr><td colspan="3" class="text-center">Cargando...</td></tr>
         </tbody>
-    </table>
-</div>
+      </table>
+    </div>
+  </div>
 
-<script>
-let rubros = [];
-let editando = false;
+  <script src="../js/config.js"></script>
+  <script src="../js/dashboard-proteccion.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+  // Reutilizamos el patrón usado en otras vistas (productos/clientes)
+  const tbody = document.getElementById('tbodyRubros');
+  const btnNuevo = document.getElementById('btnNuevo');
+  const thAcciones = document.getElementById('thAcciones');
+  const modal = new bootstrap.Modal(document.getElementById('modalRubro'));
+  const form = document.getElementById('formRubro');
+  const idInput = document.getElementById('id_rubro');
+  const nombreInput = document.getElementById('nombre');
+  const tituloModal = document.getElementById('tituloModal');
+  let esAdmin = false;
+  let rubros = [];
 
-// Mostrar rubros en la tabla
-function mostrarRubros() {
-    const tbody = document.querySelector("#tablaRubros tbody");
-    tbody.innerHTML = "";
-    rubros.forEach((rubro, idx) => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${rubro.id}</td>
-                <td>${rubro.nombre}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning" onclick="editarRubro(${idx})">Editar</button>
-                    <button class="btn btn-sm btn-danger" onclick="borrarRubro(${idx})">Borrar</button>
-                </td>
-            </tr>
-        `;
-    });
-}
+  function filaVacia(msg='Sin rubros') {
+    return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
+  }
 
-// Añadir o editar rubro
-document.getElementById("rubroForm").onsubmit = function(e) {
+  function render() {
+    if (!rubros.length) {
+      tbody.innerHTML = filaVacia();
+      return;
+    }
+    tbody.innerHTML = rubros.map(r => {
+      const acciones = esAdmin ? `
+        <button class="btn btn-sm btn-warning me-1" onclick="editar(${r.id_rubro})">Editar</button>
+        <button class="btn btn-sm btn-danger" onclick="eliminar(${r.id_rubro})">Borrar</button>
+      ` : '';
+      return `
+        <tr>
+          <td>${r.id_rubro}</td>
+          <td>${r.nombre}</td>
+          ${esAdmin ? `<td>${acciones}</td>` : ''}
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function cargarRubros() {
+    try {
+      const res = await fetch(API_URL + 'rubros');
+      if (!res.ok) throw new Error('Error al obtener rubros');
+      rubros = await res.json();
+      render();
+    } catch (e) {
+      tbody.innerHTML = filaVacia('Error cargando rubros');
+      console.error(e);
+    }
+  }
+
+  // Crear / actualizar
+  form.addEventListener('submit', async e => {
     e.preventDefault();
-    const nombre = document.getElementById("nombreRubro").value.trim();
-    if (!nombre) return;
-    if (editando) {
-        const idx = document.getElementById("rubroId").value;
-        rubros[idx].nombre = nombre;
-        editando = false;
-        document.getElementById("btnGuardar").textContent = "Añadir Rubro";
-        document.getElementById("btnCancelar").classList.add("d-none");
-    } else {
-        rubros.push({ id: rubros.length + 1, nombre });
+    const id = idInput.value.trim();
+    const payload = { nombre: nombreInput.value.trim() };
+    if (!payload.nombre) return;
+
+    const url = id ? (API_URL + 'actualizar_rubro/' + id) : (API_URL + 'crear_rubro');
+    const method = id ? 'PUT' : 'POST';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Error');
+      modal.hide();
+      await cargarRubros();
+    } catch (err) {
+      alert('Error: ' + err.message);
     }
-    document.getElementById("rubroForm").reset();
-    mostrarRubros();
-};
+  });
 
-// Editar rubro
-window.editarRubro = function(idx) {
-    document.getElementById("rubroId").value = idx;
-    document.getElementById("nombreRubro").value = rubros[idx].nombre;
-    editando = true;
-    document.getElementById("btnGuardar").textContent = "Guardar Cambios";
-    document.getElementById("btnCancelar").classList.remove("d-none");
-};
+  // Expuestas para botones
+  window.editar = id => {
+    const r = rubros.find(x => x.id_rubro == id);
+    if (!r) return;
+    idInput.value = r.id_rubro;
+    nombreInput.value = r.nombre;
+    tituloModal.textContent = 'Editar Rubro';
+    modal.show();
+  };
 
-// Borrar rubro
-window.borrarRubro = function(idx) {
-    if (confirm("¿Seguro que desea borrar este rubro?")) {
-        rubros.splice(idx, 1);
-        mostrarRubros();
+  window.eliminar = async id => {
+    if (!confirm('¿Eliminar rubro?')) return;
+    try {
+      const res = await fetch(API_URL + 'borrar_rubro/' + id, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || 'Error');
+      await cargarRubros();
+    } catch (e) {
+      alert('Error: ' + e.message);
     }
-};
+  };
 
-// Cancelar edición
-document.getElementById("btnCancelar").onclick = function() {
-    editando = false;
-    document.getElementById("rubroForm").reset();
-    document.getElementById("btnGuardar").textContent = "Añadir Rubro";
-    document.getElementById("btnCancelar").classList.add("d-none");
-};
+  btnNuevo.addEventListener('click', () => {
+    idInput.value = '';
+    form.reset();
+    tituloModal.textContent = 'Nuevo Rubro';
+    modal.show();
+  });
 
-mostrarRubros();
-</script>
+  // Obtener rol
+  fetch(API_URL + 'usuario-info')
+    .then(r => r.json())
+    .then(u => {
+      esAdmin = u.rol === 'admin';
+      if (esAdmin) {
+        btnNuevo.classList.remove('d-none');
+        thAcciones.style.display = '';
+      }
+      cargarRubros();
+    })
+    .catch(() => {
+      tbody.innerHTML = filaVacia('No autenticado');
+    });
+  </script>
 </body>
 </html>
