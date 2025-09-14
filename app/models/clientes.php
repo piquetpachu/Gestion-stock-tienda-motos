@@ -12,27 +12,37 @@ function obtenerClientePorId($pdo, $id) {
 }
 
 function crearCliente($pdo, $datos) {
-    $sql = "INSERT INTO cliente (nombre, email, telefono, direccion, dni) VALUES (?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO cliente (nombre, apellido, cuil_cuit, email, telefono, direccion) 
+            VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['nombre'],
+        $datos['apellido'] ?? null,
+        $datos['cuil_cuit'] ?? null,
         $datos['email'],
-        $datos['telefono'],
-        $datos['direccion'],
-        $datos['dni']
+        $datos['telefono'] ?? null,
+        $datos['direccion'] ?? null
     ]);
     return $pdo->lastInsertId();
 }
 
 function actualizarCliente($pdo, $id, $datos) {
-    $sql = "UPDATE cliente SET nombre = ?, email = ?, telefono = ?, direccion = ?, dni = ? WHERE id_cliente = ?";
+    $sql = "UPDATE cliente SET 
+            nombre = ?, 
+            apellido = ?, 
+            cuil_cuit = ?, 
+            email = ?, 
+            telefono = ?, 
+            direccion = ? 
+            WHERE id_cliente = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['nombre'],
+        $datos['apellido'] ?? null,
+        $datos['cuil_cuit'] ?? null,
         $datos['email'],
-        $datos['telefono'],
-        $datos['direccion'],
-        $datos['dni'],
+        $datos['telefono'] ?? null,
+        $datos['direccion'] ?? null,
         $id
     ]);
     return $stmt->rowCount() > 0;

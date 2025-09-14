@@ -1,0 +1,278 @@
+// clientes.js - versión robusta con guardado en localStorage
+(function(){
+  const STORAGE_KEY = 'formCliente';
+
+  // Esperar a que el DOM esté listo
+  document.addEventListener('DOMContentLoaded', () => {
+    // Elementos (pueden ser null si tu HTML no tiene alguno; lo manejamos)
+    const form = document.getElementById('formCliente');
+    const tabla = document.getElementById('tablaClientes');
+    const paginacion = document.getElementById('paginacion');
+    const busqueda = document.getElementById('busqueda');
+    const ordenarPor = document.getElementById('ordenarPor');
+    const modalEl = document.getElementById('modalCliente');
+
+    if (!form) console.warn('clientes.js: no se encontró #formCliente en el DOM.');
+    if (!modalEl) console.warn('clientes.js: no se encontró #modalCliente en el DOM.');
+
+    // Variables de estado
+    let clientes = [];
+    let paginaActual = 1;
+    const porPagina = 30;
+    let usuarioRol = null;
+
+    // Helpers para localStorage
+    function saveFormToStorage(formEl, key) {
+      if (!formEl) return;
+      const datos = {};
+      Array.from(formEl.elements).forEach(el => {
+        if (!el.id) return;
+        if (el.type === 'checkbox') datos[el.id] = el.checked;
+        else datos[el.id] = el.value;
+      });
+      try {
+        localStorage.setItem(key, JSON.stringify(datos));
+        console.log('clientes.js: formulario guardado en localStorage');
+      } catch (e) {
+        console.error('clientes.js: error guardando en localStorage', e);
+      }
+    }
+
+    function restoreFormFromStorage(formEl, key) {
+      if (!formEl) return false;
+      const raw = localStorage.getItem(key);
+      if (!raw) return false;
+      try {
+        const datos = JSON.parse(raw);
+        Object.keys(datos).forEach(k => {
+          const el = document.getElementById(k);
+          if (!el) return;
+          if (el.type === 'checkbox') el.checked = !!datos[k];
+          else el.value = datos[k];
+        });
+        console.log('clientes.js: formulario restaurado desde localStorage');
+        return true;
+      } catch (e) {
+        console.error('clientes.js: error restaurando desde localStorage', e);
+        return false;
+      }
+    }
+
+    // API: mostrar/ocultar UI según rol
+    fetch(API_URL + 'usuario-info')
+      .then(r => r.json())
+      .then(data => {
+        usuarioRol = data.rol;
+        if (usuarioRol === 'admin') {
+          const btn = document.getElementById('btnAgregarCliente');
+          if (btn) btn.style.display = 'block';
+          const colAcc = document.getElementById('colAcciones');
+          if (colAcc) colAcc.style.display = '';
+        } else {
+          const colAcc = document.getElementById('colAcciones');
+          if (colAcc) colAcc.style.display = 'none';
+        }
+        mostrarClientes();
+      })
+      .catch(err => console.warn('clientes.js: error usuario-info', err));
+
+    // Cargar clientes
+    function cargarClientes() {
+      fetch(API_URL + 'clientes')
+        .then(res => res.json())
+        .then(data => {
+          clientes = data || [];
+          mostrarClientes();
+        })
+        .catch(err => console.error('clientes.js: error cargando clientes', err));
+    }
+
+    // Mostrar clientes (paginado + filtro + orden)
+    function mostrarClientes() {
+      if (!tabla) return;
+      const filtro = (busqueda?.value || '').toLowerCase();
+      const campoOrden = ordenarPor?.value || '';
+
+      const filtrados = (clientes || [])
+        .filter(c => {
+          const term = filtro;
+          return (
+            (c.nombre && c.nombre.toLowerCase().includes(term)) ||
+            (c.email && c.email.toLowerCase().includes(term)) ||
+            (c.cuil_cuit && c.cuil_cuit.toString().toLowerCase().includes(term)) ||
+            (c.telefono && c.telefono.toString().toLowerCase().includes(term)) ||
+            (c.direccion && c.direccion.toLowerCase().includes(term)) ||
+            (c.fecha_alta && c.fecha_alta.toLowerCase().includes(term))
+          );
+        })
+        .sort((a, b) => {
+          if (!campoOrden) return 0;
+          let A = a[campoOrden] || '', B = b[campoOrden] || '';
+          if (typeof A === 'string') A = A.toLowerCase();
+          if (typeof B === 'string') B = B.toLowerCase();
+          return A > B ? 1 : A < B ? -1 : 0;
+        });
+
+      const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
+      const inicio = (paginaActual - 1) * porPagina;
+      const clientesPagina = filtrados.slice(inicio, inicio + porPagina);
+
+      tabla.innerHTML = clientesPagina.map(c => {
+        let botones = '';
+        let tdAcciones = '';
+        if (usuarioRol === 'admin') {
+          botones = `
+            <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
+            <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
+          `;
+          tdAcciones = `<td>${botones}</td>`;
+        } else {
+          tdAcciones = `<td style='display:none'></td>`;
+        }
+        return `
+          <tr>
+            <td>${c.nombre} ${c.apellido || ''}</td>
+            <td>${c.email}</td>
+            <td>${c.telefono || '-'}</td>
+            <td>${c.direccion || '-'}</td>
+            <td>${c.cuil_cuit}</td>
+            <td>${c.fecha_alta || '-'}</td>
+            ${tdAcciones}
+          </tr>`;
+      }).join('');
+
+      // paginación
+      if (paginacion) {
+        paginacion.innerHTML = '';
+        for (let i = 1; i <= totalPaginas; i++) {
+          paginacion.innerHTML += `
+            <li class="page-item ${i === paginaActual ? 'active' : ''}">
+              <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
+            </li>`;
+        }
+      }
+    }
+
+    // Exponer cambiarPagina a window (se usa desde HTML generado)
+    window.cambiarPagina = function(n) {
+      paginaActual = n;
+      mostrarClientes();
+    };
+
+    // Nuevo cliente: restaurar si hay datos
+    window.nuevoCliente = function() {
+      if (form) form.reset();
+      const idInput = document.getElementById('id_cliente');
+      if (idInput) idInput.value = '';
+      restoreFormFromStorage(form, STORAGE_KEY);
+      new bootstrap.Modal(document.getElementById('modalCliente')).show();
+    };
+
+    // Editar cliente: limpiar storage y cargar datos en form
+    window.editarCliente = function(cliente) {
+      localStorage.removeItem(STORAGE_KEY);
+      if (form) {
+        if (document.getElementById('id_cliente')) document.getElementById('id_cliente').value = cliente.id_cliente;
+        if (document.getElementById('nombre')) document.getElementById('nombre').value = cliente.nombre || '';
+        if (document.getElementById('apellido')) document.getElementById('apellido').value = cliente.apellido || '';
+        if (document.getElementById('cuil_cuit')) document.getElementById('cuil_cuit').value = cliente.cuil_cuit || '';
+        if (document.getElementById('email')) document.getElementById('email').value = cliente.email || '';
+        if (document.getElementById('telefono')) document.getElementById('telefono').value = cliente.telefono || '';
+        if (document.getElementById('direccion')) document.getElementById('direccion').value = cliente.direccion || '';
+      }
+      new bootstrap.Modal(document.getElementById('modalCliente')).show();
+    };
+
+    // Borrar cliente
+    window.borrarCliente = function(id) {
+      if (!confirm('¿Eliminar cliente?')) return;
+      fetch(API_URL + 'borrar_cliente/' + id, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(() => cargarClientes())
+        .catch(err => console.error('clientes.js: error borrando cliente', err));
+    };
+
+    // Attach submit handler (si existe el form)
+    if (form) {
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const datos = {
+          id_cliente: document.getElementById('id_cliente')?.value || '',
+          nombre: document.getElementById('nombre')?.value || '',
+          apellido: document.getElementById('apellido')?.value || '',
+          cuil_cuit: document.getElementById('cuil_cuit')?.value || '',
+          email: document.getElementById('email')?.value || '',
+          telefono: document.getElementById('telefono')?.value || '',
+          direccion: document.getElementById('direccion')?.value || ''
+        };
+
+        if (!datos.nombre || !datos.cuil_cuit || !datos.email) {
+          alert('Nombre, CUIL/CUIT y Email son campos requeridos');
+          return;
+        }
+
+        const id = datos.id_cliente;
+        const metodo = id ? 'PUT' : 'POST';
+        const url = id ? API_URL + 'actualizar_cliente/' + id : API_URL + 'crear_cliente';
+
+        // remove storage because we're about to save
+        localStorage.removeItem(STORAGE_KEY);
+
+        fetch(url, {
+          method: metodo,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(datos)
+        })
+        .then(res => {
+          if (!res.ok) return res.json().then(err => { throw new Error(err.error || 'Error desconocido'); });
+          return res.json();
+        })
+        .then(() => {
+          bootstrap.Modal.getInstance(document.getElementById('modalCliente'))?.hide();
+          form.reset();
+          localStorage.removeItem(STORAGE_KEY); // limpiar datos guardados
+          cargarClientes();
+        })
+        .catch(error => {
+          if (error.message.includes('Duplicate entry') && error.message.includes('cuil_cuit')) {
+            alert('El CUIL/CUIT ingresado ya está registrado.');
+          } else {
+            alert('Error: ' + error.message);
+          }
+        });
+      });
+    }
+
+    // Guardar al cerrar modal (solo si es nuevo)
+    if (modalEl) {
+      modalEl.addEventListener('hide.bs.modal', () => {
+        const idVal = document.getElementById('id_cliente')?.value;
+        if (!idVal && form) saveFormToStorage(form, STORAGE_KEY);
+      });
+    }
+
+    // Botón Vaciar (solo una vez)
+    (function ensureVaciarButton(){
+      const footer = document.querySelector('#modalCliente .modal-footer');
+      if (!footer) return;
+      if (document.getElementById('btnVaciarCliente')) return; // ya existe
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.id = 'btnVaciarCliente';
+      btn.className = 'btn btn-danger';
+      btn.textContent = 'Vaciar';
+      btn.onclick = function() {
+        if (form) form.reset();
+        localStorage.removeItem(STORAGE_KEY);
+      };
+      footer.appendChild(btn);
+    })();
+
+    // Listeners para filtros y orden (si existen)
+    if (busqueda) busqueda.addEventListener('input', () => { paginaActual = 1; mostrarClientes(); });
+    if (ordenarPor) ordenarPor.addEventListener('change', () => { paginaActual = 1; mostrarClientes(); });
+
+    // Inicializar carga
+    cargarClientes();
+  }); // DOMContentLoaded
+})();

@@ -92,6 +92,15 @@ switch ($recurso) {
         require_once __DIR__ . '/../controllers/comprasItemController.php';
         break;
     
+    case 'proveedores';
+    case 'proveedor';
+    case 'crear_proveedor';
+    case (preg_match('/^actualizar_proveedor\/(\d+)$/', $ruta, $matches) ? true : false):
+    case (preg_match('/^borrar_proveedor\/(\d+)$/', $ruta, $matches) ? true : false):
+        require_once __DIR__ . '/../controllers/proveedorController.php';
+        break;
+    
+    
     case 'rubros':
     case 'rubro':
     case 'crear_rubro':
@@ -128,6 +137,12 @@ switch ($recurso) {
     case 'registrar_movimiento_stock':
         require_once __DIR__ . '/../controllers/movimientoStockController.php';
         break;
+    // Estadísticas generales
+    case 'estadisticas':
+    case 'top_productos':
+        require_once __DIR__ . '/../controllers/estadisticasController.php';
+        break;
+
 
 
 

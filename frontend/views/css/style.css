@@ -1,0 +1,73 @@
+/* Agregar estas reglas CSS a tu archivo de estilos */
+
+/* Estilos para modo claro */
+:root, [data-bs-theme="light"] {
+  --custom-bg-th: #e9ecef;
+  --custom-color-th: #495057;
+  --custom-border-table: #dee2e6;
+  --custom-bg-tr-even: #f8f9fa;
+  --custom-bg-tr-hover: rgba(0, 0, 0, 0.075);
+}
+
+/* Estilos para modo oscuro */
+[data-bs-theme="dark"] {
+  --custom-bg-th: #65696d;
+  --custom-color-th: #e9ecef;
+  --custom-border-table: #495057;
+  --custom-bg-tr-even: #2b3035;
+  --custom-bg-tr-hover: rgba(255, 255, 255, 0.075);
+}
+
+/* Aplicar estilos a las tablas */
+.table th {
+  background-color: var(--custom-bg-th) !important;
+  color: var(--custom-color-th) !important;
+  border-color: var(--custom-border-table) !important;
+}
+
+.table td {
+  border-color: var(--custom-border-table) !important;
+}
+
+.table-striped tbody tr:nth-of-type(even) {
+  background-color: var(--custom-bg-tr-even) !important;
+}
+
+.table-hover tbody tr:hover {
+  background-color: var(--custom-bg-tr-hover) !important;
+}
+
+/* Para la tabla de productos */
+.table-productos th {
+  background-color: var(--custom-bg-th) !important;
+  color: var(--custom-color-th) !important;
+}
+
+/* Para la tabla de ventas */
+#tabla_productos th {
+  background-color: var(--custom-bg-th) !important;
+  color: var(--custom-color-th) !important;
+}
+.icon-card {
+    text-align: center;
+    padding: 20px;
+    border-radius: 15px;
+    transition: 0.3s;
+    height: 100%;
+}
+
+.icon-card:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.icon-card img {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 15px;
+}
+
+.icon-title {
+    font-weight: 500;
+    color: #343a40;
+}
