@@ -79,7 +79,6 @@ function mostrarProductos() {
     }
     return `
       <tr>
-        <td>${p.id_producto}</td>
         <td>${p.nombre}</td>
         <td>${p.descripcion || ''}</td>
         <td>${p.precio_venta || 0}</td>
