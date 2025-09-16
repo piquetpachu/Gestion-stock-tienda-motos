@@ -9,7 +9,7 @@ body {
 }
 
 .bodyclientes {
-  background-color: #f8f9fa;
+  background-color: #cacaca;
   display: none;
 }
 
@@ -18,13 +18,13 @@ body.bg-dark {
 }
 
 body.dark-theme .btn {
-  background-color: #222;
+  background-color: #cacaca;
   color: #fff;
   border-color: #444;
 }
 
 body.dark-theme .btn-warning {
-  background-color: #444;
+  background-color:#cacaca;
   color: #ffd700;
 }
 
@@ -34,11 +34,11 @@ body.dark-theme .btn-danger {
 }
 
 .bg-white-dark {
-  background-color: #212529 !important;
+  background-color: #cacaca !important;
 }
 
 .table-light-dark {
-  background-color: #343a40 !important;
+  background-color: #cacaca !important;
   color: #f8f9fa;
 }
 
