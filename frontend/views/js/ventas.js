@@ -38,7 +38,9 @@ const formatearMoneda = valor =>
 
 // -------------------- CARGA DE DATOS --------------------
 
-// Cargar productos
+function buscarProductoPorCodigo(codigo) {
+    return productosLista.find(p => p.codigo_barras === codigo);
+}
 
 // Cargar productos
 function cargarProductos() {
@@ -50,41 +52,80 @@ function cargarProductos() {
         .then(data => {
             productosLista = data;
 
-            // Inicializamos TomSelect solo si no está creado
+            // Inicializamos TomSelect solo si no existe
             if (!tomSelectProducto) {
                 tomSelectProducto = new TomSelect(selectProducto, {
                     create: false,
                     sortField: { field: "nombre", direction: "asc" },
-                    valueField: "codigo_barras",  // lo que usa internamente
-                    labelField: "nombre",         // lo que se muestra
-                    searchField: ["nombre", "codigo_barras"],  // permite búsqueda por ambos
-                    placeholder: "Seleccionar producto"
+                    valueField: "value",
+                    labelField: "nombre",
+                    searchField: ["nombre", "codigo_barras"],
+                    placeholder: "Seleccionar producto",
+                    openOnFocus: false, // NO abrir solo por focus (evita desplegar al cargar)
+                    onItemAdd: function (value) {
+                        agregarProducto(value);
+                        this.clear();
+                        setTimeout(() => this.close(), 50);
+                    }
                 });
             } else {
                 tomSelectProducto.clearOptions();
             }
 
-            // Agregar opciones a TomSelect
+            // Agregar todas las opciones
             data.forEach(prod => {
                 tomSelectProducto.addOption({
-                    codigo_barras: prod.codigo_barras,
+                    value: prod.codigo_barras,
                     nombre: prod.nombre
                 });
             });
 
-            // Manejar selección de item
-            tomSelectProducto.on('item_add', function (value) {
-                agregarProducto(value);
-            });
+            // Refrescar opciones y cerrar dropdown
+            tomSelectProducto.refreshOptions();
+            tomSelectProducto.close();
 
-            // Manejar ENTER para agregar producto
-            tomSelectProducto.on('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const val = tomSelectProducto.getValue();
-                    agregarProducto(val);
+            // --- AÑADIMOS: permitir abrir con CLICK ---
+            // TomSelect expone el input real en control_input
+            setTimeout(() => {
+                const inputTom = tomSelectProducto.control_input;
+                if (inputTom) {
+                    // Al hacer click en el input, abrimos el dropdown manualmente
+                    inputTom.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
+
+                    // También abrir al hacer mousedown (mejor sensación de clic)
+                    inputTom.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
                 }
-            });
+            }, 50);
+
+            // ENTER desde input (scanner o nombre completo)
+            const inputTomEnter = tomSelectProducto.control_input;
+            if (inputTomEnter) {
+                inputTomEnter.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const texto = inputTomEnter.value.trim();
+                        if (!texto) return;
+
+                        const producto = productosLista.find(p =>
+                            p.nombre.toLowerCase() === texto.toLowerCase() ||
+                            p.codigo_barras === texto
+                        );
+
+                        if (producto) {
+                            agregarProducto(producto.codigo_barras);
+                        }
+
+                        tomSelectProducto.clear();
+                        tomSelectProducto.focus();
+                    }
+                });
+            }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
@@ -95,26 +136,28 @@ function cargarProductos() {
 
 // Cargar métodos de pago
 function cargarMetodosPago() {
+    // Conservar fetch para que la app siga conectada a la BD
     fetch(API_URL + 'medios_pago')
-        .then(res => {
-            if (!res.ok) throw new Error('Error al obtener métodos de pago');
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            metodosPagoLista = data;
-            selectMetodoPago.innerHTML = '<option value="" disabled selected>Seleccionar método de pago</option>';
-            data.forEach(metodo => {
-                const opcion = document.createElement('option');
-                opcion.value = metodo.id_medio_pago;
-                opcion.textContent = metodo.descripcion || 'Sin nombre';
-                selectMetodoPago.appendChild(opcion);
-            });
+            metodosPagoLista = data; // guardamos la info por si se necesita
+
+            // Sobrescribimos el select con las opciones que queremos mostrar
+            selectMetodoPago.innerHTML = `
+                <option value="" disabled selected>Seleccionar método</option>
+                <option value="1">Efectivo</option>
+                <option value="2">Transferencia Bancaria</option>
+                <option value="3">Mercado Pago</option>
+                <option value="4">Tarjeta</option>
+                <option value="6">Cuenta Corriente</option>
+            `;
         })
         .catch(error => {
             console.error('Error cargando métodos de pago:', error);
             alert('No se pudieron cargar los métodos de pago.');
         });
 }
+
 
 // Cargar clientes
 
@@ -360,42 +403,73 @@ if (inputDescuento) {
 
 // -------------------- MÉTODO DE PAGO --------------------
 
+// -------------------- MÉTODO DE PAGO --------------------
+// -------------------- MÉTODO DE PAGO --------------------
+// -------------------- MÉTODO DE PAGO --------------------
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
     divCamposAdicionalesPago.innerHTML = '';
 
-    if (metodo === '2') { // tarjeta
+    if (metodo === '1' || metodo === '2' || metodo === '3' || metodo === '6') {
+        // Efectivo, Transferencia bancaria, Mercado Pago, Cuenta corriente → nada extra
+        divCamposAdicionalesPago.innerHTML = '';
+    }
+
+    if (metodo === '4' || metodo === '5') {
+        // Tarjeta → mostrar tipo (crédito/débito)
+
         divCamposAdicionalesPago.innerHTML = `
           <div class="mb-3">
-            <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
-            <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
-            <div class="form-text">Formato: 20-12345678-9</div>
-
-            </div>
-          <div class="mb-3">
-            <label class="form-label">Fecha actual</label>
-            <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
+            <label class="form-label">Tipo de tarjeta</label>
+            <select class="form-select" id="tipo_tarjeta" required>
+                <option value="" disabled selected>Seleccione</option>
+                <option value="credito">Crédito</option>
+                <option value="debito">Débito</option>
+            </select>
+          </div>
+          <div class="mb-3" id="bloque_cuotas" style="display:none;">
+            <label class="form-label">Cuotas</label>
+            <select class="form-select" id="cuotas">
+                <option value="1">1 cuota</option>
+                <option value="3">3 cuotas</option>
+                <option value="6">6 cuotas</option>
+                <option value="12">12 cuotas</option>
+            </select>
           </div>
         `;
 
-        const inputCuit = document.getElementById('cuit_tarjeta');
-        inputCuit.addEventListener('input', () => {
-            let val = inputCuit.value;
-            val = val.replace(/[^0-9\-]/g, '');
-            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
-            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-            if (val.length > 13) val = val.slice(0, 13);
-            inputCuit.value = val;
+        const selectTipoTarjeta = document.getElementById('tipo_tarjeta');
+        const bloqueCuotas = document.getElementById('bloque_cuotas');
+
+        selectTipoTarjeta.addEventListener('change', () => {
+            if (selectTipoTarjeta.value === 'credito') {
+                bloqueCuotas.style.display = 'block';
+                selectMetodoPago.value = '4'; // Tarjeta crédito ID BD
+            } else if (selectTipoTarjeta.value === 'debito') {
+                bloqueCuotas.style.display = 'none';
+                selectMetodoPago.value = '5'; // Tarjeta débito ID BD
+            }
         });
     }
 }
 
-function getNombreMetodoPago(id) {
-    const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
-    return metodo ? metodo.descripcion : 'Desconocido';
-}
+// Escucha cambios en el select de método de pago
+selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 
 // -------------------- RECIBO --------------------
+function getNombreMetodoPago(id) {
+    switch (id) {
+        case '1': return 'Efectivo';
+        case '2': return 'Transferencia Bancaria';
+        case '3': return 'Mercado Pago';
+        case '4': return 'Tarjeta Crédito';
+        case '5': return 'Tarjeta Débito';
+        case '6': return 'Cuenta Corriente';
+        default: return 'Desconocido';
+    }
+}
+
+
 
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
@@ -537,14 +611,14 @@ function finalizarVenta() {
         monto: montoTotal
     };
 
-    if (metodoPago === '2') {
-        const cuitInput = document.getElementById('cuit_tarjeta');
-        if (!cuitInput || !cuitInput.value) {
-            alert('Debe ingresar un CUIT válido para tarjeta.');
-            return;
-        }
-        pago.cuil_cuit = cuitInput.value;
-    }
+    // if (metodoPago === '2') {
+    //     // const cuitInput = document.getElementById('cuit_tarjeta');
+    //     if (!cuitInput || !cuitInput.value) {
+    //         alert('Debe ingresar un CUIT válido para tarjeta.');
+    //         return;
+    //     }
+    //     pago.cuil_cuit = cuitInput.value;
+    // }
 
     venta.pagos = [pago];
     venta.id_cliente = selectCliente.value || null;
@@ -620,18 +694,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-    // -------------------- BOTÓN VARIOS MÉTODOS --------------------
-    const bloqueVariosMetodos = document.getElementById('bloque_varios_metodos');
-    const btnVariosMetodos = document.getElementById('btn_varios_metodos');
+// -------------------- BOTÓN VARIOS MÉTODOS --------------------
+const bloqueVariosMetodos = document.getElementById('bloque_varios_metodos');
+const btnVariosMetodos = document.getElementById('btn_varios_metodos');
 
-    // Ocultar bloque al inicio
-    bloqueVariosMetodos.style.display = 'none';
+// Ocultar bloque al inicio
+bloqueVariosMetodos.style.display = 'none';
 
-    // Listener del botón
-    btnVariosMetodos.addEventListener('click', () => {
-        bloqueVariosMetodos.style.display =
-            (bloqueVariosMetodos.style.display === 'none' || bloqueVariosMetodos.style.display === '')
-                ? 'block'
-                : 'none';
-    });
+// Listener del botón
+btnVariosMetodos.addEventListener('click', () => {
+    bloqueVariosMetodos.style.display =
+        (bloqueVariosMetodos.style.display === 'none' || bloqueVariosMetodos.style.display === '')
+            ? 'block'
+            : 'none';
+});
 

@@ -63,7 +63,6 @@
   <div class="container my-4">
     <h1 class="text-center mb-4">Registrar venta</h1>
 
-    <!-- Usamos grid de Bootstrap en vez de CSS fijo -->
     <div class="row g-3">
       <!-- Columna izquierda -->
       <div class="col-12 col-lg-8">
@@ -86,9 +85,7 @@
                   <th>Acc.</th>
                 </tr>
               </thead>
-              <tbody>
-                <!-- filas dinámicas -->
-              </tbody>
+              <tbody><!-- filas dinámicas --></tbody>
             </table>
           </div>
         </div>
@@ -116,35 +113,19 @@
             <div class="d-flex flex-wrap gap-2">
               <select class="form-select form-select-dark flex-grow-1" id="metodo_de_pago">
                 <option value="" disabled selected>Seleccionar método</option>
-                <option value="efectivo">Efectivo</option>
-                <option value="tarjeta">Tarjeta</option>
-                <option value="transferencia">Transferencia</option>
+                <option value="1">Efectivo</option>
+                <option value="3">Mercado Pago</option>
+                <option value="2">Transferencia</option>
+                <option value="4">Tarjeta</option>
+                <option value="6">Cuenta corriente</option>
+                
+                
               </select>
               <button class="btn btn-success" type="button" id="btn_varios_metodos">Varios</button>
             </div>
           </div>
 
-          <div id="bloque_varios_metodos" class="mb-3 p-2 bg-white-dark rounded">
-            <label class="form-label">Varios métodos</label>
-            <div class="small">
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="checkbox" id="varios_efectivo">
-                <label class="form-check-label" for="varios_efectivo">Efectivo</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
-              </div>
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="checkbox" id="varios_tarjeta">
-                <label class="form-check-label" for="varios_tarjeta">Tarjeta</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="varios_transferencia">
-                <label class="form-check-label" for="varios_transferencia">Transferencia</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
-              </div>
-            </div>
-          </div>
-
+          <!-- Campos adicionales dinámicos según JS -->
           <div id="campos_adicionales_pago"></div>
 
           <!-- Totales -->
