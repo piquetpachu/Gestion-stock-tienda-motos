@@ -119,6 +119,7 @@
           console.error("productos.js: error cargando productos", err)
         );
     }
+    
 
     function mostrarProductos() {
       if (!tabla) return;
@@ -157,11 +158,12 @@
           let botones = "";
           let tdAcciones = "";
           if (usuarioRol === "admin") {
+            // add classes 'editar-btn' and 'borrar-btn' so the row click handler can ignore them
             botones = `
-      <button class="btn btn-warning btn-sm" onclick='editar(${JSON.stringify(
+      <button class="btn btn-warning btn-sm editar-btn" onclick='editar(${JSON.stringify(
         p
       )})'>✏️</button>
-      <button class="btn btn-danger btn-sm" onclick='borrar(${
+      <button class="btn btn-danger btn-sm borrar-btn" onclick='borrar(${
         p.id_producto
       })'>🗑️</button>
     `;
@@ -170,8 +172,9 @@
             tdAcciones = `<td style="display:none"></td>`;
           }
 
+          // include data-id attribute so click handler can find the product id
           return `
-    <tr>
+    <tr data-id="${p.id_producto}">
       <td>${p.nombre}</td>
       <td>${p.descripcion || ""}</td>
       <td>${p.precio_venta || 0}</td>
@@ -540,5 +543,105 @@
     // Inicializar rubros/proveedores
     cargarProveedores();
     cargarRubros();
+    // Añadir evento de clic a las filas de la tabla
+document.getElementById('tablaProductos').addEventListener('click', async (e) => {
+    // Buscar la fila (tr) del producto
+    const tr = e.target.closest('tr');
+    if (tr && tr.dataset.id) {
+        // Ignorar clics en los botones de "Editar" o "Borrar"
+        if (e.target.classList.contains('editar-btn') || e.target.classList.contains('borrar-btn')) {
+            return;
+        }
+
+        const idProducto = tr.dataset.id;
+        await mostrarEstadisticasProducto(idProducto);
+    }
+});
+
+// Función para mostrar las estadísticas del producto
+async function mostrarEstadisticasProducto(idProducto) {
+    const modalEstadisticasEl = document.getElementById('modalEstadisticas');
+    if (!modalEstadisticasEl) {
+        console.error("No se encontró el modal de estadísticas.");
+        return;
+    }
+    const modalBody = modalEstadisticasEl.querySelector('.modal-body');
+    const modalTitle = modalEstadisticasEl.querySelector('.modal-title');
+
+    new bootstrap.Modal(modalEstadisticasEl).show();
+    modalBody.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+    `;
+
+    try {
+        const res = await fetch(API_URL + 'estadisticas_producto/' + idProducto);
+        const data = await res.json();
+
+        const productoInfo = await obtenerProductoPorId(idProducto);
+        modalTitle.textContent = `Estadísticas de: ${productoInfo.nombre || 'Producto Desconocido'}`;
+
+        let htmlContenido = `
+            <h5 class="mt-4">Resumen General</h5>
+            <ul class="list-group">
+                <li class="list-group-item">Total de Unidades Vendidas: <b>${data.totales.total_unidades || 0}</b></li>
+                <li class="list-group-item">Total de Ventas (en dinero): <b>$${(parseFloat(data.totales.total_ventas) || 0).toFixed(2)}</b></li>
+            </ul>
+            <h5 class="mt-4">Detalle de Ventas</h5>
+        `;
+
+        if (data.ventas_detalles.length > 0) {
+            htmlContenido += `
+                <table class="table table-striped table-sm mt-3">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Cliente</th>
+                            <th>Cantidad</th>
+                            <th>Precio Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            data.ventas_detalles.forEach(venta => {
+                const fechaCorta = venta.fecha.split(' ')[0];
+                htmlContenido += `
+                    <tr>
+                        <td>${fechaCorta}</td>
+                        <td>${venta.nombre_cliente} ${venta.apellido_cliente}</td>
+                        <td>${venta.cantidad}</td>
+                        <td>$${parseFloat(venta.precio_unitario).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+            htmlContenido += `
+                        </tbody>
+                    </table>
+                `;
+        } else {
+            htmlContenido += `<p class="text-muted">No se encontraron ventas para este producto.</p>`;
+        }
+
+        modalBody.innerHTML = htmlContenido;
+    } catch (error) {
+        console.error("Error al obtener las estadísticas del producto:", error);
+        modalBody.innerHTML = `<p class="text-danger">Hubo un error al cargar las estadísticas.</p>`;
+    }
+}
+
+// Asegúrate de que esta función exista en tu archivo. Si no, agrégala.
+async function obtenerProductoPorId(id) {
+    try {
+        const res = await fetch(API_URL + 'producto/' + id);
+        return res.json();
+    } catch (err) {
+        console.error("Error al obtener producto por ID:", err);
+        return {};
+    }
+}
   }); // DOMContentLoaded
+  
 })();
