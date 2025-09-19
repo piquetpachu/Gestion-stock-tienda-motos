@@ -66,3 +66,42 @@ function borrarProducto($pdo, $id) {
     $stmt->execute([$id]);
     return $stmt->rowCount() > 0;
 }
+function obtenerEstadisticasProducto($pdo, $idProducto)
+{
+    // Consulta para obtener el total vendido, las ventas y los clientes que compraron el producto
+    $sql = "
+        SELECT
+            vi.cantidad,
+            vi.precio_unitario,
+            v.fecha,
+            c.nombre AS nombre_cliente,
+            c.apellido AS apellido_cliente
+        FROM venta_item vi
+        JOIN venta v ON vi.id_venta = v.id_venta
+        JOIN cliente c ON v.id_cliente = c.id_cliente
+        WHERE vi.id_producto = ?
+        ORDER BY v.fecha DESC;
+    ";
+
+    // Consulta para obtener el total de unidades vendidas y el total monetario
+    $sqlTotales = "
+        SELECT
+            SUM(vi.cantidad) as total_unidades,
+            SUM(vi.cantidad * vi.precio_unitario) as total_ventas
+        FROM venta_item vi
+        WHERE vi.id_producto = ?;
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$idProducto]);
+    $ventas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmtTotales = $pdo->prepare($sqlTotales);
+    $stmtTotales->execute([$idProducto]);
+    $totales = $stmtTotales->fetch(PDO::FETCH_ASSOC);
+
+    return [
+        'totales' => $totales,
+        'ventas_detalles' => $ventas
+    ];
+}

@@ -39,6 +39,13 @@ switch (true) {
         echo json_encode(borrarProducto($pdo, $matches[1]));
         break;
 
+    case preg_match('/^estadisticas_producto\\/(\\d+)$/', $ruta, $matches) && $metodo === 'GET':
+        autorizar(['admin', 'vendedor']);
+        $id = $matches[1];
+        $estadisticas = obtenerEstadisticasProducto($pdo, $id);
+        echo json_encode($estadisticas);
+        break;
+
     default:
         echo json_encode(["error" => "Ruta no válida en productos"]);
         break;

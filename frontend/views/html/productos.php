@@ -86,7 +86,26 @@ body.dark-theme .btn-danger {
       <ul class="pagination justify-content-center" id="paginacion"></ul>
     </nav>
   </div>
-
+<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEstadisticasLabel">Estadísticas del Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
   <!-- Modal Producto -->
   <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true" >
     <div class="modal-dialog modal-lg">
