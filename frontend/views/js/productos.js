@@ -173,14 +173,22 @@
           }
 
           // include data-id attribute so click handler can find the product id
+          // aplicar clases según nivel de stock
+          const stockVal = Number(p.stock || 0);
+          const stockMin = Number(p.stock_minimo || 0);
+          let clsStock = "";
+          if (isNaN(stockVal)) clsStock = "";
+          else if (stockVal <= 0) clsStock = "text-danger"; // rojo
+          else if (stockVal <= stockMin) clsStock = "text-warning"; // amarillo
+
           return `
     <tr data-id="${p.id_producto}">
       <td>${p.nombre}</td>
       <td>${p.descripcion || ""}</td>
       <td>${p.precio_venta || 0}</td>
       <td>${p.precio_compra || 0}</td>
-      <td>${p.stock || 0}</td>
-      <td>${p.stock_minimo || 0}</td>
+      <td class="${clsStock}">${stockVal}</td>
+      <td>${stockMin || 0}</td>
       <td>${p.codigo_barras || ""}</td>
       <td>${p.fecha_alta || ""}</td>
       ${tdAcciones}
