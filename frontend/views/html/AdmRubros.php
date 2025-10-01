@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -33,18 +32,18 @@
   </div>
 
   <!-- Modal Rubro -->
-  <div class="modal fade" id="modalRubro" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="modalRubro" tabindex="-1" aria-hidden="true" aria-labelledby="tituloModalRubro" role="dialog" aria-modal="true">
     <div class="modal-dialog">
-      <form id="formRubro" class="modal-content">
+      <form id="formRubro" class="modal-content" autocomplete="off">
         <div class="modal-header">
           <h5 class="modal-title" id="tituloModalRubro">Nuevo Rubro</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <input type="hidden" id="id_rubro">
+          <input type="hidden" id="id_rubro" name="id_rubro">
           <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input type="text" id="nombre_rubro" class="form-control" required maxlength="100">
+            <label class="form-label" for="nombre_rubro">Nombre</label>
+            <input type="text" id="nombre_rubro" name="nombre" class="form-control" required maxlength="100">
           </div>
         </div>
         <div class="modal-footer">
