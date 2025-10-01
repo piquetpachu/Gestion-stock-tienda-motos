@@ -14,34 +14,76 @@ const provEmail = document.getElementById('prov_email');
 const provDir = document.getElementById('prov_direccion');
 const tituloModalProveedor = document.getElementById('tituloModalProveedor');
 const inputBuscarProveedor = document.getElementById('buscarProveedor');
+const selectOrdenarProveedor = document.getElementById('ordenarPorProveedor');
+const ulPaginacionProveedores = document.getElementById('paginacionProveedores');
 
 // ---------- Estado ----------
-let esAdmin = false;
+let esAdminProv = false;
 let proveedores = [];
-let terminoBusqueda = '';
+let terminoBusquedaProv = '';
+let ordenarProv = 'nombre_asc';
+let paginaProv = 1;
+const PAGE_SIZE_PROV = 10;
 
 // ---------- Util ----------
 function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
-
+function cmpNombre(a,b){ return normalizar(a.nombre).localeCompare(normalizar(b.nombre)); }
+function cmpCuit(a,b){ return String(a.cuit||'').localeCompare(String(b.cuit||'')); }
 function filaVaciaProveedores(msg='Sin proveedores') {
-  return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
+  return `<tr><td colspan="${esAdminProv?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
 // ---------- Render ----------
-function renderProveedores() {
-  const lista = terminoBusqueda
-    ? proveedores.filter(p => {
-        const q = normalizar(terminoBusqueda);
-        return normalizar(p.nombre).includes(q) || normalizar(p.cuit).includes(q);
-      })
-    : proveedores;
+function aplicarFiltrosOrdenProv(src){
+  let lista = [...src];
+  if (terminoBusquedaProv){
+    const q = normalizar(terminoBusquedaProv);
+    lista = lista.filter(p => normalizar(p.nombre).includes(q) || normalizar(p.cuit).includes(q));
+  }
+  if (ordenarProv === 'nombre_asc') lista.sort(cmpNombre);
+  if (ordenarProv === 'nombre_desc') lista.sort((a,b)=>-cmpNombre(a,b));
+  if (ordenarProv === 'cuit_asc') lista.sort(cmpCuit);
+  if (ordenarProv === 'cuit_desc') lista.sort((a,b)=>-cmpCuit(a,b));
+  return lista;
+}
 
-  if (!lista.length) {
-    tbodyProveedores.innerHTML = filaVaciaProveedores(terminoBusqueda ? 'Sin resultados' : 'Sin proveedores');
+function renderPaginacionProveedores(total, pagina, pageSize){
+  const totalPag = Math.max(1, Math.ceil(total / pageSize));
+  paginaProv = Math.min(pagina, totalPag);
+  const li = [];
+  const disabledPrev = paginaProv === 1 ? 'disabled' : '';
+  const disabledNext = paginaProv === totalPag ? 'disabled' : '';
+  li.push(`<li class="page-item ${disabledPrev}"><a class="page-link" href="#" data-page="${paginaProv-1}">«</a></li>`);
+  for (let p=1; p<=totalPag; p++){
+    li.push(`<li class="page-item ${p===paginaProv?'active':''}"><a class="page-link" href="#" data-page="${p}">${p}</a></li>`);
+  }
+  li.push(`<li class="page-item ${disabledNext}"><a class="page-link" href="#" data-page="${paginaProv+1}">»</a></li>`);
+  ulPaginacionProveedores.innerHTML = li.join('');
+  ulPaginacionProveedores.querySelectorAll('a.page-link').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      const p = Number(a.dataset.page);
+      if (!isNaN(p) && p>=1) {
+        paginaProv = p;
+        renderProveedores();
+      }
+    });
+  });
+}
+
+function renderProveedores() {
+  const lista = aplicarFiltrosOrdenProv(proveedores);
+  const total = lista.length;
+  if (!total) {
+    tbodyProveedores.innerHTML = filaVaciaProveedores(terminoBusquedaProv ? 'Sin resultados' : 'Sin proveedores');
+    renderPaginacionProveedores(0, 1, PAGE_SIZE_PROV);
     return;
   }
-  tbodyProveedores.innerHTML = lista.map(p => {
-    const acciones = esAdmin ? `
+  const start = (paginaProv-1)*PAGE_SIZE_PROV;
+  const pageItems = lista.slice(start, start + PAGE_SIZE_PROV);
+
+  tbodyProveedores.innerHTML = pageItems.map(p => {
+    const acciones = esAdminProv ? `
       <button class="btn btn-sm btn-warning me-1" onclick="editarProveedor(${p.id_proveedor})">Editar</button>
       <button class="btn btn-sm btn-danger" onclick="eliminarProveedor(${p.id_proveedor})">Borrar</button>
     ` : '';
@@ -49,16 +91,30 @@ function renderProveedores() {
       <tr>
         <td>${p.nombre}</td>
         <td>${p.cuit || ''}</td>
-        ${esAdmin ? `<td>${acciones}</td>` : ''}
+        ${esAdminProv ? `<td>${acciones}</td>` : ''}
       </tr>
     `;
   }).join('');
+
+  renderPaginacionProveedores(total, paginaProv, PAGE_SIZE_PROV);
 }
 
-// Buscador
+// ---------- Buscador/Orden ----------
 inputBuscarProveedor?.addEventListener('input', (e) => {
-  terminoBusqueda = e.target.value.trim();
+  terminoBusquedaProv = e.target.value.trim();
+  paginaProv = 1;
   renderProveedores();
+});
+selectOrdenarProveedor?.addEventListener('change', (e)=>{
+  ordenarProv = e.target.value;
+  paginaProv = 1;
+  renderProveedores();
+});
+
+// ---------- Modal ----------
+document.getElementById('modalProveedor').addEventListener('shown.bs.modal', () => {
+  provNombre?.focus();
+  provNombre?.select();
 });
 
 // ---------- API ----------
@@ -67,9 +123,11 @@ async function cargarProveedores() {
     const res = await fetch(API_URL + 'proveedores');
     if (!res.ok) throw new Error('Error de servidor');
     proveedores = await res.json();
+    paginaProv = 1;
     renderProveedores();
   } catch {
     tbodyProveedores.innerHTML = filaVaciaProveedores('Error cargando');
+    renderPaginacionProveedores(0, 1, PAGE_SIZE_PROV);
   }
 }
 
@@ -113,7 +171,7 @@ window.editarProveedor = id => {
   provTel.value = p.telefono || '';
   provEmail.value = p.email || '';
   provDir.value = p.direccion || '';
-  tituloModalProveedor.textContent = 'Editar Proveedor';
+  tituloModalProveedor.textContent = `Editar Proveedor: ${p.nombre || '(sin nombre)'}`;
   modalProveedor.show();
 };
 
@@ -141,8 +199,8 @@ btnNuevoProveedor.addEventListener('click', () => {
   fetch(API_URL + 'usuario-info')
     .then(r=>r.json())
     .then(u=>{
-      esAdmin = u.rol === 'admin';
-      if (esAdmin){
+      esAdminProv = u.rol === 'admin';
+      if (esAdminProv){
         btnNuevoProveedor.classList.remove('d-none');
         thAccionesProveedores.style.display = '';
       }
@@ -150,5 +208,6 @@ btnNuevoProveedor.addEventListener('click', () => {
     })
     .catch(() => {
       tbodyProveedores.innerHTML = filaVaciaProveedores('No autenticado');
+      renderPaginacionProveedores(0, 1, PAGE_SIZE_PROV);
     });
 })();

@@ -10,43 +10,79 @@ const idRubroInput = document.getElementById('id_rubro');
 const nombreRubroInput = document.getElementById('nombre_rubro');
 const tituloModalRubro = document.getElementById('tituloModalRubro');
 const inputBuscarRubro = document.getElementById('buscarRubro');
+const selectOrdenarRubro = document.getElementById('ordenarPorRubro');
+const ulPaginacionRubros = document.getElementById('paginacionRubros');
 
+// ---------- Estado ----------
+let esAdmin = false;
+let rubros = [];
 let terminoBusquedaRubros = '';
+let ordenarRubro = 'nombre_asc';
+let paginaRubro = 1;
+const PAGE_SIZE_RUBRO = 10;
 
+// ---------- Util ----------
 function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
-
-// Helpers de título
-function setTituloModalRubroNuevo() {
-  tituloModalRubro.textContent = 'Nuevo Rubro';
+function compararNombre(a, b){
+  return normalizar(a.nombre).localeCompare(normalizar(b.nombre));
 }
+function filaVaciaRubros(msg='Sin rubros') {
+  return `<tr><td colspan="${esAdmin?2:1}" class="text-center text-secondary">${msg}</td></tr>`;
+}
+function setTituloModalRubroNuevo() { tituloModalRubro.textContent = 'Nuevo Rubro'; }
 function setTituloModalRubroEditar(r) {
   const nombre = (r?.nombre ?? '').trim() || '(sin nombre)';
   tituloModalRubro.textContent = `Editar Rubro: ${nombre}`;
 }
 
-// Auto-focus y actualización del título
-document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
-  nombreRubroInput?.focus();
-  nombreRubroInput?.select();
-});
-nombreRubroInput.addEventListener('input', () => {
-  if (idRubroInput.value) setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
-});
-
-// Render sin columna ID + filtro
-function filaVaciaRubros(msg='Sin rubros') {
-  return `<tr><td colspan="${esAdmin?2:1}" class="text-center text-secondary">${msg}</td></tr>`;
+// ---------- Render ----------
+function aplicarFiltrosOrden(rubrosSrc){
+  let lista = [...rubrosSrc];
+  if (terminoBusquedaRubros) {
+    const q = normalizar(terminoBusquedaRubros);
+    lista = lista.filter(r => normalizar(r.nombre).includes(q));
+  }
+  if (ordenarRubro === 'nombre_asc') lista.sort(compararNombre);
+  if (ordenarRubro === 'nombre_desc') lista.sort((a,b)=>-compararNombre(a,b));
+  return lista;
 }
-function renderRubros() {
-  const lista = terminoBusquedaRubros
-    ? rubros.filter(r => normalizar(r.nombre).includes(normalizar(terminoBusquedaRubros)))
-    : rubros;
 
-  if (!lista.length) {
+function renderPaginacionRubros(total, pagina, pageSize){
+  const totalPag = Math.max(1, Math.ceil(total / pageSize));
+  paginaRubro = Math.min(pagina, totalPag);
+  const li = [];
+  const disabledPrev = paginaRubro === 1 ? 'disabled' : '';
+  const disabledNext = paginaRubro === totalPag ? 'disabled' : '';
+  li.push(`<li class="page-item ${disabledPrev}"><a class="page-link" href="#" data-page="${paginaRubro-1}">«</a></li>`);
+  for (let p=1; p<=totalPag; p++){
+    li.push(`<li class="page-item ${p===paginaRubro?'active':''}"><a class="page-link" href="#" data-page="${p}">${p}</a></li>`);
+  }
+  li.push(`<li class="page-item ${disabledNext}"><a class="page-link" href="#" data-page="${paginaRubro+1}">»</a></li>`);
+  ulPaginacionRubros.innerHTML = li.join('');
+  ulPaginacionRubros.querySelectorAll('a.page-link').forEach(a=>{
+    a.addEventListener('click', e=>{
+      e.preventDefault();
+      const p = Number(a.dataset.page);
+      if (!isNaN(p) && p>=1) {
+        paginaRubro = p;
+        renderRubros();
+      }
+    });
+  });
+}
+
+function renderRubros() {
+  const lista = aplicarFiltrosOrden(rubros);
+  const total = lista.length;
+  if (!total) {
     tbodyRubros.innerHTML = filaVaciaRubros(terminoBusquedaRubros ? 'Sin resultados' : 'Sin rubros');
+    renderPaginacionRubros(0, 1, PAGE_SIZE_RUBRO);
     return;
   }
-  tbodyRubros.innerHTML = lista.map(r => {
+  const start = (paginaRubro-1)*PAGE_SIZE_RUBRO;
+  const pageItems = lista.slice(start, start + PAGE_SIZE_RUBRO);
+
+  tbodyRubros.innerHTML = pageItems.map(r => {
     const acciones = esAdmin ? `
       <button class="btn btn-sm btn-warning me-1" onclick="editarRubro(${r.id_rubro})">Editar</button>
       <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
@@ -58,12 +94,29 @@ function renderRubros() {
       </tr>
     `;
   }).join('');
+
+  renderPaginacionRubros(total, paginaRubro, PAGE_SIZE_RUBRO);
 }
 
-// Buscador
+// ---------- Buscador/Orden ----------
 inputBuscarRubro?.addEventListener('input', (e) => {
   terminoBusquedaRubros = e.target.value.trim();
+  paginaRubro = 1;
   renderRubros();
+});
+selectOrdenarRubro?.addEventListener('change', (e)=>{
+  ordenarRubro = e.target.value;
+  paginaRubro = 1;
+  renderRubros();
+});
+
+// ---------- Modal ----------
+document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
+  nombreRubroInput?.focus();
+  nombreRubroInput?.select();
+});
+nombreRubroInput.addEventListener('input', () => {
+  if (idRubroInput.value) setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
 });
 
 // ---------- API ----------
@@ -72,9 +125,11 @@ async function cargarRubros() {
     const res = await fetch(API_URL + 'rubros');
     if (!res.ok) throw new Error('Error de servidor');
     rubros = await res.json();
+    paginaRubro = 1;
     renderRubros();
   } catch {
     tbodyRubros.innerHTML = filaVaciaRubros('Error cargando');
+    renderPaginacionRubros(0, 1, PAGE_SIZE_RUBRO);
   }
 }
 
@@ -144,5 +199,6 @@ btnNuevoRubro.addEventListener('click', () => {
     })
     .catch(() => {
       tbodyRubros.innerHTML = filaVaciaRubros('No autenticado');
+      renderPaginacionRubros(0, 1, PAGE_SIZE_RUBRO);
     });
 })();

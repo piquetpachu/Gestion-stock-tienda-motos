@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Administrar Rubros</title>
+  <title>Gestión de Rubros</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
@@ -10,20 +10,29 @@
 <body class="bg-dark text-light">
   <?php include 'navbar.php'; ?>
 
-  <div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h2 class="h5 m-0">📂 Rubros</h2>
-      <button id="btnNuevoRubro" class="btn btn-success btn-sm d-none">➕ Nuevo</button>
+  <div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1>📂 Gestión de Rubros</h1>
+      <button id="btnNuevoRubro" class="btn btn-success d-none">➕ Nuevo Rubro</button>
     </div>
 
-    <!-- Buscador -->
-    <div class="mb-2">
-      <input type="search" id="buscarRubro" class="form-control form-control-sm" placeholder="Buscar rubro por nombre">
+    <!-- Filtros -->
+    <div class="row mb-3">
+      <div class="col-md-6 mb-2 mb-md-0">
+        <input type="search" id="buscarRubro" class="form-control" placeholder="🔍 Buscar rubro por nombre">
+      </div>
+      <div class="col-md-6">
+        <select id="ordenarPorRubro" class="form-select">
+          <option value="nombre_asc">Ordenar: Nombre (A-Z)</option>
+          <option value="nombre_desc">Nombre (Z-A)</option>
+        </select>
+      </div>
     </div>
 
+    <!-- Tabla -->
     <div class="table-responsive">
-      <table class="table table-striped table-bordered align-middle table-dark mb-0">
-        <thead>
+      <table class="table table-striped table-hover table-bordered align-middle">
+        <thead class="table-dark">
           <tr>
             <th>Nombre</th>
             <th id="thAccionesRubros" style="width:160px; display:none;">Acciones</th>
@@ -34,6 +43,11 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Paginación -->
+    <nav>
+      <ul class="pagination justify-content-center" id="paginacionRubros"></ul>
+    </nav>
   </div>
 
   <!-- Modal Rubro -->
