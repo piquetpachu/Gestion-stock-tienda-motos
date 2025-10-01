@@ -19,29 +19,19 @@ function setTituloModalRubroEditar(r) {
   tituloModalRubro.textContent = `Editar Rubro: ${nombre}`;
 }
 
-// Auto-focus al abrir el modal
+// Auto-focus y actualización del título
 document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
   nombreRubroInput?.focus();
   nombreRubroInput?.select();
 });
-
-// Refrescar título mientras se escribe (solo en modo editar)
 nombreRubroInput.addEventListener('input', () => {
-  if (idRubroInput.value) {
-    setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
-  }
+  if (idRubroInput.value) setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
 });
 
-// ---------- Estado ----------
-let esAdmin = false;
-let rubros = [];
-
-// ---------- Util ----------
+// Render sin columna ID
 function filaVaciaRubros(msg='Sin rubros') {
   return `<tr><td colspan="${esAdmin?2:1}" class="text-center text-secondary">${msg}</td></tr>`;
 }
-
-// ---------- Render ----------
 function renderRubros() {
   if (!rubros.length) {
     tbodyRubros.innerHTML = filaVaciaRubros();
