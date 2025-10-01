@@ -20,7 +20,8 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         <li class="nav-item"><a class="nav-link" href="productos.php">Gestión de Stock</a></li>
         <li class="nav-item"><a class="nav-link" href="clientes.php">Clientes</a></li>
-        <li class="nav-item"><a class="nav-link" href="AdmRubroProveedores.php">Rubros/Proveedores</a></li>
+        <li class="nav-item"><a class="nav-link" href="AdmRubros.php">Rubros</a></li>
+        <li class="nav-item"><a class="nav-link" href="AdmProveedores.php">Proveedores</a></li>
         <li class="nav-item"><a class="nav-link" href="#">Usuario</a></li>
         <li class="nav-item"><a class="nav-link" href="ventas.php">Ventas</a></li>
 
