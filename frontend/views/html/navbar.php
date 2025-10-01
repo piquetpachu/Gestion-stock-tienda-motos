@@ -10,7 +10,10 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
-    <a class="navbar-brand" href="dashboard.php">"LOGO"</a>
+    <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
+      <img src="../img/logo-motos-carri.png" alt="Motos Carri" class="brand-logo">
+      <span class="d-none d-sm-inline">Motos Carri</span>
+    </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -38,7 +41,7 @@
       </ul>
 
       <div class="d-flex align-items-center gap-2">
-        <button id="btnTema" class="btn btn-sm btn-outline-light">🌙 Oscuro</button>
+        <button id="themeToggle" class="btn btn-sm btn-outline-light" type="button">🌙 Oscuro</button>
         <button id="logoutBtn" class="btn btn-danger">
           <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
         </button>

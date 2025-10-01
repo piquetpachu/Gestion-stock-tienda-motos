@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <title>Gestión de Rubros</title>
@@ -7,9 +7,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-dark text-light">
+<body>
   <?php include 'navbar.php'; ?>
-
+  
   <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>📂 Gestión de Rubros</h1>
@@ -53,15 +53,15 @@
   <!-- Modal Rubro -->
   <div class="modal fade" id="modalRubro" tabindex="-1" aria-hidden="true" aria-labelledby="tituloModalRubro" role="dialog" aria-modal="true">
     <div class="modal-dialog">
-      <form id="formRubro" class="modal-content bg-white text-dark" autocomplete="off">
+      <form id="formRubro" class="modal-content" autocomplete="off">
         <div class="modal-header">
-          <h5 class="modal-title text-dark" id="tituloModalRubro">Nuevo Rubro</h5>
+          <h5 class="modal-title" id="tituloModalRubro">Nuevo Rubro</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
           <input type="hidden" id="id_rubro" name="id_rubro">
           <div class="mb-3">
-            <label class="form-label text-dark" for="nombre_rubro">Nombre</label>
+            <label class="form-label" for="nombre_rubro">Nombre</label>
             <input type="text" id="nombre_rubro" name="nombre" class="form-control" required maxlength="100">
           </div>
         </div>
@@ -73,6 +73,7 @@
     </div>
   </div>
 
+  <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

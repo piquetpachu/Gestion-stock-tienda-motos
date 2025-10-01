@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-bs-theme="light">
 <head>
   <meta charset="UTF-8">
   <title>Gestión de Proveedores</title>
@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 </head>
-<body class="bg-dark text-light">
+<body>
   <?php include 'navbar.php'; ?>
 
   <div class="container mt-5">
@@ -56,31 +56,31 @@
   <!-- Modal Proveedor -->
   <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true" aria-labelledby="tituloModalProveedor" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-lg">
-      <form id="formProveedor" class="modal-content bg-white text-dark" autocomplete="off">
+      <form id="formProveedor" class="modal-content" autocomplete="off">
         <div class="modal-header">
-          <h5 class="modal-title text-dark" id="tituloModalProveedor">Nuevo Proveedor</h5>
+          <h5 class="modal-title" id="tituloModalProveedor">Nuevo Proveedor</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body row g-3">
           <input type="hidden" id="id_proveedor" name="id_proveedor">
           <div class="col-md-6">
-            <label class="form-label text-dark" for="prov_nombre">Nombre</label>
+            <label class="form-label" for="prov_nombre">Nombre</label>
             <input type="text" id="prov_nombre" name="nombre" class="form-control" required maxlength="100">
           </div>
           <div class="col-md-6">
-            <label class="form-label text-dark" for="prov_cuit">CUIT</label>
+            <label class="form-label" for="prov_cuit">CUIT</label>
             <input type="text" id="prov_cuit" name="cuit" class="form-control" maxlength="20">
           </div>
           <div class="col-md-6">
-            <label class="form-label text-dark" for="prov_telefono">Teléfono</label>
+            <label class="form-label" for="prov_telefono">Teléfono</label>
             <input type="text" id="prov_telefono" name="telefono" class="form-control" maxlength="20">
           </div>
           <div class="col-md-6">
-            <label class="form-label text-dark" for="prov_email">Email</label>
+            <label class="form-label" for="prov_email">Email</label>
             <input type="email" id="prov_email" name="email" class="form-control" maxlength="100">
           </div>
           <div class="col-12">
-            <label class="form-label text-dark" for="prov_direccion">Dirección</label>
+            <label class="form-label" for="prov_direccion">Dirección</label>
             <input type="text" id="prov_direccion" name="direccion" class="form-control" maxlength="255">
           </div>
         </div>
@@ -92,6 +92,7 @@
     </div>
   </div>
 
+  <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

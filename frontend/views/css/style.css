@@ -163,4 +163,27 @@ body.dark-theme .btn-danger {
 .modal .form-label,
 .modal .form-check-label,
 .modal .form-text { color: #000 !important; }
+/* Modales respetan el tema */
+.modal .modal-content {
+  background-color: var(--bs-modal-bg) !important;
+  color: var(--bs-body-color) !important;
+}
+.modal .modal-title,
+.modal .modal-body,
+.modal .modal-footer,
+.modal .form-label,
+.modal .form-check-label,
+.modal .form-text {
+  color: var(--bs-body-color) !important;
+}
+
+/* Logo navbar */
+.navbar-brand .brand-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+}
+@media (max-width: 575.98px){
+  .navbar-brand .brand-logo { height: 28px; }
+}
 
