@@ -19,13 +19,12 @@
       <table class="table table-striped table-bordered align-middle table-dark mb-0">
         <thead>
           <tr>
-            <th style="width:80px">ID</th>
             <th>Nombre</th>
             <th id="thAccionesRubros" style="width:160px; display:none;">Acciones</th>
           </tr>
         </thead>
         <tbody id="tbodyRubros">
-          <tr><td colspan="3" class="text-center">Cargando...</td></tr>
+          <tr><td colspan="2" class="text-center">Cargando...</td></tr>
         </tbody>
       </table>
     </div>

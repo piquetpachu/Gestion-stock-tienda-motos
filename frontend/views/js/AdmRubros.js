@@ -39,7 +39,7 @@ let rubros = [];
 
 // ---------- Util ----------
 function filaVaciaRubros(msg='Sin rubros') {
-  return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
+  return `<tr><td colspan="${esAdmin?2:1}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
 // ---------- Render ----------
@@ -55,7 +55,6 @@ function renderRubros() {
     ` : '';
     return `
       <tr>
-        <td>${r.id_rubro}</td>
         <td>${r.nombre}</td>
         ${esAdmin ? `<td>${acciones}</td>` : ''}
       </tr>
