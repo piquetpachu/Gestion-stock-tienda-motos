@@ -1,16 +1,6 @@
-// Gestión Rubros y Proveedores unificada
+// Gestión de Proveedores
 
-// ---------- Referencias Rubros ----------
-const tbodyRubros = document.getElementById('tbodyRubros');
-const btnNuevoRubro = document.getElementById('btnNuevoRubro');
-const thAccionesRubros = document.getElementById('thAccionesRubros');
-const modalRubro = new bootstrap.Modal(document.getElementById('modalRubro'));
-const formRubro = document.getElementById('formRubro');
-const idRubroInput = document.getElementById('id_rubro');
-const nombreRubroInput = document.getElementById('nombre_rubro');
-const tituloModalRubro = document.getElementById('tituloModalRubro');
-
-// ---------- Referencias Proveedores ----------
+// ---------- Referencias ----------
 const tbodyProveedores = document.getElementById('tbodyProveedores');
 const btnNuevoProveedor = document.getElementById('btnNuevoProveedor');
 const thAccionesProveedores = document.getElementById('thAccionesProveedores');
@@ -26,39 +16,14 @@ const tituloModalProveedor = document.getElementById('tituloModalProveedor');
 
 // ---------- Estado ----------
 let esAdmin = false;
-let rubros = [];
 let proveedores = [];
 
 // ---------- Util ----------
-function filaVaciaRubros(msg='Sin rubros') {
-  return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
-}
 function filaVaciaProveedores(msg='Sin proveedores') {
   return `<tr><td colspan="${esAdmin?4:3}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
-// ---------- Render Rubros ----------
-function renderRubros() {
-  if (!rubros.length) {
-    tbodyRubros.innerHTML = filaVaciaRubros();
-    return;
-  }
-  tbodyRubros.innerHTML = rubros.map(r => {
-    const acciones = esAdmin ? `
-      <button class="btn btn-sm btn-warning me-1" onclick="editarRubro(${r.id_rubro})">Editar</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
-    ` : '';
-    return `
-      <tr>
-        <td>${r.id_rubro}</td>
-        <td>${r.nombre}</td>
-        ${esAdmin ? `<td>${acciones}</td>` : ''}
-      </tr>
-    `;
-  }).join('');
-}
-
-// ---------- Render Proveedores ----------
+// ---------- Render ----------
 function renderProveedores() {
   if (!proveedores.length) {
     tbodyProveedores.innerHTML = filaVaciaProveedores();
@@ -80,22 +45,11 @@ function renderProveedores() {
   }).join('');
 }
 
-// ---------- Carga desde API ----------
-async function cargarRubros() {
-  try {
-    const res = await fetch(API_URL + 'rubros');
-    if (!res.ok) throw new Error();
-    rubros = await res.json();
-    renderRubros();
-  } catch {
-    tbodyRubros.innerHTML = filaVaciaRubros('Error cargando');
-  }
-}
-
+// ---------- API ----------
 async function cargarProveedores() {
   try {
     const res = await fetch(API_URL + 'proveedores');
-    if (!res.ok) throw new Error();
+    if (!res.ok) throw new Error('Error de servidor');
     proveedores = await res.json();
     renderProveedores();
   } catch {
@@ -103,58 +57,7 @@ async function cargarProveedores() {
   }
 }
 
-// ---------- CRUD Rubro ----------
-formRubro.addEventListener('submit', async e => {
-  e.preventDefault();
-  const id = idRubroInput.value.trim();
-  const payload = { nombre: nombreRubroInput.value.trim() };
-  if (!payload.nombre) return;
-  const url = id ? (API_URL + 'actualizar_rubro/' + id) : (API_URL + 'crear_rubro');
-  const method = id ? 'PUT' : 'POST';
-  try {
-    const res = await fetch(url, {
-      method,
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(payload)
-    });
-    const data = await res.json();
-    if (!res.ok || data.error) throw new Error(data.error||'Error');
-    modalRubro.hide();
-    await cargarRubros();
-  } catch(err){
-    alert('Error Rubro: '+err.message);
-  }
-});
-
-window.editarRubro = id => {
-  const r = rubros.find(x=>x.id_rubro==id);
-  if(!r) return;
-  idRubroInput.value = r.id_rubro;
-  nombreRubroInput.value = r.nombre;
-  tituloModalRubro.textContent = 'Editar Rubro';
-  modalRubro.show();
-};
-
-window.eliminarRubro = async id => {
-  if(!confirm('¿Eliminar rubro?')) return;
-  try{
-    const res = await fetch(API_URL + 'borrar_rubro/' + id, { method:'DELETE' });
-    const data = await res.json();
-    if(!res.ok || data.error) throw new Error(data.error||'Error');
-    await cargarRubros();
-  }catch(e){
-    alert('Error: '+e.message);
-  }
-};
-
-btnNuevoRubro.addEventListener('click', () => {
-  idRubroInput.value = '';
-  formRubro.reset();
-  tituloModalRubro.textContent = 'Nuevo Rubro';
-  modalRubro.show();
-});
-
-// ---------- CRUD Proveedor ----------
+// ---------- CRUD ----------
 formProveedor.addEventListener('submit', async e => {
   e.preventDefault();
   const id = idProveedorInput.value.trim();
@@ -224,16 +127,12 @@ btnNuevoProveedor.addEventListener('click', () => {
     .then(u=>{
       esAdmin = u.rol === 'admin';
       if (esAdmin){
-        btnNuevoRubro.classList.remove('d-none');
-        thAccionesRubros.style.display = '';
         btnNuevoProveedor.classList.remove('d-none');
         thAccionesProveedores.style.display = '';
       }
-      cargarRubros();
       cargarProveedores();
     })
     .catch(() => {
-      tbodyRubros.innerHTML = filaVaciaRubros('No autenticado');
       tbodyProveedores.innerHTML = filaVaciaProveedores('No autenticado');
     });
 })();
