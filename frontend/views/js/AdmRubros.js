@@ -9,6 +9,11 @@ const formRubro = document.getElementById('formRubro');
 const idRubroInput = document.getElementById('id_rubro');
 const nombreRubroInput = document.getElementById('nombre_rubro');
 const tituloModalRubro = document.getElementById('tituloModalRubro');
+const inputBuscarRubro = document.getElementById('buscarRubro');
+
+let terminoBusquedaRubros = '';
+
+function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
 
 // Helpers de título
 function setTituloModalRubroNuevo() {
@@ -28,16 +33,20 @@ nombreRubroInput.addEventListener('input', () => {
   if (idRubroInput.value) setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
 });
 
-// Render sin columna ID
+// Render sin columna ID + filtro
 function filaVaciaRubros(msg='Sin rubros') {
   return `<tr><td colspan="${esAdmin?2:1}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 function renderRubros() {
-  if (!rubros.length) {
-    tbodyRubros.innerHTML = filaVaciaRubros();
+  const lista = terminoBusquedaRubros
+    ? rubros.filter(r => normalizar(r.nombre).includes(normalizar(terminoBusquedaRubros)))
+    : rubros;
+
+  if (!lista.length) {
+    tbodyRubros.innerHTML = filaVaciaRubros(terminoBusquedaRubros ? 'Sin resultados' : 'Sin rubros');
     return;
   }
-  tbodyRubros.innerHTML = rubros.map(r => {
+  tbodyRubros.innerHTML = lista.map(r => {
     const acciones = esAdmin ? `
       <button class="btn btn-sm btn-warning me-1" onclick="editarRubro(${r.id_rubro})">Editar</button>
       <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
@@ -50,6 +59,12 @@ function renderRubros() {
     `;
   }).join('');
 }
+
+// Buscador
+inputBuscarRubro?.addEventListener('input', (e) => {
+  terminoBusquedaRubros = e.target.value.trim();
+  renderRubros();
+});
 
 // ---------- API ----------
 async function cargarRubros() {

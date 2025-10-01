@@ -13,23 +13,34 @@ const provTel = document.getElementById('prov_telefono');
 const provEmail = document.getElementById('prov_email');
 const provDir = document.getElementById('prov_direccion');
 const tituloModalProveedor = document.getElementById('tituloModalProveedor');
+const inputBuscarProveedor = document.getElementById('buscarProveedor');
 
 // ---------- Estado ----------
 let esAdmin = false;
 let proveedores = [];
+let terminoBusqueda = '';
 
 // ---------- Util ----------
+function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
+
 function filaVaciaProveedores(msg='Sin proveedores') {
   return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
 // ---------- Render ----------
 function renderProveedores() {
-  if (!proveedores.length) {
-    tbodyProveedores.innerHTML = filaVaciaProveedores();
+  const lista = terminoBusqueda
+    ? proveedores.filter(p => {
+        const q = normalizar(terminoBusqueda);
+        return normalizar(p.nombre).includes(q) || normalizar(p.cuit).includes(q);
+      })
+    : proveedores;
+
+  if (!lista.length) {
+    tbodyProveedores.innerHTML = filaVaciaProveedores(terminoBusqueda ? 'Sin resultados' : 'Sin proveedores');
     return;
   }
-  tbodyProveedores.innerHTML = proveedores.map(p => {
+  tbodyProveedores.innerHTML = lista.map(p => {
     const acciones = esAdmin ? `
       <button class="btn btn-sm btn-warning me-1" onclick="editarProveedor(${p.id_proveedor})">Editar</button>
       <button class="btn btn-sm btn-danger" onclick="eliminarProveedor(${p.id_proveedor})">Borrar</button>
@@ -43,6 +54,12 @@ function renderProveedores() {
     `;
   }).join('');
 }
+
+// Buscador
+inputBuscarProveedor?.addEventListener('input', (e) => {
+  terminoBusqueda = e.target.value.trim();
+  renderProveedores();
+});
 
 // ---------- API ----------
 async function cargarProveedores() {

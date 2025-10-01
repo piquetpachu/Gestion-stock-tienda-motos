@@ -15,6 +15,12 @@
       <h2 class="h5 m-0">🏭 Proveedores</h2>
       <button id="btnNuevoProveedor" class="btn btn-success btn-sm d-none">➕ Nuevo</button>
     </div>
+
+    <!-- Buscador -->
+    <div class="mb-2">
+      <input type="search" id="buscarProveedor" class="form-control form-control-sm" placeholder="Buscar por nombre o CUIT">
+    </div>
+
     <div class="table-responsive">
       <table class="table table-striped table-bordered align-middle table-dark mb-0">
         <thead>

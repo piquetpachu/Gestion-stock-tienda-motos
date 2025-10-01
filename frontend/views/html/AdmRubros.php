@@ -15,6 +15,12 @@
       <h2 class="h5 m-0">📂 Rubros</h2>
       <button id="btnNuevoRubro" class="btn btn-success btn-sm d-none">➕ Nuevo</button>
     </div>
+
+    <!-- Buscador -->
+    <div class="mb-2">
+      <input type="search" id="buscarRubro" class="form-control form-control-sm" placeholder="Buscar rubro por nombre">
+    </div>
+
     <div class="table-responsive">
       <table class="table table-striped table-bordered align-middle table-dark mb-0">
         <thead>
