@@ -43,6 +43,3 @@
     }
   });
 })();
-
-<!-- en navbar.php -->
-<button id="themeToggle" class="btn btn-outline-secondary btn-sm" type="button" title="Cambiar tema">🌙 Oscuro</button>

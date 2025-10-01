@@ -6,7 +6,7 @@
   <link href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <style>
-    .brand-logo { height: 32px; width: auto; }
+    .brand-logo { height: 32px; width: auto; object-fit: contain; }
   </style>
 </head>
 
@@ -15,7 +15,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
-      <img src="/Gestion-stock-tienda-motos/public/img/logo-motos-carri.svg" alt="Motos Carri" class="brand-logo" />
+      <img src="/Gestion-stock-tienda-motos/public/img/logo-motos-carri.png" alt="Motos Carri" class="brand-logo" />
       <span class="d-none d-sm-inline">Motos Carri</span>
     </a>
 
