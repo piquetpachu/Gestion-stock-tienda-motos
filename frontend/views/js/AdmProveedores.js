@@ -20,7 +20,7 @@ let proveedores = [];
 
 // ---------- Util ----------
 function filaVaciaProveedores(msg='Sin proveedores') {
-  return `<tr><td colspan="${esAdmin?4:3}" class="text-center text-secondary">${msg}</td></tr>`;
+  return `<tr><td colspan="${esAdmin?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
 // ---------- Render ----------
@@ -36,7 +36,6 @@ function renderProveedores() {
     ` : '';
     return `
       <tr>
-        <td>${p.id_proveedor}</td>
         <td>${p.nombre}</td>
         <td>${p.cuit || ''}</td>
         ${esAdmin ? `<td>${acciones}</td>` : ''}
