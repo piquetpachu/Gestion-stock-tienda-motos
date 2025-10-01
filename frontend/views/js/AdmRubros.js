@@ -10,6 +10,12 @@ const idRubroInput = document.getElementById('id_rubro');
 const nombreRubroInput = document.getElementById('nombre_rubro');
 const tituloModalRubro = document.getElementById('tituloModalRubro');
 
+// Auto-focus al abrir el modal
+document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
+  nombreRubroInput?.focus();
+  nombreRubroInput?.select();
+});
+
 // ---------- Estado ----------
 let esAdmin = false;
 let rubros = [];
