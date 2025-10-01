@@ -16,8 +16,7 @@ function setTituloModalRubroNuevo() {
 }
 function setTituloModalRubroEditar(r) {
   const nombre = (r?.nombre ?? '').trim() || '(sin nombre)';
-  const id = r?.id_rubro ?? idRubroInput.value;
-  tituloModalRubro.textContent = `Editar Rubro: ${nombre} (ID ${id})`;
+  tituloModalRubro.textContent = `Editar Rubro: ${nombre}`;
 }
 
 // Auto-focus al abrir el modal
@@ -29,7 +28,7 @@ document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
 // Refrescar título mientras se escribe (solo en modo editar)
 nombreRubroInput.addEventListener('input', () => {
   if (idRubroInput.value) {
-    setTituloModalRubroEditar({ nombre: nombreRubroInput.value, id_rubro: idRubroInput.value });
+    setTituloModalRubroEditar({ nombre: nombreRubroInput.value });
   }
 });
 
