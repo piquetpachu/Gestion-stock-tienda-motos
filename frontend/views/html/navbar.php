@@ -16,7 +16,7 @@
   <div class="container-fluid">
     <a class="navbar-brand d-flex align-items-center gap-2" href="dashboard.php">
       <img src="/Gestion-stock-tienda-motos/public/img/logo-motos-carri.png" alt="Motos Carri" class="brand-logo" />
-      <span class="d-none d-sm-inline">Motos Carri</span>
+      <span class="d-none d-sm-inline"></span>
     </a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
