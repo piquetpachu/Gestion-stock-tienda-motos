@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -34,34 +33,34 @@
   </div>
 
   <!-- Modal Proveedor -->
-  <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true">
+  <div class="modal fade" id="modalProveedor" tabindex="-1" aria-hidden="true" aria-labelledby="tituloModalProveedor" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-lg">
-      <form id="formProveedor" class="modal-content">
+      <form id="formProveedor" class="modal-content bg-white text-dark" autocomplete="off">
         <div class="modal-header">
-          <h5 class="modal-title" id="tituloModalProveedor">Nuevo Proveedor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title text-dark" id="tituloModalProveedor">Nuevo Proveedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body row g-3">
-          <input type="hidden" id="id_proveedor">
+          <input type="hidden" id="id_proveedor" name="id_proveedor">
           <div class="col-md-6">
-            <label class="form-label">Nombre</label>
-            <input type="text" id="prov_nombre" class="form-control" required maxlength="100">
+            <label class="form-label text-dark" for="prov_nombre">Nombre</label>
+            <input type="text" id="prov_nombre" name="nombre" class="form-control" required maxlength="100">
           </div>
           <div class="col-md-6">
-            <label class="form-label">CUIT</label>
-            <input type="text" id="prov_cuit" class="form-control" maxlength="20">
+            <label class="form-label text-dark" for="prov_cuit">CUIT</label>
+            <input type="text" id="prov_cuit" name="cuit" class="form-control" maxlength="20">
           </div>
           <div class="col-md-6">
-            <label class="form-label">Teléfono</label>
-            <input type="text" id="prov_telefono" class="form-control" maxlength="20">
+            <label class="form-label text-dark" for="prov_telefono">Teléfono</label>
+            <input type="text" id="prov_telefono" name="telefono" class="form-control" maxlength="20">
           </div>
           <div class="col-md-6">
-            <label class="form-label">Email</label>
-            <input type="email" id="prov_email" class="form-control" maxlength="100">
+            <label class="form-label text-dark" for="prov_email">Email</label>
+            <input type="email" id="prov_email" name="email" class="form-control" maxlength="100">
           </div>
           <div class="col-12">
-            <label class="form-label">Dirección</label>
-            <input type="text" id="prov_direccion" class="form-control" maxlength="255">
+            <label class="form-label text-dark" for="prov_direccion">Dirección</label>
+            <input type="text" id="prov_direccion" name="direccion" class="form-control" maxlength="255">
           </div>
         </div>
         <div class="modal-footer">
