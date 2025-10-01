@@ -10,10 +10,27 @@ const idRubroInput = document.getElementById('id_rubro');
 const nombreRubroInput = document.getElementById('nombre_rubro');
 const tituloModalRubro = document.getElementById('tituloModalRubro');
 
+// Helpers de título
+function setTituloModalRubroNuevo() {
+  tituloModalRubro.textContent = 'Nuevo Rubro';
+}
+function setTituloModalRubroEditar(r) {
+  const nombre = (r?.nombre ?? '').trim() || '(sin nombre)';
+  const id = r?.id_rubro ?? idRubroInput.value;
+  tituloModalRubro.textContent = `Editar Rubro: ${nombre} (ID ${id})`;
+}
+
 // Auto-focus al abrir el modal
 document.getElementById('modalRubro').addEventListener('shown.bs.modal', () => {
   nombreRubroInput?.focus();
   nombreRubroInput?.select();
+});
+
+// Refrescar título mientras se escribe (solo en modo editar)
+nombreRubroInput.addEventListener('input', () => {
+  if (idRubroInput.value) {
+    setTituloModalRubroEditar({ nombre: nombreRubroInput.value, id_rubro: idRubroInput.value });
+  }
 });
 
 // ---------- Estado ----------
@@ -87,7 +104,7 @@ window.editarRubro = id => {
   if(!r) return;
   idRubroInput.value = r.id_rubro;
   nombreRubroInput.value = r.nombre;
-  tituloModalRubro.textContent = 'Editar Rubro';
+  setTituloModalRubroEditar(r);
   modalRubro.show();
 };
 
@@ -106,7 +123,7 @@ window.eliminarRubro = async id => {
 btnNuevoRubro.addEventListener('click', () => {
   idRubroInput.value = '';
   formRubro.reset();
-  tituloModalRubro.textContent = 'Nuevo Rubro';
+  setTituloModalRubroNuevo();
   modalRubro.show();
 });
 
