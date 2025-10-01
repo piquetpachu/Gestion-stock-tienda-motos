@@ -157,7 +157,7 @@ body.dark-theme .btn-danger {
 
 /* Texto de modales en negro (sobrescribe .text-light del body) */
 .modal .modal-content { color: #000 !important; }
-.modal .modal-title,
+.modal .modal-title { color: #000 !important; }
 .modal .modal-body,
 .modal .modal-footer,
 .modal .form-label,
