@@ -9,7 +9,7 @@ body {
 }
 
 .bodyclientes {
-  background-color: #cacaca;
+  background-color: #343a40;
   display: none;
 }
 
@@ -18,7 +18,7 @@ body.bg-dark {
 }
 
 body.dark-theme .btn {
-  background-color: #cacaca;
+  background-color: #343a40;
   color: #fff;
   border-color: #444;
 }
