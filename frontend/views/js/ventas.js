@@ -570,8 +570,34 @@ function finalizarVenta() {
         return;
     }
 
-    if (!selectMetodoPago.value) {
-        alert('Debe seleccionar un método de pago.');
+    // 🔹 Actualizar pagosVarios dinámicamente desde los checkboxes
+    pagosVarios = [];
+    document.querySelectorAll('.metodo-pago').forEach(div => {
+        const chk = div.querySelector('.pago-check');
+        if (!chk || !chk.checked) return;
+
+        const id = parseInt(div.dataset.id);
+        const inputMonto = div.querySelector('.monto');
+        let monto = parseFloat(inputMonto?.value.replace(/[^\d.-]/g, '')) || 0;
+        if (monto > 0) {
+            let pago = { id_medio_pago: id, monto };
+
+            if (id === 4) { // Tarjeta
+                const tipo = div.querySelector('.tipo-tarjeta')?.value;
+                if (!tipo) return; // si no seleccionó crédito/débito no contar
+                pago.tipo = tipo;
+                if (tipo === 'credito') {
+                    pago.cuotas = parseInt(div.querySelector('.cuotas')?.value) || 1;
+                }
+            }
+
+            pagosVarios.push(pago);
+        }
+    });
+
+    // Validar método de pago
+    if (!selectMetodoPago.value && pagosVarios.length === 0) {
+        alert('Debe seleccionar un método de pago o usar varios métodos.');
         return;
     }
 
@@ -581,7 +607,6 @@ function finalizarVenta() {
         return;
     }
 
-    const metodoPago = selectMetodoPago.value;
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
         cantidad: p.cantidad,
@@ -590,55 +615,47 @@ function finalizarVenta() {
         iva: parseFloat(inputIVA.value) || 0
     }));
 
+    // Determinar los pagos
+    let pagos = [];
+    const totalVenta = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
+
+    if (pagosVarios.length > 0) {
+        // Usar varios métodos de pago
+        let sumaPagos = pagosVarios.reduce((acc, p) => acc + p.monto, 0);
+        if (Math.abs(sumaPagos - totalVenta) > 0.01) {
+            alert('La suma de los montos ingresados no coincide con el total de la venta.');
+            return;
+        }
+        pagos = pagosVarios.map(p => ({
+            id_medio_pago: p.id_medio_pago,
+            monto: p.monto
+        }));
+    } else {
+        // Solo un método de pago
+        pagos = [{
+            id_medio_pago: parseInt(selectMetodoPago.value),
+            monto: totalVenta
+        }];
+    }
+
     const venta = {
-        monto_total: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
-        tipo_comprobante: 'A', // o el que corresponda
-        nro_comprobante: '0001-00000001', // generar dinámicamente si quieres
-        id_usuario: Number(idUsuario), // ahora toma el valor correcto
+        monto_total: totalVenta,
+        tipo_comprobante: 'TICKET', // Ajustar según tu lógica
+        nro_comprobante: Date.now().toString(), // Número único temporal
+        id_usuario: Number(idUsuario),
         id_iva: parseFloat(inputIVA.value) || 0,
         items: items,
-        pagos: [{
-            id_medio_pago: selectMetodoPago.value,
-            monto: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
-            cuil_cuit: selectMetodoPago.value === '2' ? document.getElementById('cuit_tarjeta')?.value || null : null
-        }]
+        pagos: pagos,
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null
     };
-
-    const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
-
-    const pago = {
-        id_medio_pago: parseInt(metodoPago),
-        monto: montoTotal
-    };
-
-    // if (metodoPago === '2') {
-    //     // const cuitInput = document.getElementById('cuit_tarjeta');
-    //     if (!cuitInput || !cuitInput.value) {
-    //         alert('Debe ingresar un CUIT válido para tarjeta.');
-    //         return;
-    //     }
-    //     pago.cuil_cuit = cuitInput.value;
-    // }
-
-    venta.pagos = [pago];
-    venta.id_cliente = selectCliente.value || null;
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
-    const data = {
-        items,
-        pagos: [pago],
-        monto_total: montoTotal,
-        tipo_comprobante: 'TICKET', // Valor por defecto
-        nro_comprobante: Date.now().toString(), // Generar número único
-        id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
-        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
-        id_usuario: Number(idUsuario) // ahora toma el valor correcto
-    };
+
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(venta)
     })
         .then(res => {
             if (!res.ok) throw new Error('Error al procesar la venta');
@@ -649,15 +666,16 @@ function finalizarVenta() {
             mensajeResultado.classList.remove('text-danger');
             mensajeResultado.classList.add('text-success');
 
+            // Guardar recibo
+            mostrarRecibo(venta);
 
-            mostrarRecibo(data);
-
-
+            // Limpiar todo
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
+            pagosVarios = [];
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -695,17 +713,98 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // -------------------- BOTÓN VARIOS MÉTODOS --------------------
-const bloqueVariosMetodos = document.getElementById('bloque_varios_metodos');
-const btnVariosMetodos = document.getElementById('btn_varios_metodos');
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+const btnVarios = document.getElementById('btn_varios');
+const contenedorVarios = document.getElementById('bloque_varios');
+let mostrandoVarios = false;
+let pagosVarios = [];
 
-// Ocultar bloque al inicio
-bloqueVariosMetodos.style.display = 'none';
+btnVarios?.addEventListener('click', () => {
+    mostrandoVarios = !mostrandoVarios;
+    if (!contenedorVarios) return;
+    contenedorVarios.innerHTML = '';
+    if (!mostrandoVarios) return;
 
-// Listener del botón
-btnVariosMetodos.addEventListener('click', () => {
-    bloqueVariosMetodos.style.display =
-        (bloqueVariosMetodos.style.display === 'none' || bloqueVariosMetodos.style.display === '')
-            ? 'block'
-            : 'none';
+    const html = document.createElement('div');
+    html.className = 'card bg-dark text-white p-3';
+    html.innerHTML = `<h6 class="text-center mb-3">Varios métodos de pago</h6>`;
+    contenedorVarios.appendChild(html);
+
+    // IDs según la BD: 1-Efectivo, 2-Transferencia, 3-Mercado Pago, 4-Tarjeta Crédito, 5-Tarjeta Débito, 6-Cta Corriente
+    const metodos = [
+        { id: 1, nombre: 'Efectivo' },
+        { id: 2, nombre: 'Transferencia' },
+        { id: 3, nombre: 'Mercado Pago' },
+        { id: 4, nombre: 'Tarjeta Crédito/Débito' },
+        { id: 6, nombre: 'Cuenta corriente' }
+    ];
+
+    metodos.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'form-check mb-2 metodo-pago';
+        div.dataset.id = m.id;
+
+        div.innerHTML = `
+            <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
+            <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
+            <div class="detalles-pago mt-2"></div>
+        `;
+
+        html.appendChild(div);
+
+        const chk = div.querySelector('.pago-check');
+        const detalles = div.querySelector('.detalles-pago');
+
+        chk.addEventListener('change', () => {
+            detalles.innerHTML = '';
+            if (!chk.checked) return;
+
+            // Si es tarjeta (id 4)
+            if (m.id === 4) {
+                detalles.innerHTML = `
+                    <select class="form-select mb-2 tipo-tarjeta">
+                        <option value="">Seleccione tipo</option>
+                        <option value="debito">Débito</option>
+                        <option value="credito">Crédito</option>
+                    </select>
+                    <div class="cuotas-container mb-2" style="display:none;">
+                        <select class="form-select cuotas">
+                            <option value="1">1 cuota</option>
+                            <option value="3">3 cuotas</option>
+                            <option value="6">6 cuotas</option>
+                            <option value="12">12 cuotas</option>
+                        </select>
+                    </div>
+                    <input type="text" class="form-control monto" placeholder="Monto $">
+                `;
+
+                const tipoSel = detalles.querySelector('.tipo-tarjeta');
+                const cuotasDiv = detalles.querySelector('.cuotas-container');
+
+                tipoSel.addEventListener('change', () => {
+                    cuotasDiv.style.display = tipoSel.value === 'credito' ? 'block' : 'none';
+                });
+            } else {
+                detalles.innerHTML = `<input type="text" class="form-control monto" placeholder="Monto $">`;
+            }
+
+            // Formatear montos
+            detalles.querySelectorAll('.monto').forEach(input => {
+                input.addEventListener('input', e => {
+                    e.target.value = formatoMoneda(e.target.value);
+                });
+            });
+        });
+    });
 });
 
+// Función para formato de moneda sin decimales
+function formatoMoneda(valor) {
+    valor = valor.replace(/[^\d]/g, '');
+    if (!valor) return '';
+    const numero = parseInt(valor, 10);
+    return numero.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}

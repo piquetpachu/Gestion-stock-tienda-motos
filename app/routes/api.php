@@ -30,6 +30,7 @@ switch ($recurso) {
     case 'crear_producto':
     case (preg_match('/^actualizar_producto\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_producto\/\d+$/', $ruta) ? true : false):
+    case (preg_match('/^estadisticas_producto\/\d+$/', $ruta) ? true : false):
         require_once __DIR__ . '/../controllers/productosController.php';
         break;
 

@@ -108,6 +108,7 @@
           </div>
 
           <!-- Pago -->
+          <!-- Pago -->
           <div class="mb-3">
             <label for="metodo_de_pago" class="form-label">Método de pago</label>
             <div class="d-flex flex-wrap gap-2">
@@ -118,15 +119,16 @@
                 <option value="2">Transferencia</option>
                 <option value="4">Tarjeta</option>
                 <option value="6">Cuenta corriente</option>
-                
-                
               </select>
-              <button class="btn btn-success" type="button" id="btn_varios_metodos">Varios</button>
+              <button class="btn btn-success" type="button" id="btn_varios">Varios</button>
             </div>
+            <!-- DIV FALTANTE PARA CAMPOS ADICIONALES -->
+            <div id="campos_adicionales_pago" class="mt-2"></div>
           </div>
 
-          <!-- Campos adicionales dinámicos según JS -->
-          <div id="campos_adicionales_pago"></div>
+
+          <!-- Contenedor Varios Métodos -->
+          <div id="bloque_varios" class="mb-3"></div>
 
           <!-- Totales -->
           <div class="row g-2 mb-3">
