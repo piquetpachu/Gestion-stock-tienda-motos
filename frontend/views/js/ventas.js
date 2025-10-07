@@ -1,4 +1,3 @@
-
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
@@ -341,15 +340,32 @@ function actualizarTabla() {
         inputCant.min = '1';
         inputCant.value = prod.cantidad;
         inputCant.className = 'form-control form-control-sm text-center';
+
+        let valorAnterior = prod.cantidad; // 👈 guardamos el valor anterior
+
         inputCant.addEventListener('input', e => {
-            let val = parseInt(e.target.value);
-            if (!isNaN(val) && val >= 1) {
-                productosVenta[idx].cantidad = val;
+            const val = e.target.value.trim();
+
+            // Permitir que quede vacío mientras escribe
+            if (val === '') return;
+
+            const num = parseInt(val);
+            if (!isNaN(num) && num >= 1) {
+                productosVenta[idx].cantidad = num;
+                valorAnterior = num; // actualizamos el valor anterior
                 actualizarTotales();
             } else {
-                e.target.value = productosVenta[idx].cantidad;
+                e.target.value = valorAnterior; // 👈 volvemos al último válido
             }
         });
+
+        inputCant.addEventListener('blur', e => {
+            // Si deja vacío y sale del input, volver al valor anterior
+            if (e.target.value.trim() === '') {
+                e.target.value = valorAnterior;
+            }
+        });
+
         tdCantidad.appendChild(inputCant);
         fila.appendChild(tdCantidad);
 
@@ -374,6 +390,7 @@ function actualizarTabla() {
         tablaProductosBody.appendChild(fila);
     });
 }
+
 
 function actualizarTotales() {
     // Calcular subtotal
@@ -563,41 +580,18 @@ botonImprimirRecibo.addEventListener('click', () => {
 });
 
 // -------------------- VENTA --------------------
-
 function finalizarVenta() {
     if (productosVenta.length === 0) {
         alert('Debe agregar al menos un producto a la venta.');
         return;
     }
 
-    // 🔹 Actualizar pagosVarios dinámicamente desde los checkboxes
-    pagosVarios = [];
-    document.querySelectorAll('.metodo-pago').forEach(div => {
-        const chk = div.querySelector('.pago-check');
-        if (!chk || !chk.checked) return;
+    // Verificar si hay varios métodos seleccionados
+    const variosActivos = document.querySelectorAll('#bloque_varios .pago-check:checked');
+    const tieneVarios = variosActivos.length > 0;
 
-        const id = parseInt(div.dataset.id);
-        const inputMonto = div.querySelector('.monto');
-        let monto = parseFloat(inputMonto?.value.replace(/[^\d.-]/g, '')) || 0;
-        if (monto > 0) {
-            let pago = { id_medio_pago: id, monto };
-
-            if (id === 4) { // Tarjeta
-                const tipo = div.querySelector('.tipo-tarjeta')?.value;
-                if (!tipo) return; // si no seleccionó crédito/débito no contar
-                pago.tipo = tipo;
-                if (tipo === 'credito') {
-                    pago.cuotas = parseInt(div.querySelector('.cuotas')?.value) || 1;
-                }
-            }
-
-            pagosVarios.push(pago);
-        }
-    });
-
-    // Validar método de pago
-    if (!selectMetodoPago.value && pagosVarios.length === 0) {
-        alert('Debe seleccionar un método de pago o usar varios métodos.');
+    if (!tieneVarios && !selectMetodoPago.value) {
+        alert('Debe seleccionar un método de pago.');
         return;
     }
 
@@ -615,38 +609,48 @@ function finalizarVenta() {
         iva: parseFloat(inputIVA.value) || 0
     }));
 
-    // Determinar los pagos
     let pagos = [];
     const totalVenta = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
 
-    if (pagosVarios.length > 0) {
-        // Usar varios métodos de pago
-        let sumaPagos = pagosVarios.reduce((acc, p) => acc + p.monto, 0);
-        if (Math.abs(sumaPagos - totalVenta) > 0.01) {
-            alert('La suma de los montos ingresados no coincide con el total de la venta.');
+    if (tieneVarios) {
+        variosActivos.forEach(chk => {
+            const idMetodo = parseInt(chk.id.replace('mp_', ''));
+            const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
+            const monto = parseFloat(montoInput?.value.replace(/[^\d.-]/g, '')) || 0;
+            if (monto > 0) {
+                pagos.push({
+                    id_medio_pago: idMetodo,
+                    monto: monto
+                });
+            }
+        });
+
+        // Validar que la suma coincida con el total
+        const sumaPagos = pagos.reduce((acc, p) => acc + p.monto, 0);
+        const diferencia = Math.abs(sumaPagos - totalVenta);
+
+        if (diferencia > 0.5) { // tolerancia de 50 centavos
+            alert(`La suma de los métodos de pago (${sumaPagos.toFixed(2)}) no coincide con el total (${totalVenta.toFixed(2)}).`);
             return;
         }
-        pagos = pagosVarios.map(p => ({
-            id_medio_pago: p.id_medio_pago,
-            monto: p.monto
-        }));
+
     } else {
-        // Solo un método de pago
-        pagos = [{
-            id_medio_pago: parseInt(selectMetodoPago.value),
+        const metodoPago = parseInt(selectMetodoPago.value);
+        pagos.push({
+            id_medio_pago: metodoPago,
             monto: totalVenta
-        }];
+        });
     }
 
-    const venta = {
+    const data = {
+        items,
+        pagos,
         monto_total: totalVenta,
-        tipo_comprobante: 'TICKET', // Ajustar según tu lógica
-        nro_comprobante: Date.now().toString(), // Número único temporal
-        id_usuario: Number(idUsuario),
-        id_iva: parseFloat(inputIVA.value) || 0,
-        items: items,
-        pagos: pagos,
-        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null
+        tipo_comprobante: 'TICKET',
+        nro_comprobante: Date.now().toString(),
+        id_iva: 1,
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+        id_usuario: Number(idUsuario)
     };
 
     botonFinalizar.disabled = true;
@@ -655,7 +659,7 @@ function finalizarVenta() {
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(venta)
+        body: JSON.stringify(data)
     })
         .then(res => {
             if (!res.ok) throw new Error('Error al procesar la venta');
@@ -665,17 +669,19 @@ function finalizarVenta() {
             mensajeResultado.textContent = 'Venta registrada con éxito';
             mensajeResultado.classList.remove('text-danger');
             mensajeResultado.classList.add('text-success');
+            mostrarRecibo(data);
 
-            // Guardar recibo
-            mostrarRecibo(venta);
-
-            // Limpiar todo
+            // Limpiar y resetear
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-            pagosVarios = [];
+
+            // ✅ Refrescar la página después de 1.5 segundos
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -710,6 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarClientes();
     actualizarTotales();
 });
+
+
 
 
 // -------------------- BOTÓN VARIOS MÉTODOS --------------------
