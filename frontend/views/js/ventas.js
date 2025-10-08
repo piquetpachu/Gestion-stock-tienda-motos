@@ -498,7 +498,8 @@ function mostrarRecibo(data) {
             // parsear el monto correctamente
             let monto = p.monto;
             if (typeof monto === 'string') {
-                monto = monto.replace(/[^\d]/g, ''); // solo números
+                monto = String(monto).replace(/[^\d]/g, '');
+
             }
             return `${getNombreMetodoPago(String(p.id_medio_pago))}: ${formatoMoneda(monto)}`;
         }).join('<br>');
@@ -736,10 +737,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-// -------------------- BOTÓN VARIOS MÉTODOS --------------------
-// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
-// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 const btnVarios = document.getElementById('btn_varios');
@@ -773,10 +770,10 @@ btnVarios?.addEventListener('click', () => {
         div.dataset.id = m.id;
 
         div.innerHTML = `
-            <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
-            <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
-            <div class="detalles-pago mt-2"></div>
-        `;
+           <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
+           <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
+           <div class="detalles-pago mt-2"></div>
+       `;
 
         html.appendChild(div);
 
@@ -790,21 +787,21 @@ btnVarios?.addEventListener('click', () => {
             // Si es tarjeta (id 4)
             if (m.id === 4) {
                 detalles.innerHTML = `
-                    <select class="form-select mb-2 tipo-tarjeta">
-                        <option value="">Seleccione tipo</option>
-                        <option value="debito">Débito</option>
-                        <option value="credito">Crédito</option>
-                    </select>
-                    <div class="cuotas-container mb-2" style="display:none;">
-                        <select class="form-select cuotas">
-                            <option value="1">1 cuota</option>
-                            <option value="3">3 cuotas</option>
-                            <option value="6">6 cuotas</option>
-                            <option value="12">12 cuotas</option>
-                        </select>
-                    </div>
-                    <input type="text" class="form-control monto" placeholder="Monto $">
-                `;
+                   <select class="form-select mb-2 tipo-tarjeta">
+                       <option value="">Seleccione tipo</option>
+                       <option value="debito">Débito</option>
+                       <option value="credito">Crédito</option>
+                   </select>
+                   <div class="cuotas-container mb-2" style="display:none;">
+                       <select class="form-select cuotas">
+                           <option value="1">1 cuota</option>
+                           <option value="3">3 cuotas</option>
+                           <option value="6">6 cuotas</option>
+                           <option value="12">12 cuotas</option>
+                       </select>
+                   </div>
+                   <input type="text" class="form-control monto" placeholder="Monto $">
+               `;
 
                 const tipoSel = detalles.querySelector('.tipo-tarjeta');
                 const cuotasDiv = detalles.querySelector('.cuotas-container');
@@ -819,27 +816,19 @@ btnVarios?.addEventListener('click', () => {
             // Formatear montos
             detalles.querySelectorAll('.monto').forEach(input => {
                 input.addEventListener('input', e => {
-                    // Solo números
-                    let valorNumerico = e.target.value.replace(/[^0-9.,]/g, '');  // permitir coma o punto decimal
-valorNumerico = parseFloat(valorNumerico.replace(',', '.')) || 0;
-e.target.value = formatoMoneda(valorNumerico);
-
+                    e.target.value = formatoMoneda(e.target.value);
                 });
             });
-
         });
     });
 });
 
 // Función para formato de moneda sin decimales
 function formatoMoneda(valor) {
-    let numero = Number(valor);
-    if (isNaN(numero)) numero = 0;
-    return numero.toLocaleString('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3
-    });
+    if (valor == null) return '';
+    valor = String(valor); // <-- convertir a string
+    valor = valor.replace(/[^\d]/g, '');
+    if (!valor) return '';
+    const numero = parseInt(valor, 10);
+    return numero.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
 }
-
