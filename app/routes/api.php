@@ -144,8 +144,15 @@ switch ($recurso) {
         require_once __DIR__ . '/../controllers/estadisticasController.php';
         break;
 
+    // Historial
+    case 'historial':
+    case 'historial_ventas':
+        require_once __DIR__ . '/../config/database.php'; // Esto ya crea $pdo
+        require_once __DIR__ . '/../controllers/historialController.php';
 
-
+        $controller = new historialController($pdo);
+        $controller->obtenerHistorial();
+        break;
 
     default:
         echo json_encode(["error" => "Ruta no válida"]);
