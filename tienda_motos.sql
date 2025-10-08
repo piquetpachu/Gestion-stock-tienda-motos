@@ -16,8 +16,8 @@
 
 
 -- Volcando estructura de base de datos para tienda_motos
-CREATE DATABASE IF NOT EXISTS `tienda_motos` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
-USE `tienda_motos`;
+CREATE DATABASE IF NOT EXISTS `tienda_motos_2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */;
+USE `tienda_motos_2`;
 
 -- Volcando estructura para tabla tienda_motos.cliente
 CREATE TABLE IF NOT EXISTS `cliente` (

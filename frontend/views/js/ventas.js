@@ -171,7 +171,7 @@ function cargarClientes(seleccionarId = null) {
             selectCliente.innerHTML = '';
 
             // Tomamos el primer cliente que sea "Consumidor Final" de la BD
-            const consumidorFinal = data.find(c => c.id_cliente == 9);
+            const consumidorFinal = data.find(c => c.id_cliente == 1);
             if (consumidorFinal) {
                 const opcion = document.createElement('option');
                 opcion.value = consumidorFinal.id_cliente;
@@ -371,7 +371,7 @@ function actualizarTabla() {
 
         // Precio total por producto
         const tdPrecio = document.createElement('td');
-        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         fila.appendChild(tdPrecio);
 
         // Acciones
@@ -404,11 +404,12 @@ function actualizarTotales() {
     const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
 
     // Aplicar IVA
+
     const totalFinal = montoConDescuento * (1 + ivaPerc / 100);
 
     // Actualizar campo total en formato moneda
     if (inputTotalVenta) {
-        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 }
 
@@ -420,9 +421,7 @@ if (inputDescuento) {
 
 // -------------------- MÉTODO DE PAGO --------------------
 
-// -------------------- MÉTODO DE PAGO --------------------
-// -------------------- MÉTODO DE PAGO --------------------
-// -------------------- MÉTODO DE PAGO --------------------
+
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
     divCamposAdicionalesPago.innerHTML = '';
@@ -487,10 +486,26 @@ function getNombreMetodoPago(id) {
 }
 
 
-
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
     const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
+
+    // Determinar los pagos
+    // Determinar los pagos
+    let pagosTexto = '';
+    if (data.pagos && data.pagos.length > 0) {
+        pagosTexto = data.pagos.map(p => {
+            // parsear el monto correctamente
+            let monto = p.monto;
+            if (typeof monto === 'string') {
+                monto = monto.replace(/[^\d]/g, ''); // solo números
+            }
+            return `${getNombreMetodoPago(String(p.id_medio_pago))}: ${formatoMoneda(monto)}`;
+        }).join('<br>');
+    } else {
+        pagosTexto = getNombreMetodoPago(selectMetodoPago.value);
+    }
+
 
     // Generar el contenido del recibo
     reciboGuardado = `
@@ -498,12 +513,18 @@ function mostrarRecibo(data) {
       <head>
         <title>Recibo de Venta</title>
         <style>
-          body { font-family: monospace; padding: 20px; }
-          h2 { text-align: center; }
-          .info { margin-bottom: 15px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-          .totales { margin-top: 20px; font-weight: bold; }
+          body { font-family: 'Arial', sans-serif; margin: 20px; color: #333; }
+          h2 { text-align: center; font-size: 24px; margin-bottom: 20px; color: #0d6efd; }
+          .info p { margin: 4px 0; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f8f9fa; }
+          tr:nth-child(even) { background-color: #f2f2f2; }
+          .totales { margin-top: 20px; font-weight: bold; font-size: 16px; }
+          .totales p { margin: 4px 0; }
+          .totales p span { float: right; }
+          .gracias { text-align: center; margin-top: 30px; font-size: 16px; color: #198754; font-weight: bold; }
+          @media print { body { margin: 0; padding: 10px; font-size: 12px; } h2 { font-size: 20px; } .totales { font-size: 14px; } }
         </style>
       </head>
       <body>
@@ -511,7 +532,7 @@ function mostrarRecibo(data) {
         <div class="info">
           <p><strong>Fecha:</strong> ${fechaActual}</p>
           <p><strong>Hora:</strong> ${horaActual}</p>
-          <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
+          <p><strong>Métodos de pago:</strong><br>${pagosTexto}</p>
           ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
         </div>
         <table>
@@ -541,25 +562,21 @@ function mostrarRecibo(data) {
           </tbody>
         </table>
         <div class="totales">
-            <p>Subtotal: ${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</p>
-            <p>Descuento: ${inputDescuento.value || 0}%</p>
-            <p>IVA: ${inputIVA.value || 0}%</p>
-            <p>Total Final: ${inputTotalVenta.value}</p>
+            <p>Subtotal: <span>${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</span></p>
+            <p>Descuento: <span>${inputDescuento.value || 0}%</span></p>
+            <p>IVA: <span>${inputIVA.value || 0}%</span></p>
+            <p>Total Final: <span>${inputTotalVenta.value}</span></p>
         </div>
-        <div style="text-align: center; margin-top: 30px;">
+        <div class="gracias">
           <p>¡Gracias por su compra!</p>
         </div>
       </body>
     </html>
   `;
 
-    // ✅ Habilitar el botón de imprimir solo después de generar el recibo
     botonImprimirRecibo.disabled = false;
-    // Cambiar la clase de color de gris a verde
     botonImprimirRecibo.classList.remove('btn-secondary');
     botonImprimirRecibo.classList.add('btn-success');
-
-    // 🔹 Forzar colores para evitar que el estilo de "disabled" lo deje gris
     botonImprimirRecibo.style.backgroundColor = '#198754';
     botonImprimirRecibo.style.borderColor = '#198754';
     botonImprimirRecibo.style.color = '#fff';
@@ -802,17 +819,27 @@ btnVarios?.addEventListener('click', () => {
             // Formatear montos
             detalles.querySelectorAll('.monto').forEach(input => {
                 input.addEventListener('input', e => {
-                    e.target.value = formatoMoneda(e.target.value);
+                    // Solo números
+                    let valorNumerico = e.target.value.replace(/[^0-9.,]/g, '');  // permitir coma o punto decimal
+valorNumerico = parseFloat(valorNumerico.replace(',', '.')) || 0;
+e.target.value = formatoMoneda(valorNumerico);
+
                 });
             });
+
         });
     });
 });
 
 // Función para formato de moneda sin decimales
 function formatoMoneda(valor) {
-    valor = valor.replace(/[^\d]/g, '');
-    if (!valor) return '';
-    const numero = parseInt(valor, 10);
-    return numero.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    let numero = Number(valor);
+    if (isNaN(numero)) numero = 0;
+    return numero.toLocaleString('es-AR', {
+        style: 'currency',
+        currency: 'ARS',
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 3
+    });
 }
+
