@@ -494,18 +494,15 @@ function mostrarRecibo(data) {
     // Determinar los pagos
     let pagosTexto = '';
     if (data.pagos && data.pagos.length > 0) {
-        pagosTexto = data.pagos.map(p => {
-            // parsear el monto correctamente
-            let monto = p.monto;
-            if (typeof monto === 'string') {
-                monto = String(monto).replace(/[^\d]/g, '');
-
-            }
-            return `${getNombreMetodoPago(String(p.id_medio_pago))}: ${formatoMoneda(monto)}`;
-        }).join('<br>');
+        // Solo mostrar nombres de los métodos de pago
+        pagosTexto = data.pagos
+            .map(p => getNombreMetodoPago(String(p.id_medio_pago)))
+            .join('<br>');
     } else {
+        // Si solo hay un método seleccionado en el select
         pagosTexto = getNombreMetodoPago(selectMetodoPago.value);
     }
+
 
 
     // Generar el contenido del recibo
@@ -699,7 +696,7 @@ function finalizarVenta() {
             // ✅ Refrescar la página después de 1.5 segundos
             setTimeout(() => {
                 location.reload();
-            }, 1500);
+            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
