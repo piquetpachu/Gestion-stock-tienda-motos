@@ -696,7 +696,7 @@ function finalizarVenta() {
             // ✅ Refrescar la página después de 1.5 segundos
             setTimeout(() => {
                 location.reload();
-            }, 10000);
+            }, 100000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
