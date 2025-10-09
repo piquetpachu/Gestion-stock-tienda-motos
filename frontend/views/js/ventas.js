@@ -494,17 +494,15 @@ function mostrarRecibo(data) {
     // Determinar los pagos
     let pagosTexto = '';
     if (data.pagos && data.pagos.length > 0) {
-        pagosTexto = data.pagos.map(p => {
-            // parsear el monto correctamente
-            let monto = p.monto;
-            if (typeof monto === 'string') {
-                monto = monto.replace(/[^\d]/g, ''); // solo números
-            }
-            return `${getNombreMetodoPago(String(p.id_medio_pago))}: ${formatoMoneda(monto)}`;
-        }).join('<br>');
+        // Solo mostrar nombres de los métodos de pago
+        pagosTexto = data.pagos
+            .map(p => getNombreMetodoPago(String(p.id_medio_pago)))
+            .join('<br>');
     } else {
+        // Si solo hay un método seleccionado en el select
         pagosTexto = getNombreMetodoPago(selectMetodoPago.value);
     }
+
 
 
     // Generar el contenido del recibo
@@ -627,13 +625,19 @@ function finalizarVenta() {
     }));
 
     let pagos = [];
-    const totalVenta = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
+    const totalVenta = parseFloat(inputTotalVenta.value.replace(/\./g, '').replace(',', '.')) || 0;
 
     if (tieneVarios) {
         variosActivos.forEach(chk => {
             const idMetodo = parseInt(chk.id.replace('mp_', ''));
             const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
-            const monto = parseFloat(montoInput?.value.replace(/[^\d.-]/g, '')) || 0;
+            const montoRaw = montoInput?.value || '0';
+
+            // Quitar formato de moneda antes de parsear
+            const monto = parseFloat(
+                montoRaw.replace(/\./g, '').replace(',', '.').replace('$', '')
+            ) || 0;
+
             if (monto > 0) {
                 pagos.push({
                     id_medio_pago: idMetodo,
@@ -646,7 +650,7 @@ function finalizarVenta() {
         const sumaPagos = pagos.reduce((acc, p) => acc + p.monto, 0);
         const diferencia = Math.abs(sumaPagos - totalVenta);
 
-        if (diferencia > 0.5) { // tolerancia de 50 centavos
+        if (diferencia > 0.01) { // tolerancia mínima
             alert(`La suma de los métodos de pago (${sumaPagos.toFixed(2)}) no coincide con el total (${totalVenta.toFixed(2)}).`);
             return;
         }
@@ -695,10 +699,9 @@ function finalizarVenta() {
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
 
-            // ✅ Refrescar la página después de 1.5 segundos
             setTimeout(() => {
                 location.reload();
-            }, 1500);
+            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -711,6 +714,7 @@ function finalizarVenta() {
             botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
+
 
 
 botonFinalizar.addEventListener('click', finalizarVenta);
@@ -736,10 +740,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-
-// -------------------- BOTÓN VARIOS MÉTODOS --------------------
-// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
-// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
 const btnVarios = document.getElementById('btn_varios');
@@ -773,10 +773,10 @@ btnVarios?.addEventListener('click', () => {
         div.dataset.id = m.id;
 
         div.innerHTML = `
-            <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
-            <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
-            <div class="detalles-pago mt-2"></div>
-        `;
+           <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
+           <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
+           <div class="detalles-pago mt-2"></div>
+       `;
 
         html.appendChild(div);
 
@@ -790,21 +790,21 @@ btnVarios?.addEventListener('click', () => {
             // Si es tarjeta (id 4)
             if (m.id === 4) {
                 detalles.innerHTML = `
-                    <select class="form-select mb-2 tipo-tarjeta">
-                        <option value="">Seleccione tipo</option>
-                        <option value="debito">Débito</option>
-                        <option value="credito">Crédito</option>
-                    </select>
-                    <div class="cuotas-container mb-2" style="display:none;">
-                        <select class="form-select cuotas">
-                            <option value="1">1 cuota</option>
-                            <option value="3">3 cuotas</option>
-                            <option value="6">6 cuotas</option>
-                            <option value="12">12 cuotas</option>
-                        </select>
-                    </div>
-                    <input type="text" class="form-control monto" placeholder="Monto $">
-                `;
+                   <select class="form-select mb-2 tipo-tarjeta">
+                       <option value="">Seleccione tipo</option>
+                       <option value="debito">Débito</option>
+                       <option value="credito">Crédito</option>
+                   </select>
+                   <div class="cuotas-container mb-2" style="display:none;">
+                       <select class="form-select cuotas">
+                           <option value="1">1 cuota</option>
+                           <option value="3">3 cuotas</option>
+                           <option value="6">6 cuotas</option>
+                           <option value="12">12 cuotas</option>
+                       </select>
+                   </div>
+                   <input type="text" class="form-control monto" placeholder="Monto $">
+               `;
 
                 const tipoSel = detalles.querySelector('.tipo-tarjeta');
                 const cuotasDiv = detalles.querySelector('.cuotas-container');
@@ -818,28 +818,40 @@ btnVarios?.addEventListener('click', () => {
 
             // Formatear montos
             detalles.querySelectorAll('.monto').forEach(input => {
-                input.addEventListener('input', e => {
-                    // Solo números
-                    let valorNumerico = e.target.value.replace(/[^0-9.,]/g, '');  // permitir coma o punto decimal
-valorNumerico = parseFloat(valorNumerico.replace(',', '.')) || 0;
-e.target.value = formatoMoneda(valorNumerico);
+                // permitir solo números al escribir
+                // permitir números y decimales
+input.addEventListener('input', e => {
+    // solo dígitos y coma/punto
+    e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+});
 
+
+                // aplicar formato recién al salir
+                input.addEventListener('blur', e => {
+                    e.target.value = formatoMoneda(e.target.value);
                 });
             });
 
-        });
     });
 });
 
 // Función para formato de moneda sin decimales
-function formatoMoneda(valor) {
-    let numero = Number(valor);
-    if (isNaN(numero)) numero = 0;
-    return numero.toLocaleString('es-AR', {
-        style: 'currency',
-        currency: 'ARS',
-        minimumFractionDigits: 3,
-        maximumFractionDigits: 3
-    });
-}
+    
+    function formatoMoneda(valor) {
+        if (valor == null || valor === '') return '';
 
+        // Reemplazar comas por puntos y dejar solo dígitos y un punto
+        valor = String(valor).replace(',', '.').replace(/[^\d.]/g, '');
+
+        // Convertir a número
+        const numero = parseFloat(valor);
+        if (isNaN(numero)) return '';
+
+        // Formatear con separador de miles y 2 decimales
+        return '$' + numero.toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+});

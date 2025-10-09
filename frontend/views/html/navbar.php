@@ -29,6 +29,7 @@
           <li class="nav-item"><a class="nav-link" href="#">Estadísticas</a></li>
           <li class="nav-item" id="navUsuarios"><a class="nav-link" href="usuarios.php">Usuario</a></li>
           <li class="nav-item"><a class="nav-link" href="ventas.php">Ventas</a></li>
+          <li class="nav-item"><a class="nav-link" href="historial.php">Historial</a></li>
 
           <!-- Dropdown Caja -->
           <li class="nav-item dropdown">
@@ -111,13 +112,15 @@
   <script src="../js/logout.js"></script>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function() {
       // Toggle manual del navbar
       const btnToggle = document.querySelector('.navbar-toggler');
       const collapseEl = document.getElementById('navbarContenido');
-      const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+      const bsCollapse = new bootstrap.Collapse(collapseEl, {
+        toggle: false
+      });
 
-      btnToggle.addEventListener('click', function () {
+      btnToggle.addEventListener('click', function() {
         if (collapseEl.classList.contains('show')) {
           bsCollapse.hide();
         } else {
@@ -127,7 +130,7 @@
 
       // Cerrar navbar al hacer click en un enlace del menú
       document.querySelectorAll('#navbarContenido .nav-link').forEach(link => {
-        link.addEventListener('click', function () {
+        link.addEventListener('click', function() {
           if (collapseEl.classList.contains('show')) {
             bsCollapse.hide();
           }
@@ -136,7 +139,7 @@
 
       // Cerrar navbar al abrir un modal
       document.querySelectorAll('[data-bs-toggle="modal"]').forEach(trigger => {
-        trigger.addEventListener('click', function () {
+        trigger.addEventListener('click', function() {
           if (collapseEl.classList.contains('show')) {
             bsCollapse.hide();
           }

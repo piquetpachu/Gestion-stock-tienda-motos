@@ -32,8 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
         resumen.innerHTML = "";
 
         try {
-            // <-- Ruta relativa corregida
-            const res = await fetch(`../../../app/routes/api.php?ruta=historial&desde=${fDesde}&hasta=${fHasta}`);
+            // <-- Cambié la ruta para que coincida con api.php y tus rutas amigables
+            const res = await fetch(`../../../app/routes/api.php/historial?desde=${fDesde}&hasta=${fHasta}`);
 
             if (!res.ok) throw new Error('Error al cargar historial');
 

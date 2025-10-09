@@ -18,13 +18,18 @@ class Historial
             $hasta = date('Y-m-d');
         }
 
-        // Asegurarse de incluir todo el día
-        $desde .= ' 00:00:00';
-        $hasta .= ' 23:59:59';
+        // Revisar tipo de columna fecha
+        $stmtTipo = $this->db->query("SHOW COLUMNS FROM venta LIKE 'fecha'");
+        $colFecha = $stmtTipo->fetch();
+        if (strpos($colFecha['Type'], 'datetime') !== false) {
+            $desde .= ' 00:00:00';
+            $hasta .= ' 23:59:59';
+        }
 
+        // Consulta corregida: tablas reales de tu BD
         $sql = "SELECT v.id, v.fecha, v.total, p.medio_pago, p.monto
-                FROM ventas v
-                LEFT JOIN pagos p ON v.id = p.venta_id
+                FROM venta v
+                LEFT JOIN venta_medio_pago p ON v.id = p.venta_id
                 WHERE v.fecha BETWEEN :desde AND :hasta
                 ORDER BY v.fecha DESC";
         $stmt = $this->db->prepare($sql);
@@ -67,4 +72,4 @@ class Historial
 
         return ['ventas' => array_values($ventas), 'resumen' => $resumen];
     }
-} 
+}

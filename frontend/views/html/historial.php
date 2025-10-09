@@ -28,6 +28,7 @@
             border-bottom: none;
         }
     </style>
+    <?php include 'navbar.php'; ?>
 </head>
 
 <body>
