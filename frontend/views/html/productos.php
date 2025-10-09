@@ -66,7 +66,6 @@ body.dark-theme .btn-danger {
         <thead class="table-dark">
           <tr>
             <th>Nombre</th>
-            <th>Descripción</th>
             <th>Venta</th>
             <th>Compra</th>
             <th>Stock</th>
@@ -86,19 +85,16 @@ body.dark-theme .btn-danger {
       <ul class="pagination justify-content-center" id="paginacion"></ul>
     </nav>
   </div>
-<div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
+  <!-- Modal Detalle de Producto -->
+<div class="modal fade" id="modalDetalles" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalEstadisticasLabel">Estadísticas del Producto</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalDetallesLabel">Detalles del Producto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body">
-        <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Cargando...</span>
-            </div>
-        </div>
+      <div class="modal-body" id="detalleProducto">
+        <p class="text-muted text-center">Selecciona un producto para ver sus detalles.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -106,6 +102,7 @@ body.dark-theme .btn-danger {
     </div>
   </div>
 </div>
+
   <!-- Modal Producto -->
   <div class="modal fade" id="modalProducto" tabindex="-1" aria-hidden="true" >
     <div class="modal-dialog modal-lg">
@@ -115,42 +112,74 @@ body.dark-theme .btn-danger {
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body row g-3">
-          <input type="hidden" id="id_producto" />
-          <div class="col-md-6"><input type="text" id="nombre" class="form-control" placeholder="Nombre" required /></div>
-          <div class="col-md-6"><input type="text" id="descripcion" class="form-control" placeholder="Descripción" /></div>
-          <div class="col-md-4"><input type="number" id="precio_venta" class="form-control" placeholder="Precio Venta" step="0.01" /></div>
-          <div class="col-md-4"><input type="number" id="precio_compra" class="form-control" placeholder="Precio Compra" step="0.01" /></div>
-          <div class="col-md-4"><input type="number" id="stock" class="form-control" placeholder="Stock" /></div>
-          <div class="col-md-4"><input type="number" id="stock_minimo" class="form-control" placeholder="Stock Mínimo" /></div>
-          <div class="col-md-4"><input type="text" id="codigo_barras" class="form-control" placeholder="Código de Barras" /></div>
-          <!-- <div class="col-md-4"><input type="date" id="fecha_alta" class="form-control" /></div> -->
-<div class="col-md-6">
-  <label for="id_proveedor" class="form-label">Proveedor</label>
-  <div class="input-group">
-    <select id="id_proveedor" class="form-select">
-      <option value="">Seleccione proveedor</option>
-      <!-- Las opciones se agregan dinámicamente -->
+  <input type="hidden" id="id_producto" />
+
+  <div class="col-md-6">
+    <label for="nombre" class="form-label">Nombre</label>
+    <input type="text" id="nombre" class="form-control" placeholder="Ej: Casco integral" required />
+  </div>
+
+  <div class="col-md-6">
+    <label for="descripcion" class="form-label">Descripción</label>
+    <input type="text" id="descripcion" class="form-control" placeholder="Ej: Casco con visor y ventilación" />
+  </div>
+
+  <div class="col-md-4">
+    <label for="precio_venta" class="form-label">Precio de Venta</label>
+    <input type="number" id="precio_venta" class="form-control" placeholder="Ej: 15000" step="0.01" />
+  </div>
+
+  <div class="col-md-4">
+    <label for="precio_compra" class="form-label">Precio de Compra</label>
+    <input type="number" id="precio_compra" class="form-control" placeholder="Ej: 12000" step="0.01" />
+  </div>
+
+  <div class="col-md-4">
+    <label for="stock" class="form-label">Stock</label>
+    <input type="number" id="stock" class="form-control" placeholder="Ej: 50" />
+  </div>
+
+  <div class="col-md-4">
+    <label for="stock_minimo" class="form-label">Stock Mínimo</label>
+    <input type="number" id="stock_minimo" class="form-control" placeholder="Ej: 5" />
+  </div>
+
+  <div class="col-md-4">
+    <label for="codigo_barras" class="form-label">Código de Barras</label>
+    <input type="text" id="codigo_barras" class="form-control" placeholder="Ej: 7894561237890" />
+  </div>
+
+  <div class="col-md-6">
+    <label for="id_proveedor" class="form-label">Proveedor</label>
+    <div class="input-group">
+      <select id="id_proveedor" class="form-select">
+        <option value="">Seleccione proveedor</option>
+        <!-- Cargado dinámicamente -->
+      </select>
+      <button type="button" class="btn btn-outline-primary" id="btnNuevoProveedor" title="Agregar proveedor">+</button>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <label for="id_rubro" class="form-label">Rubro</label>
+    <div class="input-group">
+      <select id="id_rubro" class="form-select">
+        <option value="">Seleccione rubro</option>
+        <!-- Cargado dinámicamente -->
+      </select>
+      <button type="button" class="btn btn-outline-primary" id="btnNuevoRubro" title="Agregar rubro">+</button>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <label for="activo" class="form-label">Estado</label>
+    <select id="activo" class="form-select">
+      <option value="1">Activo</option>
+      <option value="0">Inactivo</option>
     </select>
-    <button type="button" class="btn btn-outline-primary" id="btnNuevoProveedor" title="Agregar proveedor">+</button>
   </div>
 </div>
-<div class="col-md-6">
-  <label for="id_rubro" class="form-label">Rubro</label>
-  <div class="input-group">
-    <select id="id_rubro" class="form-select">
-      <option value="">Seleccione rubro</option>
-      <!-- Se cargará con JS -->
-    </select>
-    <button type="button" class="btn btn-outline-primary" id="btnNuevoRubro" title="Agregar rubro">+</button>
-  </div>
-</div>
-          <div class="col-md-6">
-            <select id="activo" class="form-select">
-              <option value="1">Activo</option>
-              <option value="0">Inactivo</option>
-            </select>
-          </div>
-        </div>
+
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Guardar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
