@@ -625,13 +625,19 @@ function finalizarVenta() {
     }));
 
     let pagos = [];
-    const totalVenta = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
+    const totalVenta = parseFloat(inputTotalVenta.value.replace(/\./g, '').replace(',', '.')) || 0;
 
     if (tieneVarios) {
         variosActivos.forEach(chk => {
             const idMetodo = parseInt(chk.id.replace('mp_', ''));
             const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
-            const monto = parseFloat(montoInput?.value.replace(/[^\d.-]/g, '')) || 0;
+            const montoRaw = montoInput?.value || '0';
+
+            // Quitar formato de moneda antes de parsear
+            const monto = parseFloat(
+                montoRaw.replace(/\./g, '').replace(',', '.').replace('$', '')
+            ) || 0;
+
             if (monto > 0) {
                 pagos.push({
                     id_medio_pago: idMetodo,
@@ -644,7 +650,7 @@ function finalizarVenta() {
         const sumaPagos = pagos.reduce((acc, p) => acc + p.monto, 0);
         const diferencia = Math.abs(sumaPagos - totalVenta);
 
-        if (diferencia > 0.5) { // tolerancia de 50 centavos
+        if (diferencia > 0.01) { // tolerancia mínima
             alert(`La suma de los métodos de pago (${sumaPagos.toFixed(2)}) no coincide con el total (${totalVenta.toFixed(2)}).`);
             return;
         }
@@ -693,10 +699,9 @@ function finalizarVenta() {
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
 
-            // ✅ Refrescar la página después de 1.5 segundos
             setTimeout(() => {
                 location.reload();
-            }, 100000);
+            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -709,6 +714,7 @@ function finalizarVenta() {
             botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
+
 
 
 botonFinalizar.addEventListener('click', finalizarVenta);
@@ -812,20 +818,40 @@ btnVarios?.addEventListener('click', () => {
 
             // Formatear montos
             detalles.querySelectorAll('.monto').forEach(input => {
-                input.addEventListener('input', e => {
+                // permitir solo números al escribir
+                // permitir números y decimales
+input.addEventListener('input', e => {
+    // solo dígitos y coma/punto
+    e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+});
+
+
+                // aplicar formato recién al salir
+                input.addEventListener('blur', e => {
                     e.target.value = formatoMoneda(e.target.value);
                 });
             });
-        });
+
     });
 });
 
 // Función para formato de moneda sin decimales
-function formatoMoneda(valor) {
-    if (valor == null) return '';
-    valor = String(valor); // <-- convertir a string
-    valor = valor.replace(/[^\d]/g, '');
-    if (!valor) return '';
-    const numero = parseInt(valor, 10);
-    return numero.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
+    
+    function formatoMoneda(valor) {
+        if (valor == null || valor === '') return '';
+
+        // Reemplazar comas por puntos y dejar solo dígitos y un punto
+        valor = String(valor).replace(',', '.').replace(/[^\d.]/g, '');
+
+        // Convertir a número
+        const numero = parseFloat(valor);
+        if (isNaN(numero)) return '';
+
+        // Formatear con separador de miles y 2 decimales
+        return '$' + numero.toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+});
