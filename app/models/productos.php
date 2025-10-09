@@ -5,10 +5,29 @@ function obtenerProductos($pdo) {
 }
 
 function obtenerProductoPorId($pdo, $id) {
-    $stmt = $pdo->prepare("SELECT * FROM producto WHERE id_producto = ?");
+    $sql = "SELECT 
+                p.id_producto,
+                p.nombre,
+                p.descripcion,
+                p.precio_venta,
+                p.precio_compra,
+                p.stock,
+                p.stock_minimo,
+                p.codigo_barras,
+                p.fecha_alta,
+                p.activo,
+                pr.nombre AS nombre_proveedor,
+                r.nombre AS nombre_rubro
+            FROM producto p
+            LEFT JOIN proveedor pr ON p.id_proveedor = pr.id_proveedor
+            LEFT JOIN rubro r ON p.id_rubro = r.id_rubro
+            WHERE p.id_producto = ?";
+
+    $stmt = $pdo->prepare($sql);
     $stmt->execute([$id]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
+
 
 function obtenerProductoPorCodigo($pdo, $codigo)
 {

@@ -34,7 +34,9 @@ body.dark-theme .btn-danger {
     body { 
             display: none; /* Oculta toda la página inicialmente */
         }
+        
   </style>
+  
 </head>
 
 <body>
@@ -68,7 +70,6 @@ body.dark-theme .btn-danger {
             <th>Nombre</th>
             <th>Email</th>
             <th>Teléfono</th>
-            <th>Dirección</th>
             <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
             <th id="colAcciones" style="display: none;">Acciones</th>
@@ -95,25 +96,38 @@ body.dark-theme .btn-danger {
         </div>
         <div class="modal-body row g-3">
           <input type="hidden" id="id_cliente" />
+
           <div class="col-md-6">
-            <input type="text" id="nombre" class="form-control" placeholder="Nombre" required />
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" id="nombre" class="form-control" placeholder="Ej: Juan" required />
           </div>
+
           <div class="col-md-6">
-            <input type="text" id="apellido" class="form-control" placeholder="Apellido" required />
+            <label for="apellido" class="form-label">Apellido</label>
+            <input type="text" id="apellido" class="form-control" placeholder="Ej: Pérez" required />
           </div>
+
           <div class="col-md-6">
-            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT"  maxlength="11"/>
+            <label for="cuil_cuit" class="form-label">CUIL/CUIT</label>
+            <input type="text" id="cuil_cuit" class="form-control" placeholder="Ej: 20123456789" maxlength="11" required />
           </div>
+
           <div class="col-md-6">
-            <input type="email" id="email" class="form-control" placeholder="Email" required />
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" placeholder="Ej: juanperez@mail.com" required />
           </div>
+
           <div class="col-md-6">
-            <input type="tel" id="telefono" class="form-control" placeholder="Teléfono" />
+            <label for="telefono" class="form-label">Teléfono</label>
+            <input type="tel" id="telefono" class="form-control" placeholder="Ej: 3794000000" />
           </div>
+
           <div class="col-12">
-            <input type="text" id="direccion" class="form-control" placeholder="Dirección" />
+            <label for="direccion" class="form-label">Dirección</label>
+            <input type="text" id="direccion" class="form-control" placeholder="Ej: Av. San Martín 1234" />
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="submit" class="btn btn-primary">Guardar</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -121,6 +135,23 @@ body.dark-theme .btn-danger {
       </form>
     </div>
   </div>
+<!-- Modal Detalle de Cliente -->
+<div class="modal fade" id="modalDetallesCliente" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalDetallesClienteLabel">Detalles del Cliente</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="detalleCliente">
+        <p class="text-muted text-center">Selecciona un cliente para ver sus datos completos.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <!-- Scripts -->
   <script src="../js/theme.js"></script>

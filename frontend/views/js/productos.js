@@ -184,7 +184,6 @@
           return `
     <tr data-id="${p.id_producto}">
       <td>${p.nombre}</td>
-      <td>${p.descripcion || ""}</td>
       <td>${p.precio_venta || 0}</td>
       <td>${p.precio_compra || 0}</td>
       <td class="${clsStock}">${stockVal}</td>
@@ -551,20 +550,54 @@
     // Inicializar rubros/proveedores
     cargarProveedores();
     cargarRubros();
-    // Añadir evento de clic a las filas de la tabla
-document.getElementById('tablaProductos').addEventListener('click', async (e) => {
-    // Buscar la fila (tr) del producto
-    const tr = e.target.closest('tr');
-    if (tr && tr.dataset.id) {
-        // Ignorar clics en los botones de "Editar" o "Borrar"
-        if (e.target.classList.contains('editar-btn') || e.target.classList.contains('borrar-btn')) {
-            return;
-        }
 
-        const idProducto = tr.dataset.id;
-        await mostrarEstadisticasProducto(idProducto);
-    }
+    // Añadir evento de clic a las filas de la tabla
+// === Click en producto para ver detalles ===
+document.getElementById('tablaProductos').addEventListener('click', async (e) => {
+  const tr = e.target.closest('tr');
+  if (!tr || e.target.classList.contains('editar-btn') || e.target.classList.contains('borrar-btn')) return;
+  
+  const id = tr.dataset.id;
+  mostrarDetalleProducto(id);
 });
+
+// === Mostrar detalle completo del producto ===
+async function mostrarDetalleProducto(idProducto) {
+  try {
+    const res = await fetch(API_URL + 'producto/' + idProducto);
+    const producto = await res.json();
+
+    if (!producto) {
+      alert("No se encontraron datos del producto.");
+      return;
+    }
+
+    const detalleHTML = `
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>ID:</b> ${producto.id_producto}</li>
+        <li class="list-group-item"><b>Nombre:</b> ${producto.nombre}</li>
+        <li class="list-group-item"><b>Descripción:</b> ${producto.descripcion || '-'}</li>
+        <li class="list-group-item"><b>Precio Venta:</b> $${producto.precio_venta || 0}</li>
+        <li class="list-group-item"><b>Precio Compra:</b> $${producto.precio_compra || 0}</li>
+        <li class="list-group-item"><b>Stock:</b> ${producto.stock || 0}</li>
+        <li class="list-group-item"><b>Stock Mínimo:</b> ${producto.stock_minimo || 0}</li>
+        <li class="list-group-item"><b>Código de Barras:</b> ${producto.codigo_barras || '-'}</li>
+        <li class="list-group-item"><b>Fecha de Alta:</b> ${producto.fecha_alta || '-'}</li>
+        <li class="list-group-item"><b>Proveedor:</b> ${producto.nombre_proveedor || '-'}</li>
+        <li class="list-group-item"><b>Rubro:</b> ${producto.nombre_rubro || '-'}</li>
+        <li class="list-group-item"><b>Estado:</b> ${producto.activo == 1 ? 'Activo' : 'Inactivo'}</li>
+      </ul>
+    `;
+
+    document.getElementById("detalleProducto").innerHTML = detalleHTML;
+    document.getElementById("modalDetallesLabel").textContent = `Detalles de ${producto.nombre}`;
+    new bootstrap.Modal(document.getElementById("modalDetalles")).show();
+  } catch (err) {
+    console.error("Error cargando detalle del producto:", err);
+    alert("Hubo un error al obtener la información del producto.");
+  }
+}
+
 
 // Función para mostrar las estadísticas del producto
 async function mostrarEstadisticasProducto(idProducto) {
