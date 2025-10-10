@@ -11,32 +11,25 @@ class Historial
     public function obtenerPorFechas($desde, $hasta)
     {
         // Si no se selecciona ninguna fecha, usar el día actual
-        if (empty($desde)) {
-            $desde = date('Y-m-d');
-        }
-        if (empty($hasta)) {
-            $hasta = date('Y-m-d');
-        }
+        if (empty($desde)) $desde = date('Y-m-d');
+        if (empty($hasta)) $hasta = date('Y-m-d');
 
-        // Revisar tipo de columna fecha
-        $stmtTipo = $this->db->query("SHOW COLUMNS FROM venta LIKE 'fecha'");
-        $colFecha = $stmtTipo->fetch();
-        if (strpos($colFecha['Type'], 'datetime') !== false) {
-            $desde .= ' 00:00:00';
-            $hasta .= ' 23:59:59';
-        }
+        // Incluir todo el día
+        $desde .= ' 00:00:00';
+        $hasta .= ' 23:59:59';
 
-        // Consulta corregida: tablas reales de tu BD
-        $sql = "SELECT v.id, v.fecha, v.total, p.medio_pago, p.monto
+        // Consultar usando las tablas reales
+        $sql = "SELECT v.id_venta AS id, v.fecha, v.monto_total AS total, 
+                       mp.monto, mp.medio_pago
                 FROM venta v
-                LEFT JOIN venta_medio_pago p ON v.id = p.venta_id
+                LEFT JOIN venta_medio_pago mp ON v.id_venta = mp.venta_id
                 WHERE v.fecha BETWEEN :desde AND :hasta
                 ORDER BY v.fecha DESC";
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([':desde' => $desde, ':hasta' => $hasta]);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Agrupar por venta
         $ventas = [];
         $resumen = [
             'efectivo' => 0,
@@ -64,9 +57,7 @@ class Historial
                 ];
 
                 $medio = strtolower(trim($row['medio_pago']));
-                if (isset($resumen[$medio])) {
-                    $resumen[$medio] += $row['monto'];
-                }
+                if (isset($resumen[$medio])) $resumen[$medio] += $row['monto'];
             }
         }
 
