@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function cargarResumen() {
-  const res = await fetch(API_URL + 'estadisticas');
+  const res = await fetch(API_URL + 'estadisticas', { credentials: 'same-origin' });
   const data = await res.json();
 
   document.getElementById('gananciaHoy').textContent = `$${data.ganancia_hoy || 0}`;
@@ -20,8 +20,8 @@ async function cargarResumen() {
 
 async function cargarVentasPorDia() {
   try {
-    const res = await fetch(API_URL + 'ventas_por_dia');
-    if (!res.ok) throw new Error('Error al cargar ventas por día');
+  const res = await fetch(API_URL + 'ventas_por_dia', { credentials: 'same-origin' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} al cargar ventas por día`);
     const filas = await res.json();
     const labels = Array.isArray(filas) ? filas.map(f => f.dia) : [];
     const datos = Array.isArray(filas) ? filas.map(f => Number(f.total || 0)) : [];
@@ -42,8 +42,8 @@ async function cargarVentasPorDia() {
       datasets: [{
         label: 'Ventas ($)',
         data: datos,
-        borderColor: '#198754',
-        backgroundColor: 'rgba(25,135,84,0.15)',
+  borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bs-success').trim() || '#22c55e',
+  backgroundColor: 'rgba(34,197,94,0.15)',
         tension: 0.25,
         fill: true,
         pointRadius: 2
@@ -59,17 +59,24 @@ async function cargarVentasPorDia() {
     });
   } catch (e) {
     console.error(e);
+    const msg = document.getElementById('msgVentasPorDia');
+    const canvas = document.getElementById('graficoVentasPorDia');
+    if (msg && canvas) {
+      msg.textContent = 'Error al cargar datos';
+      canvas.style.display = 'none';
+    }
   }
 }
 
 async function cargarIngresosPorRubro() {
   try {
-    const res = await fetch(API_URL + 'ingresos_por_rubro');
-    if (!res.ok) throw new Error('Error al cargar ingresos por rubro');
+  const res = await fetch(API_URL + 'ingresos_por_rubro', { credentials: 'same-origin' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} al cargar ingresos por rubro`);
     const filas = await res.json();
     const labels = Array.isArray(filas) ? filas.map(f => f.rubro || 'Sin rubro') : [];
     const datos = Array.isArray(filas) ? filas.map(f => Number(f.total || 0)) : [];
-    const colores = labels.map((_,i) => `hsl(${(i*47)%360} 70% 55%)`);
+  const base = ['#1f6feb','#22c55e','#f59e0b','#ef4444','#0ea5e9','#8b5cf6','#14b8a6','#f43f5e','#84cc16','#6366f1'];
+  const colores = labels.map((_,i) => base[i % base.length]);
     const msg = document.getElementById('msgIngresosPorRubro');
     const canvas = document.getElementById('graficoIngresosPorRubro');
     if (!labels.length) {
@@ -94,13 +101,19 @@ async function cargarIngresosPorRubro() {
     });
   } catch (e) {
     console.error(e);
+    const msg = document.getElementById('msgIngresosPorRubro');
+    const canvas = document.getElementById('graficoIngresosPorRubro');
+    if (msg && canvas) {
+      msg.textContent = 'Error al cargar datos';
+      canvas.style.display = 'none';
+    }
   }
 }
 
 async function cargarStockBajoMinimo(){
   try {
-    const res = await fetch(API_URL + 'stock_bajo_minimo');
-    if (!res.ok) throw new Error('Error al cargar stock bajo mínimo');
+  const res = await fetch(API_URL + 'stock_bajo_minimo', { credentials: 'same-origin' });
+  if (!res.ok) throw new Error(`HTTP ${res.status} al cargar stock bajo mínimo`);
     const filas = await res.json();
     const tbody = document.getElementById('tbodyStockBajoMinimo');
     if (!filas || !filas.length){
@@ -117,11 +130,15 @@ async function cargarStockBajoMinimo(){
     `).join('');
   } catch (e) {
     console.error(e);
+    const tbody = document.getElementById('tbodyStockBajoMinimo');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar</td></tr>';
+    }
   }
 }
 
 async function cargarTopProductos() {
-  const res = await fetch(API_URL + 'top_productos');
+  const res = await fetch(API_URL + 'top_productos', { credentials: 'same-origin' });
   const productos = await res.json();
 
   const nombres = productos.map(p => p.nombre);
@@ -135,7 +152,7 @@ async function cargarTopProductos() {
       datasets: [{
         label: 'Unidades vendidas',
         data: cantidades,
-        backgroundColor: '#0d6efd',
+  backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bs-primary').trim() || '#1f6feb',
         borderRadius: 8,
         barThickness: 40
       }]

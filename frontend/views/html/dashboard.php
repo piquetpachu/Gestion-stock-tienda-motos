@@ -118,7 +118,7 @@
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="../js/estadisticas.js"></script>
+  <script src="../js/estadisticas.js?v=20251010"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
