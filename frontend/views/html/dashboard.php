@@ -61,16 +61,18 @@
           <div class="col-lg-6">
             <div class="card h-100">
               <div class="card-body">
-                <h6 class="mb-3">📈 Ventas por día (últimos 30 días)</h6>
-                <canvas id="graficoVentasPorDia" height="140"></canvas>
+                <h6 class="mb-3">📈 Ventas por día (año en curso)</h6>
+                <div id="msgVentasPorDia" class="text-center text-secondary small">Cargando...</div>
+                <canvas id="graficoVentasPorDia" height="140" style="display:none"></canvas>
               </div>
             </div>
           </div>
           <div class="col-lg-6">
             <div class="card h-100">
               <div class="card-body">
-                <h6 class="mb-3">🏷️ Ingresos por Rubro</h6>
-                <canvas id="graficoIngresosPorRubro" height="140"></canvas>
+                <h6 class="mb-3">🏷️ Ingresos por Rubro (año en curso)</h6>
+                <div id="msgIngresosPorRubro" class="text-center text-secondary small">Cargando...</div>
+                <canvas id="graficoIngresosPorRubro" height="140" style="display:none"></canvas>
               </div>
             </div>
           </div>

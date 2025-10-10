@@ -76,13 +76,14 @@ function obtenerIngresosPorRubro($pdo, $desde = null, $hasta = null) {
     if (!$hasta) $hasta = date('Y-m-d');
 
     $sql = "
-        SELECT r.nombre AS rubro, SUM(vi.cantidad * vi.precio_unitario) AS total
+        SELECT COALESCE(r.nombre, 'Sin rubro') AS rubro,
+               SUM(vi.cantidad * vi.precio_unitario) AS total
         FROM venta_item vi
         JOIN venta v ON v.id_venta = vi.id_venta
         JOIN producto p ON p.id_producto = vi.id_producto
         LEFT JOIN rubro r ON r.id_rubro = p.id_rubro
         WHERE DATE(v.fecha) BETWEEN ? AND ?
-        GROUP BY r.id_rubro
+        GROUP BY p.id_rubro
         ORDER BY total DESC
     ";
     $stmt = $pdo->prepare($sql);

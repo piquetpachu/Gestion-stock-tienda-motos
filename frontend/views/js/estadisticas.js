@@ -19,12 +19,23 @@ async function cargarResumen() {
 }
 
 async function cargarVentasPorDia() {
-  const res = await fetch(API_URL + 'ventas_por_dia');
-  const filas = await res.json();
-  const labels = filas.map(f => f.dia);
-  const datos = filas.map(f => Number(f.total || 0));
-  const ctx = document.getElementById('graficoVentasPorDia').getContext('2d');
-  new Chart(ctx, {
+  try {
+    const res = await fetch(API_URL + 'ventas_por_dia');
+    if (!res.ok) throw new Error('Error al cargar ventas por día');
+    const filas = await res.json();
+    const labels = Array.isArray(filas) ? filas.map(f => f.dia) : [];
+    const datos = Array.isArray(filas) ? filas.map(f => Number(f.total || 0)) : [];
+    const msg = document.getElementById('msgVentasPorDia');
+    const canvas = document.getElementById('graficoVentasPorDia');
+    if (!labels.length) {
+      msg.textContent = 'Sin datos en el período';
+      canvas.style.display = 'none';
+      return;
+    }
+    msg.style.display = 'none';
+    canvas.style.display = '';
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
     type: 'line',
     data: {
       labels,
@@ -45,46 +56,68 @@ async function cargarVentasPorDia() {
         y: { beginAtZero: true }
       }
     }
-  });
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function cargarIngresosPorRubro() {
-  const res = await fetch(API_URL + 'ingresos_por_rubro');
-  const filas = await res.json();
-  const labels = filas.map(f => f.rubro || 'Sin rubro');
-  const datos = filas.map(f => Number(f.total || 0));
-  const colores = labels.map((_,i) => `hsl(${(i*47)%360} 70% 55%)`);
-  const ctx = document.getElementById('graficoIngresosPorRubro').getContext('2d');
-  new Chart(ctx, {
-    type: 'doughnut',
-    data: { labels, datasets: [{ data: datos, backgroundColor: colores }] },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom' },
-        tooltip: { callbacks: { label: c => ` $${c.parsed}` } }
-      },
-      cutout: '55%'
+  try {
+    const res = await fetch(API_URL + 'ingresos_por_rubro');
+    if (!res.ok) throw new Error('Error al cargar ingresos por rubro');
+    const filas = await res.json();
+    const labels = Array.isArray(filas) ? filas.map(f => f.rubro || 'Sin rubro') : [];
+    const datos = Array.isArray(filas) ? filas.map(f => Number(f.total || 0)) : [];
+    const colores = labels.map((_,i) => `hsl(${(i*47)%360} 70% 55%)`);
+    const msg = document.getElementById('msgIngresosPorRubro');
+    const canvas = document.getElementById('graficoIngresosPorRubro');
+    if (!labels.length) {
+      msg.textContent = 'Sin datos en el período';
+      canvas.style.display = 'none';
+      return;
     }
-  });
+    msg.style.display = 'none';
+    canvas.style.display = '';
+    const ctx = canvas.getContext('2d');
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: datos, backgroundColor: colores }] },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: c => ` $${c.parsed}` } }
+        },
+        cutout: '55%'
+      }
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function cargarStockBajoMinimo(){
-  const res = await fetch(API_URL + 'stock_bajo_minimo');
-  const filas = await res.json();
-  const tbody = document.getElementById('tbodyStockBajoMinimo');
-  if (!filas || !filas.length){
-    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">Sin alertas</td></tr>';
-    return;
-  }
-  tbody.innerHTML = filas.map(f => `
+  try {
+    const res = await fetch(API_URL + 'stock_bajo_minimo');
+    if (!res.ok) throw new Error('Error al cargar stock bajo mínimo');
+    const filas = await res.json();
+    const tbody = document.getElementById('tbodyStockBajoMinimo');
+    if (!filas || !filas.length){
+      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">Sin alertas</td></tr>';
+      return;
+    }
+    tbody.innerHTML = filas.map(f => `
     <tr>
       <td>${f.nombre}</td>
       <td>${f.rubro}</td>
       <td class="text-end">${f.stock}</td>
       <td class="text-end">${f.stock_minimo}</td>
     </tr>
-  `).join('');
+    `).join('');
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function cargarTopProductos() {
