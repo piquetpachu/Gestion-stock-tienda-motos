@@ -57,8 +57,57 @@
 
       <!-- Gráfico -->
       <div class="mt-5">
-        <h5 class="text-center text-secondary mb-3">🛒 Productos Más Vendidos</h5>
-        <canvas id="graficoTopProductos" height="120"></canvas>
+        <div class="row g-4">
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="mb-3">📈 Ventas por día (últimos 30 días)</h6>
+                <canvas id="graficoVentasPorDia" height="140"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="mb-3">🏷️ Ingresos por Rubro</h6>
+                <canvas id="graficoIngresosPorRubro" height="140"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mt-1">
+          <div class="col-lg-7">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="mb-3">🛒 Productos Más Vendidos</h6>
+                <canvas id="graficoTopProductos" height="160"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-5">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="mb-3">📦 Stock bajo mínimo</h6>
+                <div class="table-responsive" style="max-height: 360px;">
+                  <table class="table table-sm table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th>Rubro</th>
+                        <th class="text-end">Stock</th>
+                        <th class="text-end">Mín.</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyStockBajoMinimo">
+                      <tr><td colspan="4" class="text-center text-secondary">Cargando...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

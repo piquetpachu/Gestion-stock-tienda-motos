@@ -144,6 +144,11 @@ switch ($recurso) {
     case 'top_productos':
         require_once __DIR__ . '/../controllers/estadisticasController.php';
         break;
+    case 'ventas_por_dia':
+    case 'ingresos_por_rubro':
+    case 'stock_bajo_minimo':
+        require_once __DIR__ . '/../controllers/estadisticasController.php';
+        break;
 
 
 

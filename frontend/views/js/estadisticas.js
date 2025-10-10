@@ -3,6 +3,9 @@
 document.addEventListener('DOMContentLoaded', () => {
   cargarResumen();
   cargarTopProductos();
+  cargarVentasPorDia();
+  cargarIngresosPorRubro();
+  cargarStockBajoMinimo();
 });
 
 async function cargarResumen() {
@@ -13,6 +16,75 @@ async function cargarResumen() {
   document.getElementById('gananciaMes').textContent = `$${data.ganancia_mes || 0}`;
   document.getElementById('gananciaAnio').textContent = `$${data.ganancia_anio || 0}`;
   document.getElementById('productoMasVendido').textContent = data.producto_mas_vendido || 'Sin datos';
+}
+
+async function cargarVentasPorDia() {
+  const res = await fetch(API_URL + 'ventas_por_dia');
+  const filas = await res.json();
+  const labels = filas.map(f => f.dia);
+  const datos = filas.map(f => Number(f.total || 0));
+  const ctx = document.getElementById('graficoVentasPorDia').getContext('2d');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Ventas ($)',
+        data: datos,
+        borderColor: '#198754',
+        backgroundColor: 'rgba(25,135,84,0.15)',
+        tension: 0.25,
+        fill: true,
+        pointRadius: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+
+async function cargarIngresosPorRubro() {
+  const res = await fetch(API_URL + 'ingresos_por_rubro');
+  const filas = await res.json();
+  const labels = filas.map(f => f.rubro || 'Sin rubro');
+  const datos = filas.map(f => Number(f.total || 0));
+  const colores = labels.map((_,i) => `hsl(${(i*47)%360} 70% 55%)`);
+  const ctx = document.getElementById('graficoIngresosPorRubro').getContext('2d');
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: datos, backgroundColor: colores }] },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: c => ` $${c.parsed}` } }
+      },
+      cutout: '55%'
+    }
+  });
+}
+
+async function cargarStockBajoMinimo(){
+  const res = await fetch(API_URL + 'stock_bajo_minimo');
+  const filas = await res.json();
+  const tbody = document.getElementById('tbodyStockBajoMinimo');
+  if (!filas || !filas.length){
+    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">Sin alertas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filas.map(f => `
+    <tr>
+      <td>${f.nombre}</td>
+      <td>${f.rubro}</td>
+      <td class="text-end">${f.stock}</td>
+      <td class="text-end">${f.stock_minimo}</td>
+    </tr>
+  `).join('');
 }
 
 async function cargarTopProductos() {
