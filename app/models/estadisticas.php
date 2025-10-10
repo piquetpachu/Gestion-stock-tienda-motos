@@ -54,7 +54,8 @@ function obtenerTopProductos($pdo, $limite = 10) {
 }
 
 function obtenerVentasPorDia($pdo, $desde = null, $hasta = null) {
-    if (!$desde) $desde = date('Y-m-d', strtotime('-29 days'));
+    // Por defecto: Año en curso (YTD)
+    if (!$desde) $desde = date('Y-01-01');
     if (!$hasta) $hasta = date('Y-m-d');
 
     $sql = "
@@ -70,7 +71,8 @@ function obtenerVentasPorDia($pdo, $desde = null, $hasta = null) {
 }
 
 function obtenerIngresosPorRubro($pdo, $desde = null, $hasta = null) {
-    if (!$desde) $desde = date('Y-m-d', strtotime('-29 days'));
+    // Por defecto: Año en curso (YTD)
+    if (!$desde) $desde = date('Y-01-01');
     if (!$hasta) $hasta = date('Y-m-d');
 
     $sql = "
