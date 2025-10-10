@@ -40,7 +40,13 @@ function aplicarFiltrosOrdenProv(src){
   let lista = [...src];
   if (terminoBusquedaProv){
     const q = normalizar(terminoBusquedaProv);
-    lista = lista.filter(p => normalizar(p.nombre).includes(q) || normalizar(p.cuit).includes(q));
+    lista = lista.filter(p =>
+      normalizar(p.nombre).includes(q) ||
+      normalizar(p.cuit).includes(q) ||
+      normalizar(p.telefono).includes(q) ||
+      normalizar(p.email).includes(q) ||
+      normalizar(p.direccion).includes(q)
+    );
   }
   if (ordenarProv === 'nombre_asc') lista.sort(cmpNombre);
   if (ordenarProv === 'nombre_desc') lista.sort((a,b)=>-cmpNombre(a,b));
@@ -91,7 +97,7 @@ function renderProveedores() {
     ` : '';
     return `
       <tr>
-        <td>${p.nombre}</td>
+        <td><a href="#" class="link-primary fw-semibold" data-prov-id="${p.id_proveedor}" data-prov-nombre="${p.nombre}">${p.nombre}</a></td>
         <td>${p.cuit || ''}</td>
         <td>${p.telefono || ''}</td>
         <td>${p.email || ''}</td>
@@ -100,6 +106,16 @@ function renderProveedores() {
       </tr>
     `;
   }).join('');
+
+  // Asignar eventos a los nombres de proveedores para abrir modal de productos
+  tbodyProveedores.querySelectorAll('a[data-prov-id]').forEach(a => {
+    a.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const id = a.getAttribute('data-prov-id');
+      const nombre = a.getAttribute('data-prov-nombre') || 'Proveedor';
+      await mostrarProductosDeProveedor(id, nombre);
+    });
+  });
 
   renderPaginacionProveedores(total, paginaProv, PAGE_SIZE_PROV);
 }
@@ -216,3 +232,34 @@ btnNuevoProveedor.addEventListener('click', () => {
       renderPaginacionProveedores(0, 1, PAGE_SIZE_PROV);
     });
 })();
+
+// ---- Productos por proveedor ----
+const modalProductosProveedor = new bootstrap.Modal(document.getElementById('modalProductosProveedor'));
+const tbodyProdPorProveedor = document.getElementById('tbodyProdPorProveedor');
+const tituloModalProductosProveedor = document.getElementById('tituloModalProductosProveedor');
+
+async function mostrarProductosDeProveedor(idProveedor, nombreProveedor){
+  tituloModalProductosProveedor.textContent = `Productos de ${nombreProveedor}`;
+  tbodyProdPorProveedor.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Cargando...</td></tr>';
+  modalProductosProveedor.show();
+  try{
+    const res = await fetch(API_URL + 'productos_por_proveedor/' + idProveedor);
+    if(!res.ok) throw new Error('Error del servidor');
+    const items = await res.json();
+    if(!items || !items.length){
+      tbodyProdPorProveedor.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Sin productos</td></tr>';
+      return;
+    }
+    tbodyProdPorProveedor.innerHTML = items.map(it => `
+      <tr>
+        <td>${it.nombre || ''}</td>
+        <td>${it.descripcion || ''}</td>
+        <td>${it.precio_venta ?? ''}</td>
+        <td>${it.stock ?? ''}</td>
+        <td>${it.codigo_barras || ''}</td>
+      </tr>
+    `).join('');
+  }catch(err){
+    tbodyProdPorProveedor.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${err.message}</td></tr>`;
+  }
+}

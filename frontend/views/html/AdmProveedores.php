@@ -19,7 +19,7 @@
     <!-- Filtros -->
     <div class="row mb-3">
       <div class="col-md-6 mb-2 mb-md-0">
-        <input type="search" id="buscarProveedor" class="form-control" placeholder="🔍 Buscar por nombre o CUIT">
+        <input type="search" id="buscarProveedor" class="form-control" placeholder="🔍 Buscar por Nombre, CUIT, Teléfono, Email o Dirección">
       </div>
       <div class="col-md-6">
         <select id="ordenarPorProveedor" class="form-select">
@@ -54,6 +54,39 @@
     <nav>
       <ul class="pagination justify-content-center" id="paginacionProveedores"></ul>
     </nav>
+  </div>
+
+  <!-- Modal Productos del Proveedor -->
+  <div class="modal fade" id="modalProductosProveedor" tabindex="-1" aria-hidden="true" aria-labelledby="tituloModalProductosProveedor" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloModalProductosProveedor">Productos del Proveedor</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Precio Venta</th>
+                  <th>Stock</th>
+                  <th>Código Barras</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyProdPorProveedor">
+                <tr><td colspan="5" class="text-center text-secondary">Sin productos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal Proveedor -->

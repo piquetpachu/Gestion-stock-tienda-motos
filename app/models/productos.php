@@ -17,6 +17,17 @@ function obtenerProductoPorCodigo($pdo, $codigo)
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
+function obtenerProductosPorProveedor($pdo, $idProveedor)
+{
+    $sql = "SELECT id_producto, nombre, descripcion, precio_venta, stock, codigo_barras
+            FROM producto
+            WHERE id_proveedor = ?
+            ORDER BY nombre";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$idProveedor]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
 function crearProducto($pdo, $datos) {
     $sql = "INSERT INTO producto (
