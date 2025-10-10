@@ -38,11 +38,14 @@
           <tr>
             <th>Nombre</th>
             <th>CUIT</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Dirección</th>
             <th id="thAccionesProveedores" style="width:160px; display:none;">Acciones</th>
           </tr>
         </thead>
         <tbody id="tbodyProveedores">
-          <tr><td colspan="3" class="text-center">Cargando...</td></tr>
+          <tr><td colspan="5" class="text-center">Cargando...</td></tr>
         </tbody>
       </table>
     </div>

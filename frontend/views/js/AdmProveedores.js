@@ -30,7 +30,9 @@ function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('N
 function cmpNombre(a,b){ return normalizar(a.nombre).localeCompare(normalizar(b.nombre)); }
 function cmpCuit(a,b){ return String(a.cuit||'').localeCompare(String(b.cuit||'')); }
 function filaVaciaProveedores(msg='Sin proveedores') {
-  return `<tr><td colspan="${esAdminProv?3:2}" class="text-center text-secondary">${msg}</td></tr>`;
+  // Columnas visibles: Nombre, CUIT, Teléfono, Email, Dirección (+ Acciones si admin)
+  const baseCols = 5;
+  return `<tr><td colspan="${esAdminProv ? baseCols + 1 : baseCols}" class="text-center text-secondary">${msg}</td></tr>`;
 }
 
 // ---------- Render ----------
@@ -91,6 +93,9 @@ function renderProveedores() {
       <tr>
         <td>${p.nombre}</td>
         <td>${p.cuit || ''}</td>
+        <td>${p.telefono || ''}</td>
+        <td>${p.email || ''}</td>
+        <td>${p.direccion || ''}</td>
         ${esAdminProv ? `<td>${acciones}</td>` : ''}
       </tr>
     `;
