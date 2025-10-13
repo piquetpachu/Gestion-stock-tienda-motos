@@ -13,12 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch(API_URL + 'usuarios', { credentials: 'same-origin' });
       if (!res.ok) throw new Error('Error al cargar');
       const usuarios = await res.json();
-      const vendedores = usuarios.filter(u => u.rol === 'vendedor');
+      const vendedores = usuarios.filter((u) => u.rol === 'vendedor');
       if (!vendedores.length) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-secondary">Sin vendedores</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-secondary">Sin vendedores</td></tr>';
         return;
       }
-      tbody.innerHTML = vendedores.map(v => `
+      tbody.innerHTML = vendedores
+        .map(
+          (v) => `
         <tr>
           <td>${v.nombre}</td>
           <td>${v.email}</td>
@@ -27,10 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <button class="btn btn-sm btn-danger" data-id="${v.id_usuario}" data-action="del">Eliminar</button>
           </td>
         </tr>
-      `).join('');
+      `
+        )
+        .join('');
     } catch (e) {
       console.error(e);
-      tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center text-danger">Error</td></tr>';
     }
   }
 
@@ -48,7 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('vend_nombre').value = u.nombre || '';
         document.getElementById('vend_email').value = u.email || '';
         document.getElementById('vend_contrasena').value = '';
-        if (info) { info.style.display = 'block'; info.textContent = 'Rol fijo: vendedor'; }
+        if (info) {
+          info.style.display = 'block';
+          info.textContent = 'Rol fijo: vendedor';
+        }
         modal.show();
       } catch (err) {
         alert('Error: ' + err.message);
@@ -57,7 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (action === 'del') {
       if (!confirm('¿Eliminar vendedor?')) return;
       try {
-        const res = await fetch(API_URL + 'borrar_usuario/' + id, { method: 'DELETE', credentials: 'same-origin' });
+        const res = await fetch(API_URL + 'borrar_usuario/' + id, {
+          method: 'DELETE',
+          credentials: 'same-origin',
+        });
         if (!res.ok) throw new Error('No se pudo eliminar');
         await cargar();
       } catch (err) {
@@ -70,7 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnNuevo.addEventListener('click', () => {
       document.getElementById('vend_id').value = '';
       form.reset();
-      if (info) { info.style.display = 'block'; info.textContent = 'Rol fijo: vendedor'; }
+      if (info) {
+        info.style.display = 'block';
+        info.textContent = 'Rol fijo: vendedor';
+      }
       modal.show();
     });
   }
@@ -87,17 +100,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const pass = document.getElementById('vend_contrasena').value;
       if (pass) payload.contrasena = pass;
       try {
-        const url = id ? (API_URL + 'actualizar_usuario/' + id) : (API_URL + 'registrar_usuario');
+        const url = id
+          ? API_URL + 'actualizar_usuario/' + id
+          : API_URL + 'registrar_usuario';
         const method = id ? 'PUT' : 'POST';
         const res = await fetch(url, {
           method,
           headers: { 'Content-Type': 'application/json' },
           credentials: 'same-origin',
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
         });
         if (!res.ok) {
           let text = 'Error al guardar';
-          try { const j = await res.json(); if (j.error) text = j.error; } catch {}
+          try {
+            const j = await res.json();
+            if (j.error) text = j.error;
+          } catch {}
           throw new Error(text);
         }
         modal.hide();
@@ -118,7 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const panel = document.getElementById('vendedores-panel');
         if (panel) panel.style.display = 'none';
         const alert = document.getElementById('vendedores-alert');
-        if (alert) { alert.textContent = 'Acceso solo para administradores.'; alert.classList.remove('d-none'); }
+        if (alert) {
+          alert.textContent = 'Acceso solo para administradores.';
+          alert.classList.remove('d-none');
+        }
         document.body.style.display = '';
         return;
       }
