@@ -5,17 +5,22 @@ $ruta = str_replace($basePath, '', $uri);
 $partes = explode('/', trim($ruta, '/'));
 $recurso = $partes[0] ?? null;
 // CONFIGURACIÓN DE SESIÓN DEBE ESTAR ANTES DE session_start()
-$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? 80) == 443;
 $secureCookie = $isSecure ? true : false; // Solo true en producción con HTTPS
+$host = $_SERVER['HTTP_HOST'] ?? '';
 
-session_set_cookie_params([
+// Evitar establecer 'domain' en localhost/127.0.0.1 (host-only cookie)
+$cookieParams = [
     'lifetime' => 86400, // 1 día
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
     'secure' => $secureCookie,     // Auto-ajuste para desarrollo/producción
     'httponly' => true,
     'samesite' => 'Strict'
-]);
+];
+if ($host && !in_array($host, ['localhost', '127.0.0.1'])) {
+    $cookieParams['domain'] = $host;
+}
+session_set_cookie_params($cookieParams);
 
 // Iniciar sesión solo si no está iniciada
 if (session_status() === PHP_SESSION_NONE) {

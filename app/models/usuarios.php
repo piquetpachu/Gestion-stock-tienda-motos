@@ -56,7 +56,11 @@ function crearUsuario($pdo, $datos)
 // Verificar login
 function loginUsuario($pdo, $email, $contrasena)
 {
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
+    $email = trim((string)$email);
+    $contrasena = (string)$contrasena;
+
+    // Comparación case-insensitive por email
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE LOWER(email) = LOWER(?)");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -68,8 +72,9 @@ function loginUsuario($pdo, $email, $contrasena)
 
     $coincide = false;
     if ($hashAlmacenado) {
-        // Caso 1: ya está hasheado con bcrypt (prefijo $2y$)
-        if (substr((string)$hashAlmacenado, 0, 4) === '$2y$') {
+        // Caso 1: ya está hasheado con bcrypt (prefijo $2y$, $2a$ o $2b$)
+        $pref = substr((string)$hashAlmacenado, 0, 4);
+        if (in_array($pref, ['$2y$', '$2a$', '$2b$'], true)) {
             $coincide = password_verify($contrasena, $hashAlmacenado);
         } else {
             // Caso 2: puede venir en texto plano desde el dump de SQL
