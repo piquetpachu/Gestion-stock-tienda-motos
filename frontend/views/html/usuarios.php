@@ -104,7 +104,7 @@
     // Mostrar el body solo si es admin
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        const res = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+        const res = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
         if (!res.ok) throw new Error('No autenticado');
         const user = await res.json();
         if (user.rol !== 'admin') {

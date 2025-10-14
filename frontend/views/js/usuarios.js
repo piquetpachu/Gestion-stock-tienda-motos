@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------
   async function verificarAdmin() {
     try {
-      const res = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+  const res = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
       if (!res.ok) return false;
       const user = await res.json();
       if (user.rol !== 'admin') {
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------
   async function cargarUsuarios() {
     try {
-      const res = await fetch('/Gestion-stock-tienda-motos/app/usuarios');
+  const res = await fetch(`${API_URL}usuarios`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error('No se pudieron cargar usuarios');
       const usuarios = await res.json();
       if (!tablaUsuarios) return;
@@ -140,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(url, {
           method: metodo,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datos)
+          body: JSON.stringify(datos),
+          credentials: 'same-origin'
         });
         if (!res.ok) {
           let text = 'Error al guardar usuario';
@@ -172,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.editarUsuario = async function (id) {
     try {
       localStorage.removeItem(STORAGE_KEY);
-      const res = await fetch(`/Gestion-stock-tienda-motos/app/usuario/${id}`);
+  const res = await fetch(`${API_URL}usuario/${id}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error('No se encontró usuario');
       const usuario = await res.json();
       document.getElementById('usuario_id').value = usuario.id_usuario || '';
@@ -181,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('usuario_rol').value = usuario.rol || '';
       document.getElementById('usuario_contrasena').value = '';
 
-      const resInfo = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+  const resInfo = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
       const user = resInfo.ok ? await resInfo.json() : null;
       const rolSel = document.getElementById('usuario_rol');
       if (rolSel) rolSel.disabled = (user && user.id === usuario.id_usuario);
@@ -203,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = resUser.ok ? await resUser.json() : null;
       if (user && user.id === id) { alert('No puede eliminar su usuario actual.'); return; }
       if (!confirm('¿Eliminar usuario?')) return;
-      const res = await fetch(`/Gestion-stock-tienda-motos/app/borrar_usuario/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}borrar_usuario/${id}`, { method: 'DELETE', credentials: 'same-origin' });
       if (!res.ok) throw new Error('Error al eliminar usuario');
       await cargarUsuarios();
     } catch (e) {
