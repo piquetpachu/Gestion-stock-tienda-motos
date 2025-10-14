@@ -4,7 +4,9 @@
   flex-grow: 1;
 }
 
-/* No ocultar el body globalmente: esto provocaba páginas en blanco */
+body {
+  display: none;
+}
 
 .bodyclientes {
   background-color: #343a40;
