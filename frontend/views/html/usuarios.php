@@ -34,7 +34,7 @@
     }
   </style>
 </head>
-<body style="display:none;">
+<body>
   <?php include 'navbar.php'; ?>
   <div class="container mt-5" id="usuarios-panel">
     <h1>👤 Panel de Control de Usuarios</h1>
@@ -101,7 +101,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/usuarios.js"></script>
   <script>
-    // Mostrar el body solo si es admin
+    // Controlar acceso: mostrar/ocultar panel pero nunca ocultar el body
     document.addEventListener('DOMContentLoaded', async function() {
       try {
         const res = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
@@ -111,12 +111,17 @@
           document.getElementById('usuarios-panel').style.display = 'none';
           document.getElementById('admin-alert').textContent = 'Acceso solo para administradores.';
           document.getElementById('admin-alert').classList.remove('d-none');
-          document.body.style.display = '';
         } else {
-          document.body.style.display = '';
+          // admin: el JS usuarios.js se encargará de cargar la tabla
         }
-      } catch {
-        window.location.href = 'login.html';
+      } catch (e) {
+        const panel = document.getElementById('usuarios-panel');
+        if (panel) panel.style.display = 'none';
+        const alert = document.getElementById('admin-alert');
+        if (alert) {
+          alert.textContent = 'No autenticado. Inicie sesión para continuar.';
+          alert.classList.remove('d-none');
+        }
       }
     });
   </script>
