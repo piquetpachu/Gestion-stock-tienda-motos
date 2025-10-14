@@ -7,7 +7,7 @@
 /* Ocultamos inicialmente hasta que JS (theme.js) aplique el tema y muestre; evita parpadeo */
 body {
   display: none; /* se sobreescribe a block en theme.js */
-  background-color: var(--app-body-bg, var(--bs-body-bg, #f5f7fa)) !important; /* forzamos prioridad */
+  background-color: var(--app-body-bg, #f5f7fa);
   color: var(--app-body-color, #212529);
   min-height: 100vh;
 }
@@ -105,7 +105,6 @@ body.dark-theme .btn-danger {
 
   /* App body (tema claro) */
   --app-body-bg: #9b9b9b; /* Ajuste solicitado para fondo claro */
-  --bs-body-bg: #9b9b9b; /* Sincronizamos Bootstrap body bg */
   --app-body-color: #212529;
 }
 
