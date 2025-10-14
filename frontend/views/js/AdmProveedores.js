@@ -96,8 +96,8 @@ function renderProveedores() {
       <button class="btn btn-sm btn-danger" onclick="eliminarProveedor(${p.id_proveedor})">Borrar</button>
     ` : '';
     return `
-      <tr>
-        <td><a href="#" class="link-primary fw-semibold" data-prov-id="${p.id_proveedor}" data-prov-nombre="${p.nombre}">${p.nombre}</a></td>
+      <tr data-prov-row="${p.id_proveedor}" data-prov-nombre="${p.nombre}">
+        <td class="fw-semibold">${p.nombre}</td>
         <td>${p.cuit || ''}</td>
         <td>${p.telefono || ''}</td>
         <td>${p.email || ''}</td>
@@ -108,12 +108,14 @@ function renderProveedores() {
   }).join('');
 
   // Asignar eventos a los nombres de proveedores para abrir modal de productos
-  tbodyProveedores.querySelectorAll('a[data-prov-id]').forEach(a => {
-    a.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const id = a.getAttribute('data-prov-id');
-      const nombre = a.getAttribute('data-prov-nombre') || 'Proveedor';
-      await mostrarProductosDeProveedor(id, nombre);
+  // Click en fila (ignorando botones) para ver productos del proveedor
+  tbodyProveedores.querySelectorAll('tr[data-prov-row]').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.closest('button')) return; // ignorar botones acciones
+      const id = tr.getAttribute('data-prov-row');
+      const nombre = tr.getAttribute('data-prov-nombre') || 'Proveedor';
+      mostrarProductosDeProveedor(id, nombre);
     });
   });
 
@@ -263,3 +265,5 @@ async function mostrarProductosDeProveedor(idProveedor, nombreProveedor){
     tbodyProdPorProveedor.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${err.message}</td></tr>`;
   }
 }
+
+// Eliminado modal de detalle independiente (redundante)

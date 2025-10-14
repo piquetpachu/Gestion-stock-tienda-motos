@@ -73,6 +73,39 @@
     </div>
   </div>
 
+  <!-- Modal Productos por Rubro -->
+  <div class="modal fade" id="modalProductosRubro" tabindex="-1" aria-hidden="true" aria-labelledby="tituloProductosRubro" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="tituloProductosRubro">Productos del Rubro</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-sm table-striped align-middle">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Descripción</th>
+                  <th>Precio Venta</th>
+                  <th>Stock</th>
+                  <th>Código Barras</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyProdPorRubro">
+                <tr><td colspan="5" class="text-center text-secondary">Sin productos</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>

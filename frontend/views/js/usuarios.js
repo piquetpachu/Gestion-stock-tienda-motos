@@ -203,6 +203,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (idInput) idInput.value = '';
       const restored = restoreFormFromStorage();
       if (!restored && formUsuario) formUsuario.reset();
+      // Ajustar etiqueta de contraseña para modo creación
+      const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+      if (passLabel) passLabel.textContent = 'Contraseña';
       bootstrap.Modal.getOrCreateInstance(modalUsuarioEl).show();
     });
   }
@@ -219,6 +222,10 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('usuario_email').value = usuario.email || '';
       document.getElementById('usuario_rol').value = usuario.rol || '';
       document.getElementById('usuario_contrasena').value = '';
+
+    // Cambiar etiqueta de contraseña en modo edición
+    const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+    if (passLabel) passLabel.textContent = 'Cambiar Contraseña';
 
   const resInfo = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
       const user = resInfo.ok ? await resInfo.json() : null;
@@ -279,6 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isEditing) restoreFormFromStorage();
         const adv = document.getElementById('pass-warning'); if (adv) adv.style.display = 'none';
         const alertDiv = modalUsuarioEl.querySelector('#user-alert'); if (alertDiv) alertDiv.remove();
+        // Asegurar etiqueta correcta según modo
+        const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+        if (passLabel) passLabel.textContent = isEditing ? 'Cambiar Contraseña' : 'Contraseña';
       } catch (e) { console.error(e); }
     });
 

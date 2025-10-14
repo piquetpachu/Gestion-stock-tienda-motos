@@ -15,6 +15,7 @@
 <body>
 
 <div class="container mt-5">
+  <div id="alertRol" class="alert alert-warning d-none" role="alert"></div>
   <div class="card shadow rounded-4">
     <div class="card-body">
       <h3 class="card-title mb-4 text-center text-primary fw-bold">📊 Estadísticas Generales</h3>
@@ -114,6 +115,22 @@
     </div>
   </div>
 </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Ocultar cualquier acceso directo a usuarios si existe en el dashboard
+      const atajos = document.querySelectorAll('a[href$="usuarios.php"], a[href*="/usuarios.php"]');
+      atajos.forEach(a => a.style.display = 'none');
+
+      fetch('/Gestion-stock-tienda-motos/app/usuario-info', { credentials: 'same-origin' })
+        .then(r => r.ok ? r.json() : null)
+        .then(user => {
+          if (user && user.rol === 'admin') {
+            atajos.forEach(a => a.style.display = '');
+          }
+        })
+        .catch(() => {});
+    });
+  </script>
   <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
