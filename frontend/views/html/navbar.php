@@ -1,18 +1,9 @@
-<!DOCTYPE html>
-<html lang="es">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Navbar con Modal Caja</title>
-  <link href="https://unpkg.com/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://unpkg.com/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <style>
-    .brand-logo { height: 32px; width: auto; object-fit: contain; }
-  </style>
-</head>
-
-<body>
+<!-- Parcial: Navbar (sin HTML/HEAD/BODY) -->
+<style>
+  .brand-logo { height: 32px; width: auto; object-fit: contain; }
+  .navbar .navbar-toggler { border: 1px solid rgba(255,255,255,.4); }
+  .navbar .navbar-toggler:focus { box-shadow: none; }
+</style>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
@@ -61,7 +52,7 @@
           </a>
         </li>
         <li class="nav-item">
-          <a class="nav-link d-flex align-items-center gap-1" href="usuarios.php">
+          <a id="navUsuarios" class="nav-link d-flex align-items-center gap-1" href="usuarios.php">
             Usuario
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-person-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
               <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0m2 5.755V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-.245S4 12 8 12s5 1.755 5 1.755"/>
@@ -152,9 +143,7 @@
     </div>
   </div>
 
-  <!-- Bootstrap JS bundle -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Tu JS de logout -->
+  <!-- JS de logout (se asume Bootstrap ya cargado por la vista contenedora) -->
   <script src="../js/logout.js"></script>
 
   <script>
@@ -162,15 +151,16 @@
       // Toggle manual del navbar
       const btnToggle = document.querySelector('.navbar-toggler');
       const collapseEl = document.getElementById('navbarContenido');
-      const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
-
-      btnToggle.addEventListener('click', function () {
-        if (collapseEl.classList.contains('show')) {
-          bsCollapse.hide();
-        } else {
-          bsCollapse.show();
-        }
-      });
+      if (btnToggle && collapseEl && window.bootstrap?.Collapse) {
+        const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+        btnToggle.addEventListener('click', function () {
+          if (collapseEl.classList.contains('show')) {
+            bsCollapse.hide();
+          } else {
+            bsCollapse.show();
+          }
+        });
+      }
 
       // Cerrar navbar al hacer click en un enlace del menú
       document.querySelectorAll('#navbarContenido .nav-link').forEach(link => {
@@ -191,16 +181,15 @@
       });
 
       // Ocultar el enlace de usuarios si no es admin
-      fetch('/Gestion-stock-tienda-motos/app/usuario-info')
+      fetch('/Gestion-stock-tienda-motos/app/usuario-info', { credentials: 'same-origin' })
         .then(res => res.ok ? res.json() : null)
         .then(user => {
+          const navUsers = document.getElementById('navUsuarios');
+          if (!navUsers) return; // nada que ocultar
           if (!user || user.rol !== 'admin') {
-            document.getElementById('navUsuarios').style.display = 'none';
+            navUsers.style.display = 'none';
           }
-        });
+        })
+        .catch(() => {});
     });
   </script>
-
-</body>
-
-</html>

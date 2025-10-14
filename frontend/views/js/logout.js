@@ -1,4 +1,5 @@
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+const logoutBtn = document.getElementById('logoutBtn');
+if (logoutBtn) logoutBtn.addEventListener('click', async () => {
     try {
         const response = await fetch('/Gestion-stock-tienda-motos/app/logout', {
             method: 'POST',
