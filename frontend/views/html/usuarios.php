@@ -39,14 +39,28 @@
   <div class="container mt-5" id="usuarios-panel">
     <h1>👤 Panel de Control de Usuarios</h1>
     <div id="admin-alert" class="alert alert-danger d-none" role="alert"></div>
-    <div class="mb-3 text-end">
-      <button class="btn btn-success" id="btnAgregarUsuario">➕ Registrar Usuario</button>
+    <div class="row g-2 align-items-end mb-3">
+      <div class="col-md-6">
+        <label for="busquedaUsuario" class="form-label">Buscar</label>
+        <input type="text" id="busquedaUsuario" class="form-control" placeholder="Buscar por nombre, email o rol..." />
+      </div>
+      <div class="col-md-4">
+        <label for="ordenarUsuario" class="form-label">Ordenar por</label>
+        <select id="ordenarUsuario" class="form-select">
+          <option value="">Sin orden</option>
+          <option value="nombre">Nombre</option>
+          <option value="email">Email</option>
+          <option value="rol">Rol</option>
+        </select>
+      </div>
+      <div class="col-md-2 text-end">
+        <button class="btn btn-success w-100" id="btnAgregarUsuario">➕ Registrar Usuario</button>
+      </div>
     </div>
     <div class="table-responsive">
       <table class="table table-striped table-hover table-bordered align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>

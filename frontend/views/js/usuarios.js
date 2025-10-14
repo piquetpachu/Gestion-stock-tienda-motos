@@ -6,6 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalUsuarioEl = document.getElementById('modalUsuario');
   const btnAgregarUsuario = document.getElementById('btnAgregarUsuario');
   const tablaUsuarios = document.getElementById('tablaUsuarios');
+  const inputBusqueda = document.getElementById('busquedaUsuario');
+  const selectOrden = document.getElementById('ordenarUsuario');
+  let usuariosCache = [];
+  let filtroActual = '';
+  let ordenActual = '';
   let justSaved = false;
 
   // -----------------------------------
@@ -97,29 +102,62 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------
   async function cargarUsuarios() {
     try {
-  const res = await fetch(`${API_URL}usuarios`, { credentials: 'same-origin' });
+      const res = await fetch(`${API_URL}usuarios`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error('No se pudieron cargar usuarios');
-      const usuarios = await res.json();
-      if (!tablaUsuarios) return;
-      tablaUsuarios.innerHTML = '';
-      usuarios.forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${u.id_usuario}</td>
-          <td>${u.nombre}</td>
-          <td>${u.email}</td>
-          <td>${u.rol}</td>
-          <td>
-            <button class="btn btn-warning btn-sm" onclick="editarUsuario(${u.id_usuario})">Editar</button>
-            <button class="btn btn-danger btn-sm" onclick="eliminarUsuario(${u.id_usuario})">Eliminar</button>
-          </td>`;
-        tablaUsuarios.appendChild(tr);
-      });
+      usuariosCache = await res.json();
+      renderUsuarios();
     } catch (e) {
       console.error(e);
       mostrarError('Error cargando usuarios');
     }
   }
+
+  function normalizarTexto(v) { return String(v || '').toLowerCase(); }
+
+  function renderUsuarios() {
+    if (!tablaUsuarios) return;
+    const filtro = normalizarTexto(filtroActual);
+    const campoOrden = ordenActual;
+
+    const lista = (usuariosCache || [])
+      .filter(u => {
+        if (!filtro) return true;
+        return (
+          normalizarTexto(u.nombre).includes(filtro) ||
+          normalizarTexto(u.email).includes(filtro) ||
+          normalizarTexto(u.rol).includes(filtro)
+        );
+      })
+      .sort((a,b) => {
+        if (!campoOrden) return 0;
+        let A = normalizarTexto(a[campoOrden]);
+        let B = normalizarTexto(b[campoOrden]);
+        return A > B ? 1 : A < B ? -1 : 0;
+      });
+
+    tablaUsuarios.innerHTML = '';
+    lista.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${u.nombre}</td>
+        <td>${u.email}</td>
+        <td>${u.rol}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="editarUsuario(${u.id_usuario})">Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="eliminarUsuario(${u.id_usuario})">Eliminar</button>
+        </td>`;
+      tablaUsuarios.appendChild(tr);
+    });
+  }
+
+  // Debounce utilitario
+  function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
+
+  const onBuscar = debounce(() => { filtroActual = inputBusqueda?.value || ''; renderUsuarios(); }, 250);
+  const onOrdenar = () => { ordenActual = selectOrden?.value || ''; renderUsuarios(); };
+
+  inputBusqueda?.addEventListener('input', onBuscar);
+  selectOrden?.addEventListener('change', onOrdenar);
 
   // Guardar (crear/actualizar)
   if (formUsuario) {
@@ -148,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
           try { const json = await res.json(); if (json && json.error) text = json.error; } catch {}
           throw new Error(text);
         }
-        await cargarUsuarios();
+        await cargarUsuarios(); // respeta el filtro/orden actuales con renderUsuarios
         justSaved = true;
         bootstrap.Modal.getInstance(modalUsuarioEl)?.hide();
       } catch (err) {
