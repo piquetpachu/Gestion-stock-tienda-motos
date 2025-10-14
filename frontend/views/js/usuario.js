@@ -2,7 +2,7 @@
 (function(){
   // Mostrar el body cuando estemos listos
   function showBody(){
-    document.body.style.display = '';
+    if (document.body) document.body.style.display = 'block';
   }
 
   function showAlert(tipo, mensaje){
@@ -32,8 +32,8 @@
       document.getElementById('perfil-email').value = detalle.email ?? '';
 
       // 4) Mostrar contenido
-      const contenido = document.getElementById('perfil-contenido');
-      if (contenido) contenido.style.display = '';
+  const contenido = document.getElementById('perfil-contenido');
+  if (contenido) contenido.style.display = 'block';
 
     } catch (e) {
       showAlert('warning', 'No autenticado. Iniciá sesión para ver tu perfil.');

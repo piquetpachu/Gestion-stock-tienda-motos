@@ -34,6 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Asegurar que el body sea visible (algunos estilos globales lo ocultan inicialmente)
   if (document.body && getComputedStyle(document.body).display === 'none') {
-    document.body.style.display = '';
+    document.body.style.display = 'block';
   }
 });
