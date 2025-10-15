@@ -41,11 +41,11 @@
     <div id="admin-alert" class="alert alert-danger d-none" role="alert"></div>
     <div class="row g-2 align-items-end mb-3">
       <div class="col-md-6">
-        <label for="busquedaUsuario" class="form-label">Buscar</label>
+        <label for="busquedaUsuario" class="form-label"></label>
         <input type="text" id="busquedaUsuario" class="form-control" placeholder="Buscar por nombre, email o rol..." />
       </div>
       <div class="col-md-4">
-        <label for="ordenarUsuario" class="form-label">Ordenar por</label>
+        <label for="ordenarUsuario" class="form-label"></label>
         <select id="ordenarUsuario" class="form-select">
           <option value="">Sin orden</option>
           <option value="nombre">Nombre</option>

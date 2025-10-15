@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -8,12 +7,10 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-
-<head>
-  <?php include 'navbar.php'; ?>
 </head>
 
-<body class="bg-dark">
+<body>
+  <?php include 'navbar.php'; ?>
 
   <div class="container my-4">
     <h1 class="text-center mb-4">Registrar venta</h1>
@@ -26,13 +23,13 @@
           <h5>Productos</h5>
           <div class="mb-3">
             <label for="seleccionar_producto" class="form-label">Agregar producto</label>
-            <select class="form-select form-select-dark" id="seleccionar_producto">
+            <select class="form-select" id="seleccionar_producto">
               <option value="" disabled selected>Seleccionar producto</option>
             </select>
           </div>
-          <div class="bg-white-dark p-2 rounded" style="max-height: 250px; overflow-y:auto;">
+          <div class="p-2 rounded border" style="max-height: 250px; overflow-y:auto;">
             <table class="table table-sm table-bordered text-center align-middle" id="tabla_productos">
-              <thead class="table-light-dark">
+              <thead>
                 <tr>
                   <th>Cód.</th>
                   <th>Producto</th>
@@ -69,7 +66,7 @@
           <div class="mb-3">
             <label for="metodo_de_pago" class="form-label">Método de pago</label>
             <div class="d-flex flex-wrap gap-2">
-              <select class="form-select form-select-dark flex-grow-1" id="metodo_de_pago">
+              <select class="form-select flex-grow-1" id="metodo_de_pago">
                 <option value="" disabled selected>Seleccionar método</option>
                 <option value="efectivo">Efectivo</option>
                 <option value="tarjeta">Tarjeta</option>
@@ -79,23 +76,23 @@
             </div>
           </div>
 
-          <div id="bloque_varios_metodos" class="mb-3 p-2 bg-white-dark rounded">
+          <div id="bloque_varios_metodos" class="mb-3 p-2 rounded border">
             <label class="form-label">Varios métodos</label>
             <div class="small">
               <div class="form-check mb-1">
                 <input class="form-check-input" type="checkbox" id="varios_efectivo">
                 <label class="form-check-label" for="varios_efectivo">Efectivo</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+                <input type="number" class="form-control mt-1" placeholder="Monto $" min="0">
               </div>
               <div class="form-check mb-1">
                 <input class="form-check-input" type="checkbox" id="varios_tarjeta">
                 <label class="form-check-label" for="varios_tarjeta">Tarjeta</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+                <input type="number" class="form-control mt-1" placeholder="Monto $" min="0">
               </div>
               <div class="form-check">
                 <input class="form-check-input" type="checkbox" id="varios_transferencia">
                 <label class="form-check-label" for="varios_transferencia">Transferencia</label>
-                <input type="number" class="form-control form-control-dark mt-1" placeholder="Monto $" min="0">
+                <input type="number" class="form-control mt-1" placeholder="Monto $" min="0">
               </div>
             </div>
           </div>
@@ -106,11 +103,11 @@
           <div class="row g-2 mb-3">
             <div class="col-6">
               <label for="descuento" class="form-label">Descuento (%)</label>
-              <input type="number" class="form-control form-control-dark text-end" id="descuento" min="0" value="0">
+              <input type="number" class="form-control text-end" id="descuento" min="0" value="0">
             </div>
             <div class="col-6">
               <label for="total_venta" class="form-label">Total</label>
-              <input type="text" class="form-control form-control-dark text-end" id="total_venta" readonly>
+              <input type="text" class="form-control text-end" id="total_venta" readonly>
             </div>
           </div>
 
@@ -137,19 +134,19 @@
   <!-- Modal cliente -->
   <div class="modal fade" id="modalCliente" tabindex="-1">
     <div class="modal-dialog">
-      <div class="modal-content bg-dark text-light">
+      <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Agregar Cliente</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="form_cliente">
-            <div class="mb-2"><label class="form-label">Nombre</label><input type="text" class="form-control form-control-dark" id="cliente_nombre" required></div>
-            <div class="mb-2"><label class="form-label">Apellido</label><input type="text" class="form-control form-control-dark" id="cliente_apellido"></div>
-            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control form-control-dark" id="cliente_cuit" required></div>
-            <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control form-control-dark" id="cliente_email" required></div>
-            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control form-control-dark" id="cliente_telefono"></div>
-            <div class="mb-2"><label class="form-label">Dirección</label><input type="text" class="form-control form-control-dark" id="cliente_direccion"></div>
+            <div class="mb-2"><label class="form-label">Nombre</label><input type="text" class="form-control" id="cliente_nombre" required></div>
+            <div class="mb-2"><label class="form-label">Apellido</label><input type="text" class="form-control" id="cliente_apellido"></div>
+            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control" id="cliente_cuit" required></div>
+            <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control" id="cliente_email" required></div>
+            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="cliente_telefono"></div>
+            <div class="mb-2"><label class="form-label">Dirección</label><input type="text" class="form-control" id="cliente_direccion"></div>
           </form>
         </div>
         <div class="modal-footer">
@@ -161,6 +158,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
