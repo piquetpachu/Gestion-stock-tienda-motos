@@ -233,6 +233,24 @@ body.dark-theme .btn-danger {
   .navbar-brand .brand-logo { height: 28px; }
 }
 
+/* ===== Switch de tema en navbar (más grande) ===== */
+/* Si Bootstrap 5.3+ está presente, ajustar el ancho del switch con variable */
+.navbar .form-switch { 
+  --bs-form-switch-width: 3rem; /* default ~2.5rem; aumentamos tamaño */
+}
+/* Fallback: escalar el input para hacerlo más grande visualmente */
+.navbar .form-switch .form-check-input#switchTema {
+  transform: scale(1.35);
+  transform-origin: left center;
+}
+/* Compensar el mayor tamaño para que no quede pegado al borde */
+.navbar .form-switch { padding-left: 2.25rem; }
+
+@media (max-width: 576px) {
+  .navbar .form-switch { --bs-form-switch-width: 2.6rem; }
+  .navbar .form-switch .form-check-input#switchTema { transform: scale(1.2); }
+}
+
 /* ===== Layout de página en caja reutilizable ===== */
 .page-container { padding: 24px 0; }
 .page-card {
