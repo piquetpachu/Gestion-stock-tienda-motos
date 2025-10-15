@@ -1,88 +1,20 @@
-/* Agregar estas reglas CSS a tu archivo de estilos */
+/*
+  style.css — Organización y limpieza
+  - Variables y temas (light/dark)
+  - Base / Resets
+  - Utilidades legacy (compatibilidad)
+  - Layout
+  - Componentes (cards, iconos)
+  - Tablas
+  - Modales
+  - Navbar / Responsive
+  - Estadísticas y títulos
+*/
 
-.d-flex .ts-wrapper {
-  flex-grow: 1;
-}
-
-/* Ocultamos inicialmente hasta que JS (theme.js) aplique el tema y muestre; evita parpadeo */
-body {
-  display: none; /* se sobreescribe a block en theme.js */
-  background-color: var(--app-body-bg, #f5f7fa);
-  color: var(--app-body-color, #212529);
-  min-height: 100vh;
-}
-
-/* Eliminado .bodyclientes (legacy) para permitir fondo dinámico mediante variables */
-
-body.bg-dark {
-  color: #f8f9fa;
-}
-
-body.dark-theme .btn {
-  background-color: #343a40;
-  color: #fff;
-  border-color: #444;
-}
-
-body.dark-theme .btn-warning {
-  background-color:#cacaca;
-  color: #ffd700;
-}
-
-body.dark-theme .btn-danger {
-  background-color: #880000;
-  color: #fff;
-}
-
-.bg-white-dark {
-  background-color: #cacaca !important;
-}
-
-.table-light-dark {
-  background-color: #cacaca !important;
-  color: #f8f9fa;
-}
-
-.form-control-dark {
-  background-color: #343a40;
-  color: #f8f9fa;
-  border: 1px solid #495057;
-}
-
-.form-select-dark {
-  background-color: #343a40;
-  color: #f8f9fa;
-  border: 1px solid #495057;
-}
-
-.icon-card {
-  text-align: center;
-  padding: 20px;
-  border-radius: 15px;
-  transition: 0.3s;
-  height: 100%;
-}
-
-.icon-card:hover {
-  background-color: #f8f9fa;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.icon-card img {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 15px;
-}
-
-.icon-title {
-  font-weight: 500;
-  color: #343a40;
-}
-
-
-/* Paleta base inspirada en dashboard adjunto */
+/* ========== VARIABLES Y TEMAS ========== */
+/* Paleta base inspirada en dashboard */
 :root, [data-bs-theme="light"] {
-  /* Bootstrap theme colors */
+  /* Colores Bootstrap */
   --bs-primary: #1f6feb;         /* Azul principal */
   --bs-primary-rgb: 31, 111, 235;
   --bs-success: #22c55e;         /* Verde */
@@ -96,9 +28,9 @@ body.dark-theme .btn-danger {
   --bs-link-color: var(--bs-primary);
   --bs-link-hover-color: #1a5ccc;
 
-  /* Variables clave para tarjetas en tema claro */
-  --bs-card-bg: #ffffff;          /* Fondo de card en claro */
-  --bs-card-color: #212529;       /* Texto de card en claro */
+  /* Tarjetas (claro) */
+  --bs-card-bg: #ffffff;
+  --bs-card-color: #212529;
 
   /* Neutrales y tablas */
   --custom-bg-th: #eef2f6;
@@ -107,14 +39,13 @@ body.dark-theme .btn-danger {
   --custom-bg-tr-even: #f7fafc;
   --custom-bg-tr-hover: rgba(0, 0, 0, 0.06);
 
-  /* App body (tema claro) */
-  --app-body-bg: #9b9b9b; /* Ajuste solicitado para fondo claro */
+  /* Body (claro) */
+  --app-body-bg: #9b9b9b; /* Fondo claro solicitado */
   --app-body-color: #212529;
 }
 
-/* Estilos para modo oscuro */
+/* Tema oscuro */
 [data-bs-theme="dark"] {
-  /* Bootstrap theme colors (misma paleta, ajustada para contraste) */
   --bs-primary: #63a1ff;
   --bs-primary-rgb: 99, 161, 255;
   --bs-success: #4ade80;
@@ -128,137 +59,114 @@ body.dark-theme .btn-danger {
   --bs-link-color: var(--bs-primary);
   --bs-link-hover-color: #8dbbff;
 
-  /* Variables clave para tarjetas en tema oscuro */
-  --bs-card-bg: #1b1f24;          /* Fondo de card en oscuro */
+  /* Tarjetas (oscuro) */
+  --bs-card-bg: #1b1f24;
   --bs-card-color: var(--bs-body-color);
 
+  /* Tablas (oscuro) */
   --custom-bg-th: #3a3f45;
   --custom-color-th: #e6e9ee;
   --custom-border-table: #4a5158;
   --custom-bg-tr-even: #2b3035;
   --custom-bg-tr-hover: rgba(255, 255, 255, 0.08);
 
-  /* App body (tema oscuro) */
+  /* Body (oscuro) */
   --app-body-bg: #0f1113;
   --app-body-color: #e2e6ea;
 }
 
-/* Aplicar estilos a las tablas */
-.table th {
-  background-color: var(--custom-bg-th) !important;
-  color: var(--custom-color-th) !important;
-  border-color: var(--custom-border-table) !important;
+/* ========== BASE / GLOBAL ========== */
+/* Evita FOUC hasta que theme.js fije el tema */
+body {
+  display: none; /* se sobreescribe a block en theme.js */
+  background-color: var(--app-body-bg, #f5f7fa);
+  color: var(--app-body-color, #212529);
+  min-height: 100vh;
 }
 
-.table td {
-  border-color: var(--custom-border-table) !important;
-}
+/* Ajuste Selectize/TS en layouts flex */
+.d-flex .ts-wrapper { flex-grow: 1; }
 
-.table-striped tbody tr:nth-of-type(even) {
-  background-color: var(--custom-bg-tr-even) !important;
-}
+/* ========== UTILIDADES LEGACY (compatibilidad) ========== */
+/* Mantener por si alguna vista los usa directamente */
+body.bg-dark { color: #f8f9fa; }
+body.dark-theme .btn { background-color: #343a40; color: #fff; border-color: #444; }
+body.dark-theme .btn-warning { background-color: #cacaca; color: #ffd700; }
+body.dark-theme .btn-danger { background-color: #880000; color: #fff; }
+.bg-white-dark { background-color: #cacaca !important; }
+.table-light-dark { background-color: #cacaca !important; color: #f8f9fa; }
+.form-control-dark { background-color: #343a40; color: #f8f9fa; border: 1px solid #495057; }
+.form-select-dark  { background-color: #343a40; color: #f8f9fa; border: 1px solid #495057; }
 
-.table-hover tbody tr:hover {
-  background-color: var(--custom-bg-tr-hover) !important;
-}
-
-/* Para la tabla de productos */
-.table-productos th {
-  background-color: var(--custom-bg-th) !important;
-  color: var(--custom-color-th) !important;
-}
-
-/* Para la tabla de ventas */
-#tabla_productos th {
-  background-color: var(--custom-bg-th) !important;
-  color: var(--custom-color-th) !important;
-}
-.icon-card {
-    text-align: center;
-    padding: 20px;
-    border-radius: 15px;
-    transition: 0.3s;
-    height: 100%;
-}
-
-.icon-card:hover {
-    background-color: #f8f9fa;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.icon-card img {
-    width: 80px;
-    height: 80px;
-    margin-bottom: 15px;
-}
-
-.icon-title {
-    font-weight: 500;
-    color: #343a40;
-}
-
-.table-responsive {
-  margin-top: 20px;
-}
-
-/* Texto de modales en negro (sobrescribe .text-light del body) */
-.modal .modal-content { color: #000 !important; }
-.modal .modal-title { color: #000 !important; }
-.modal .modal-body,
-.modal .modal-footer,
-.modal .form-label,
-.modal .form-check-label,
-.modal .form-text { color: #000 !important; }
-/* Modales respetan el tema */
-.modal .modal-content {
-  background-color: var(--bs-modal-bg) !important;
-  color: var(--bs-body-color) !important;
-}
-.modal .modal-title,
-.modal .modal-body,
-.modal .modal-footer,
-.modal .form-label,
-.modal .form-check-label,
-.modal .form-text {
-  color: var(--bs-body-color) !important;
-}
-
-/* Logo navbar */
-.navbar-brand .brand-logo {
-  height: 32px;
-  width: auto;
-  object-fit: contain;
-}
-@media (max-width: 575.98px){
-  .navbar-brand .brand-logo { height: 28px; }
-}
-
-/* ===== Layout de página en caja reutilizable ===== */
+/* ========== LAYOUT ========== */
 .page-container { padding: 24px 0; }
 .page-card {
-  /* Usar las variables estándar de Bootstrap para tarjetas */
-  background-color: var(--bs-card-bg, #fff);
-  color: var(--bs-body-color);
+  background-color: var(--bs-card-bg, #d40000);
+  color: var(--bs-card-color, var(--bs-body-color));
   border: 1px solid var(--custom-border-table);
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-[data-bs-theme="light"] .page-card {
-  /* Reafirmar blanco en tema claro (en caso de overrides específicos) */
-  background-color: var(--bs-card-bg, #ffffff);
-  color: var(--bs-card-color, #212529);
-  border-color: var(--custom-border-table);
-}
-[data-bs-theme="dark"] .page-card {
-  /* Fondo ligeramente más claro que el body en oscuro */
-  background-color: #1b1f24;
-  color: var(--bs-body-color);
-  border-color: #2a3138;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
-}
+/* Afinar contraste de card por tema sin romper variables */
+[data-bs-theme="dark"] .page-card { border-color: #2a3138; box-shadow: 0 2px 10px rgba(0,0,0,0.5); }
 
-/* ===== Tarjetas de estadísticas con fondo lleno ===== */
+/* ========== COMPONENTES ========== */
+/* Icon cards */
+.icon-card {
+  text-align: center;
+  padding: 20px;
+  border-radius: 15px;
+  transition: 0.3s;
+  height: 100%;
+}
+.icon-card:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+[data-bs-theme="dark"] .icon-card:hover {
+  background-color: rgba(255,255,255,0.06);
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+}
+.icon-card img { width: 80px; height: 80px; margin-bottom: 15px; }
+.icon-title { font-weight: 500; color: #343a40; }
+
+/* Título con icono */
+.title-icon { width: 1em; height: 1em; margin-right: 0.4em; vertical-align: -0.15em; }
+.page-card h1 .title-icon { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
+#titulo-clientes .title-icon { width: 1.25em; height: 1.25em; vertical-align: -0.22em; }
+
+/* ========== TABLAS ========== */
+.table th {
+  background-color: var(--custom-bg-th) !important;
+  color: var(--custom-color-th) !important;
+  border-color: var(--custom-border-table) !important;
+}
+.table td { border-color: var(--custom-border-table) !important; }
+.table-striped tbody tr:nth-of-type(even) { background-color: var(--custom-bg-tr-even) !important; }
+.table-hover tbody tr:hover { background-color: var(--custom-bg-tr-hover) !important; }
+
+/* Tablas específicas */
+.table-productos th { background-color: var(--custom-bg-th) !important; color: var(--custom-color-th) !important; }
+#tabla_productos th { background-color: var(--custom-bg-th) !important; color: var(--custom-color-th) !important; }
+
+.table-responsive { margin-top: 20px; }
+
+/* ========== MODALES ========== */
+/* Respetar el tema activo */
+.modal .modal-content { background-color: var(--bs-modal-bg) !important; color: var(--bs-body-color) !important; }
+.modal .modal-title,
+.modal .modal-body,
+.modal .modal-footer,
+.modal .form-label,
+.modal .form-check-label,
+.modal .form-text { color: var(--bs-body-color) !important; }
+
+/* ========== NAVBAR / RESPONSIVE ========== */
+.navbar-brand .brand-logo { height: 32px; width: auto; object-fit: contain; }
+@media (max-width: 575.98px) { .navbar-brand .brand-logo { height: 28px; } }
+
+/* ========== ESTADÍSTICAS ========== */
 .stat-card {
   border-width: 1px;
   border-style: solid;
@@ -267,23 +175,11 @@ body.dark-theme .btn-danger {
 }
 .stat-card .card-body { padding: 1rem 1rem; }
 .stat-card .card-title, .stat-card p { color: inherit !important; margin-bottom: .25rem; }
-
 .stat-primary { background-color: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
 .stat-success  { background-color: var(--bs-success);  border-color: var(--bs-success);  color: #fff; }
 .stat-danger   { background-color: var(--bs-danger);   border-color: var(--bs-danger);   color: #fff; }
 /* En warning el contraste mejora con texto oscuro */
 .stat-warning  { background-color: var(--bs-warning);  border-color: var(--bs-warning);  color: #111; }
-
-/* Subtle tone option (not used now but available) */
+/* Opción sutil */
 .stat-subtle { filter: saturate(0.95) brightness(1.05); }
-
-/* ===== Icono en títulos de página ===== */
-/* Escala con el tamaño de la fuente del título */
-.title-icon { width: 1em; height: 1em; margin-right: 0.4em; vertical-align: -0.15em; }
-
-/* Opcional: ligeramente mayor en H1 para jerarquía visual */
-.page-card h1 .title-icon { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
-
-/* Aumentar el tamaño del icono SOLO en el título de Clientes */
-#titulo-clientes .title-icon { width: 1.25em; height: 1.25em; vertical-align: -0.22em; }
 

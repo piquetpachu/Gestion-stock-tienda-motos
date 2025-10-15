@@ -5,10 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function aplicarTema(tema) {
     const esOscuro = tema === "oscuro"; // valores esperados: "oscuro" | "claro"
     root.setAttribute("data-bs-theme", esOscuro ? "dark" : "light");
-    // Añadir clases al body para reforzar estilos específicos si algún selector del atributo no aplica
-    if (document.body) {
-      document.body.classList.toggle('theme-dark', esOscuro);
-      document.body.classList.toggle('theme-light', !esOscuro);
+    // Asegurar que el body sea visible cuando se aplica el tema
+    if (document.body && getComputedStyle(document.body).display === 'none') {
+      document.body.style.display = 'block';
     }
 
     // Si no existe el botón (por ejemplo en login), no intentar modificarlo
