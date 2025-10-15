@@ -20,7 +20,7 @@
       </button>
 
     <div class="collapse navbar-collapse" id="navbarContenido">
-      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+  <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
         <li class="nav-item">
           <a class="nav-link d-flex align-items-center gap-2" href="productos.php">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box2-fill" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
