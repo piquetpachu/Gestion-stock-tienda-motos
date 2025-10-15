@@ -14,10 +14,10 @@
 </head>
 <body>
 
-<div class="container mt-5">
+<div class="container page-container">
   <div id="alertRol" class="alert alert-warning d-none" role="alert"></div>
-  <div class="card shadow rounded-4">
-    <div class="card-body">
+  <div class="page-card">
+    <div class="card-body p-0">
       <h3 class="card-title mb-4 text-center text-primary fw-bold">
         <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
           <path d="M0 0h1v15H0zM3 8h1v7H3zM6 4h1v11H6zM9 11h1v4H9zM12 6h1v9h-1zM15 2h1v13h-1z"/>
