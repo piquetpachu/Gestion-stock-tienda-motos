@@ -235,9 +235,42 @@ body.dark-theme .btn-danger {
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
+[data-bs-theme="light"] .page-card {
+  background-color: #ffffff; /* cajas blancas en modo claro */
+  border-color: var(--custom-border-table);
+}
 [data-bs-theme="dark"] .page-card {
   background-color: #1b1f24; /* ligeramente más claro que el body oscuro */
   border-color: #2a3138;
   box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
+
+/* ===== Tarjetas de estadísticas con fondo lleno ===== */
+.stat-card {
+  border-width: 1px;
+  border-style: solid;
+  border-radius: .75rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.stat-card .card-body { padding: 1rem 1rem; }
+.stat-card .card-title, .stat-card p { color: inherit !important; margin-bottom: .25rem; }
+
+.stat-primary { background-color: var(--bs-primary); border-color: var(--bs-primary); color: #fff; }
+.stat-success  { background-color: var(--bs-success);  border-color: var(--bs-success);  color: #fff; }
+.stat-danger   { background-color: var(--bs-danger);   border-color: var(--bs-danger);   color: #fff; }
+/* En warning el contraste mejora con texto oscuro */
+.stat-warning  { background-color: var(--bs-warning);  border-color: var(--bs-warning);  color: #111; }
+
+/* Subtle tone option (not used now but available) */
+.stat-subtle { filter: saturate(0.95) brightness(1.05); }
+
+/* ===== Icono en títulos de página ===== */
+/* Escala con el tamaño de la fuente del título */
+.title-icon { width: 1em; height: 1em; margin-right: 0.4em; vertical-align: -0.15em; }
+
+/* Opcional: ligeramente mayor en H1 para jerarquía visual */
+.page-card h1 .title-icon { width: 1.1em; height: 1.1em; vertical-align: -0.18em; }
+
+/* Aumentar el tamaño del icono SOLO en el título de Clientes */
+#titulo-clientes .title-icon { width: 1.25em; height: 1.25em; vertical-align: -0.22em; }
 

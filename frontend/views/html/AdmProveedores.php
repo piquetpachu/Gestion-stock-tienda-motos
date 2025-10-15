@@ -13,14 +13,24 @@
   <div class="container page-container">
     <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>🏭 Gestión de Proveedores</h1>
-      <button id="btnNuevoProveedor" class="btn btn-success d-none">➕ Nuevo Proveedor</button>
+      <h1>
+        <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.24 2.24 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.3 6.3 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+        </svg>
+        Gestión de Proveedores
+      </h1>
+      <button id="btnNuevoProveedor" class="btn btn-success d-none d-inline-flex align-items-center gap-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+        </svg>
+        Nuevo Proveedor
+      </button>
     </div>
 
     <!-- Filtros -->
     <div class="row mb-3">
       <div class="col-md-6 mb-2 mb-md-0">
-        <input type="search" id="buscarProveedor" class="form-control" placeholder="🔍 Buscar por Nombre, CUIT, Teléfono, Email o Dirección">
+  <input type="search" id="buscarProveedor" class="form-control" placeholder="Buscar por Nombre, CUIT, Teléfono, Email o Dirección">
       </div>
       <div class="col-md-6">
         <select id="ordenarPorProveedor" class="form-select">

@@ -11,22 +11,31 @@
 <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
 <link rel="stylesheet" href="../css/style.css">
-
-<head>
-  <?php include 'navbar.php'; ?>
 </head>
 
-<body >
-  <div class="container mt-5">
+<body>
+  <?php include 'navbar.php'; ?>
+  <div class="container page-container">
+    <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>📦 Gestión de Productos</h1>
-      <button class="btn btn-success" onclick="nuevoProducto()" id="btnAgregarProducto" style="display: none;">➕ Agregar Producto</button>
+      <h1>
+        <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M3.75 0a1 1 0 0 0-.8.4L.1 4.2a.5.5 0 0 0-.1.3V15a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V4.5a.5.5 0 0 0-.1-.3L13.05.4a1 1 0 0 0-.8-.4zM15 4.667V5H1v-.333L1.5 4h6V1h1v3h6z"/>
+        </svg>
+        Gestión de Productos
+      </h1>
+      <button class="btn btn-success d-inline-flex align-items-center gap-1" onclick="nuevoProducto()" id="btnAgregarProducto" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+        </svg>
+        Agregar Producto
+      </button>
     </div>
 
     <!-- Filtros -->
     <div class="row mb-3">
-      <div class="col-md-6">
-<input type="text" id="busqueda" class="form-control" placeholder="🔍 Buscar por nombre, precio, código o fecha..." />
+  <div class="col-md-6">
+<input type="text" id="busqueda" class="form-control" placeholder="Buscar por nombre, precio, código o fecha..." />
       </div>
       <div class="col-md-6">
         <select id="ordenarPor" class="form-select">
@@ -63,6 +72,7 @@
     <nav>
       <ul class="pagination justify-content-center" id="paginacion"></ul>
     </nav>
+    </div>
   </div>
 <div class="modal fade" id="modalEstadisticas" tabindex="-1" aria-labelledby="modalEstadisticasLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
