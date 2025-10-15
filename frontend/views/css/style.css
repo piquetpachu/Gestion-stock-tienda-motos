@@ -236,7 +236,17 @@ body.dark-theme .btn-danger {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 [data-bs-theme="light"] .page-card {
-  background-color: #ffffff; /* cajas blancas en modo claro */
+  background-color: #ffffff !important; /* cajas blancas en modo claro */
+  border-color: var(--custom-border-table);
+}
+
+/* Refuerzo: si el atributo está en el elemento root (html) */
+:root[data-bs-theme="light"] .page-card { background-color: #ffffff !important; }
+
+/* En modo claro, también hacer blancos los cards internos del dashboard u otras vistas */
+[data-bs-theme="light"] .page-card .card {
+  background-color: #ffffff !important;
+  color: var(--bs-body-color);
   border-color: var(--custom-border-table);
 }
 [data-bs-theme="dark"] .page-card {
