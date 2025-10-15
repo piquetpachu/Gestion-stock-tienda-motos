@@ -10,7 +10,8 @@
 <body>
   <?php include 'navbar.php'; ?>
 
-  <div class="container mt-5">
+  <div class="container page-container">
+    <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>🏭 Gestión de Proveedores</h1>
       <button id="btnNuevoProveedor" class="btn btn-success d-none">➕ Nuevo Proveedor</button>
@@ -54,6 +55,7 @@
     <nav>
       <ul class="pagination justify-content-center" id="paginacionProveedores"></ul>
     </nav>
+    </div>
   </div>
 
   <!-- Modal Productos del Proveedor -->

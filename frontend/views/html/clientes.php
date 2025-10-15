@@ -11,7 +11,8 @@
 <body>
   <?php include 'navbar.php'; ?>
 
-  <div class="container mt-5">
+  <div class="container page-container">
+    <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>👥 Gestión de Clientes</h1>
       <button class="btn btn-success" onclick="nuevoCliente()" id="btnAgregarCliente" style="display: none;">➕ Agregar Cliente</button>
@@ -54,6 +55,7 @@
     <nav>
       <ul class="pagination justify-content-center" id="paginacion"></ul>
     </nav>
+    </div>
   </div>
 
   <!-- Modal Cliente -->

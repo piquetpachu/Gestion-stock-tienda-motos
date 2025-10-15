@@ -12,7 +12,8 @@
 <body>
   <?php include 'navbar.php'; ?>
 
-  <div class="container my-4">
+  <div class="container page-container">
+    <div class="page-card">
     <h1 class="text-center mb-4">Registrar venta</h1>
 
     <!-- Usamos grid de Bootstrap en vez de CSS fijo -->
@@ -128,6 +129,7 @@
           <div id="mensaje_resultado" class="mt-3"></div>
         </div>
       </div>
+    </div>
     </div>
   </div>
 

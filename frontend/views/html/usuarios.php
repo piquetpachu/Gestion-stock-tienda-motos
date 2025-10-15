@@ -6,37 +6,11 @@
   <title>Panel de Usuarios</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css">
-  <style>
-    body.dark-theme {
-      background-color: #181818;
-      color: #eee;
-    }
-    body.dark-theme .table-dark {
-      background-color: #222;
-      color: #fff;
-    }
-    body.dark-theme .card, body.dark-theme .modal-content {
-      background-color: #222;
-      color: #fff;
-    }
-    body.dark-theme .btn {
-      background-color: #222;
-      color: #fff;
-      border-color: #444;
-    }
-    body.dark-theme .btn-warning {
-      background-color: #444;
-      color: #ffd700;
-    }
-    body.dark-theme .btn-danger {
-      background-color: #880000;
-      color: #fff;
-    }
-  </style>
 </head>
 <body>
   <?php include 'navbar.php'; ?>
-  <div class="container mt-5" id="usuarios-panel">
+  <div class="container page-container" id="usuarios-panel">
+    <div class="page-card">
     <h1>👤 Panel de Control de Usuarios</h1>
     <div id="admin-alert" class="alert alert-danger d-none" role="alert"></div>
     <div class="row g-2 align-items-end mb-3">
@@ -69,6 +43,7 @@
         </thead>
         <tbody id="tablaUsuarios"></tbody>
       </table>
+    </div>
     </div>
   </div>
 

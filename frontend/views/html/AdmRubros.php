@@ -10,7 +10,8 @@
 <body>
   <?php include 'navbar.php'; ?>
   
-  <div class="container mt-5">
+  <div class="container page-container">
+    <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>📂 Gestión de Rubros</h1>
       <button id="btnNuevoRubro" class="btn btn-success d-none">➕ Nuevo Rubro</button>
@@ -48,6 +49,7 @@
     <nav>
       <ul class="pagination justify-content-center" id="paginacionRubros"></ul>
     </nav>
+    </div>
   </div>
 
   <!-- Modal Rubro -->
