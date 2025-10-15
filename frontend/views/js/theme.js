@@ -5,6 +5,11 @@ document.addEventListener("DOMContentLoaded", () => {
   function aplicarTema(tema) {
     const esOscuro = tema === "oscuro"; // valores esperados: "oscuro" | "claro"
     root.setAttribute("data-bs-theme", esOscuro ? "dark" : "light");
+    // Añadir clases al body para reforzar estilos específicos si algún selector del atributo no aplica
+    if (document.body) {
+      document.body.classList.toggle('theme-dark', esOscuro);
+      document.body.classList.toggle('theme-light', !esOscuro);
+    }
 
     // Si no existe el botón (por ejemplo en login), no intentar modificarlo
     if (!btnTema) return;
@@ -18,9 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Cargar preferencia previa (normalizada a "oscuro" | "claro")
-  const preferencia = localStorage.getItem("tema") || "oscuro";
-  aplicarTema(preferencia);
+  // Determinar tema inicial: 1) localStorage, 2) atributo en <html>, 3) por defecto "claro"
+  const attrTema = root.getAttribute("data-bs-theme"); // "dark" | "light" | null
+  const preferencia = localStorage.getItem("tema"); // "oscuro" | "claro" | null
+  const temaInicial = preferencia
+    ? preferencia
+    : (attrTema === "dark" ? "oscuro" : "claro");
+  aplicarTema(temaInicial);
 
   // Alternar al hacer clic (solo si el botón existe en la vista actual)
   if (btnTema) {

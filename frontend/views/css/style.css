@@ -96,6 +96,10 @@ body.dark-theme .btn-danger {
   --bs-link-color: var(--bs-primary);
   --bs-link-hover-color: #1a5ccc;
 
+  /* Variables clave para tarjetas en tema claro */
+  --bs-card-bg: #ffffff;          /* Fondo de card en claro */
+  --bs-card-color: #212529;       /* Texto de card en claro */
+
   /* Neutrales y tablas */
   --custom-bg-th: #eef2f6;
   --custom-color-th: #344256;
@@ -123,6 +127,10 @@ body.dark-theme .btn-danger {
   --bs-info-rgb: 56, 189, 248;
   --bs-link-color: var(--bs-primary);
   --bs-link-hover-color: #8dbbff;
+
+  /* Variables clave para tarjetas en tema oscuro */
+  --bs-card-bg: #1b1f24;          /* Fondo de card en oscuro */
+  --bs-card-color: var(--bs-body-color);
 
   --custom-bg-th: #3a3f45;
   --custom-color-th: #e6e9ee;
@@ -228,7 +236,8 @@ body.dark-theme .btn-danger {
 /* ===== Layout de página en caja reutilizable ===== */
 .page-container { padding: 24px 0; }
 .page-card {
-  background-color: var(--bs-body-bg);
+  /* Usar las variables estándar de Bootstrap para tarjetas */
+  background-color: var(--bs-card-bg, #fff);
   color: var(--bs-body-color);
   border: 1px solid var(--custom-border-table);
   border-radius: 12px;
@@ -236,21 +245,15 @@ body.dark-theme .btn-danger {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 [data-bs-theme="light"] .page-card {
-  background-color: #ffffff !important; /* cajas blancas en modo claro */
-  border-color: var(--custom-border-table);
-}
-
-/* Refuerzo: si el atributo está en el elemento root (html) */
-:root[data-bs-theme="light"] .page-card { background-color: #ffffff !important; }
-
-/* En modo claro, también hacer blancos los cards internos del dashboard u otras vistas */
-[data-bs-theme="light"] .page-card .card {
-  background-color: #ffffff !important;
-  color: var(--bs-body-color);
+  /* Reafirmar blanco en tema claro (en caso de overrides específicos) */
+  background-color: var(--bs-card-bg, #ffffff);
+  color: var(--bs-card-color, #212529);
   border-color: var(--custom-border-table);
 }
 [data-bs-theme="dark"] .page-card {
-  background-color: #1b1f24; /* ligeramente más claro que el body oscuro */
+  /* Fondo ligeramente más claro que el body en oscuro */
+  background-color: #1b1f24;
+  color: var(--bs-body-color);
   border-color: #2a3138;
   box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
