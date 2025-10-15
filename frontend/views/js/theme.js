@@ -1,40 +1,47 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const root = document.documentElement;
   const btnTema = document.getElementById("btnTema");
+  const root = document.documentElement;
 
-  // Mostrar body si estaba oculto
-  if (document.body && getComputedStyle(document.body).display === 'none') {
-    document.body.style.display = 'block';
-  }
+  function aplicarTema(tema) {
+    const esOscuro = tema === "oscuro"; // valores esperados: "oscuro" | "claro"
+    root.setAttribute("data-bs-theme", esOscuro ? "dark" : "light");
+    // Asegurar que el body sea visible cuando se aplica el tema
+    if (document.body && getComputedStyle(document.body).display === 'none') {
+      document.body.style.display = 'block';
+    }
 
-  // Estado inicial por localStorage o atributo
-  const preferencia = localStorage.getItem('appTheme'); // 'dark' | 'light'
-  const attr = root.getAttribute('data-app-theme');
-  const inicial = preferencia || attr || 'light';
-  root.setAttribute('data-app-theme', inicial);
-
-  // Configurar botón si existe
-  function renderBtn(theme) {
+    // Si no existe el botón (por ejemplo en login), no intentar modificarlo
     if (!btnTema) return;
-    if (theme === 'dark') {
-      btnTema.textContent = '☀️ Claro';
-      btnTema.classList.remove('btn-outline-light');
-      btnTema.classList.add('btn-outline-warning');
+
+    if (esOscuro) {
+      btnTema.textContent = "☀️ Claro";
+      btnTema.classList.replace("btn-outline-light", "btn-outline-warning");
     } else {
-      btnTema.textContent = '🌙 Oscuro';
-      btnTema.classList.remove('btn-outline-warning');
-      btnTema.classList.add('btn-outline-light');
+      btnTema.textContent = "🌙 Oscuro";
+      btnTema.classList.replace("btn-outline-warning", "btn-outline-light");
     }
   }
-  renderBtn(inicial);
 
+  // Determinar tema inicial: 1) localStorage, 2) atributo en <html>, 3) por defecto "claro"
+  const attrTema = root.getAttribute("data-bs-theme"); // "dark" | "light" | null
+  const preferencia = localStorage.getItem("tema"); // "oscuro" | "claro" | null
+  const temaInicial = preferencia
+    ? preferencia
+    : (attrTema === "dark" ? "oscuro" : "claro");
+  aplicarTema(temaInicial);
+
+  // Alternar al hacer clic (solo si el botón existe en la vista actual)
   if (btnTema) {
-    btnTema.addEventListener('click', () => {
-      const actual = root.getAttribute('data-app-theme') === 'dark' ? 'dark' : 'light';
-      const nuevo = actual === 'dark' ? 'light' : 'dark';
-      root.setAttribute('data-app-theme', nuevo);
-      localStorage.setItem('appTheme', nuevo);
-      renderBtn(nuevo);
+    btnTema.addEventListener("click", () => {
+      const actual = root.getAttribute("data-bs-theme"); // "dark" | "light"
+      const nuevo = actual === "dark" ? "claro" : "oscuro";
+      localStorage.setItem("tema", nuevo);
+      aplicarTema(nuevo);
     });
+  }
+
+  // Asegurar que el body sea visible (algunos estilos globales lo ocultan inicialmente)
+  if (document.body && getComputedStyle(document.body).display === 'none') {
+    document.body.style.display = 'block';
   }
 });
