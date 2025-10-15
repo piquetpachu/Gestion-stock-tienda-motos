@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-app-theme="light">
 <head>
   <meta charset="UTF-8">
   <title>Panel Principal</title>
