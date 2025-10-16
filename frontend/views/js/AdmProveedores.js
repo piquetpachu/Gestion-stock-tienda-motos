@@ -25,6 +25,22 @@ let ordenarProv = 'nombre_asc';
 let paginaProv = 1;
 const PAGE_SIZE_PROV = 10;
 
+// ---------- Iconos SVG (inline, sin dependencias) ----------
+const SVG_EDIT = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <line x1="3" y1="13" x2="13" y2="3"></line>
+    <polygon points="12,2 14,4 13,5 11,3" fill="currentColor" stroke="currentColor"></polygon>
+    <rect x="2" y="12" width="3" height="2" fill="currentColor" stroke="none"></rect>
+  </svg>`;
+const SVG_TRASH = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="5" width="8" height="9" rx="1"></rect>
+    <line x1="6" y1="7" x2="6" y2="13"></line>
+    <line x1="10" y1="7" x2="10" y2="13"></line>
+    <polyline points="5,5 5,3 11,3 11,5"></polyline>
+    <line x1="4" y1="5" x2="12" y2="5"></line>
+  </svg>`;
+
 // ---------- Util ----------
 function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
 function cmpNombre(a,b){ return normalizar(a.nombre).localeCompare(normalizar(b.nombre)); }
@@ -92,8 +108,8 @@ function renderProveedores() {
 
   tbodyProveedores.innerHTML = pageItems.map(p => {
     const acciones = esAdminProv ? `
-      <button class="btn btn-warning btn-sm me-1" title="Editar" aria-label="Editar" onclick="editarProveedor(${p.id_proveedor})">✏️</button>
-      <button class="btn btn-danger btn-sm" title="Borrar" aria-label="Borrar" onclick="eliminarProveedor(${p.id_proveedor})">🗑️</button>
+      <button class="btn btn-warning btn-sm me-1" title="Editar" aria-label="Editar" onclick="editarProveedor(${p.id_proveedor})">${SVG_EDIT}</button>
+      <button class="btn btn-danger btn-sm" title="Borrar" aria-label="Borrar" onclick="eliminarProveedor(${p.id_proveedor})">${SVG_TRASH}</button>
     ` : '';
     return `
       <tr data-prov-row="${p.id_proveedor}" data-prov-nombre="${p.nombre}">
