@@ -52,3 +52,53 @@ function obtenerTopProductos($pdo, $limite = 10) {
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function obtenerVentasPorDia($pdo, $desde = null, $hasta = null) {
+    // Por defecto: Año en curso (YTD)
+    if (!$desde) $desde = date('Y-01-01');
+    if (!$hasta) $hasta = date('Y-m-d');
+
+    $sql = "
+        SELECT DATE(v.fecha) AS dia, SUM(v.monto_total) AS total
+        FROM venta v
+        WHERE DATE(v.fecha) BETWEEN ? AND ?
+        GROUP BY DATE(v.fecha)
+        ORDER BY dia
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$desde, $hasta]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function obtenerIngresosPorRubro($pdo, $desde = null, $hasta = null) {
+    // Por defecto: Año en curso (YTD)
+    if (!$desde) $desde = date('Y-01-01');
+    if (!$hasta) $hasta = date('Y-m-d');
+
+    $sql = "
+        SELECT COALESCE(r.nombre, 'Sin rubro') AS rubro,
+               SUM(vi.cantidad * vi.precio_unitario) AS total
+        FROM venta_item vi
+        JOIN venta v ON v.id_venta = vi.id_venta
+        JOIN producto p ON p.id_producto = vi.id_producto
+        LEFT JOIN rubro r ON r.id_rubro = p.id_rubro
+        WHERE DATE(v.fecha) BETWEEN ? AND ?
+        GROUP BY p.id_rubro
+        ORDER BY total DESC
+    ";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$desde, $hasta]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function obtenerStockBajoMinimo($pdo) {
+    $sql = "
+        SELECT p.id_producto, p.nombre, p.stock, p.stock_minimo, COALESCE(r.nombre, 'Sin rubro') AS rubro
+        FROM producto p
+        LEFT JOIN rubro r ON r.id_rubro = p.id_rubro
+        WHERE p.stock < p.stock_minimo
+        ORDER BY (p.stock_minimo - p.stock) DESC
+    ";
+    $stmt = $pdo->query($sql);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}

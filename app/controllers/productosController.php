@@ -46,6 +46,13 @@ switch (true) {
         echo json_encode($estadisticas);
         break;
 
+    case preg_match('/^productos_por_proveedor\/(\d+)$/', $ruta, $matches) && $metodo === 'GET':
+        autorizar(['admin', 'vendedor']);
+        $idProveedor = $matches[1];
+        $lista = obtenerProductosPorProveedor($pdo, $idProveedor);
+        echo json_encode($lista);
+        break;
+
     default:
         echo json_encode(["error" => "Ruta no válida en productos"]);
         break;

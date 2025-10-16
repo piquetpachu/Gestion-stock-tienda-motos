@@ -25,7 +25,7 @@
     // Ocultar el formulario hasta verificar sesión
     window.addEventListener("DOMContentLoaded", async function () {
       try {
-        const res = await fetch("/Gestion-stock-tienda-motos/app/usuario-info");
+        const res = await fetch("/Gestion-stock-tienda-motos/app/usuario-info", { credentials: "same-origin" });
         if (res.ok) {
           const userData = await res.json();
           // Redirigir según rol

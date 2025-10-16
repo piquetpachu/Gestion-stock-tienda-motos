@@ -5,17 +5,22 @@ $ruta = str_replace($basePath, '', $uri);
 $partes = explode('/', trim($ruta, '/'));
 $recurso = $partes[0] ?? null;
 // CONFIGURACIÓN DE SESIÓN DEBE ESTAR ANTES DE session_start()
-$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443;
+$isSecure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || ($_SERVER['SERVER_PORT'] ?? 80) == 443;
 $secureCookie = $isSecure ? true : false; // Solo true en producción con HTTPS
+$host = $_SERVER['HTTP_HOST'] ?? '';
 
-session_set_cookie_params([
+// Evitar establecer 'domain' en localhost/127.0.0.1 (host-only cookie)
+$cookieParams = [
     'lifetime' => 86400, // 1 día
     'path' => '/',
-    'domain' => $_SERVER['HTTP_HOST'],
     'secure' => $secureCookie,     // Auto-ajuste para desarrollo/producción
     'httponly' => true,
     'samesite' => 'Strict'
-]);
+];
+if ($host && !in_array($host, ['localhost', '127.0.0.1'])) {
+    $cookieParams['domain'] = $host;
+}
+session_set_cookie_params($cookieParams);
 
 // Iniciar sesión solo si no está iniciada
 if (session_status() === PHP_SESSION_NONE) {
@@ -31,6 +36,7 @@ switch ($recurso) {
     case (preg_match('/^actualizar_producto\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_producto\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^estadisticas_producto\/\d+$/', $ruta) ? true : false):
+    case 'productos_por_proveedor':
         require_once __DIR__ . '/../controllers/productosController.php';
         break;
 
@@ -141,6 +147,11 @@ switch ($recurso) {
     // Estadísticas generales
     case 'estadisticas':
     case 'top_productos':
+        require_once __DIR__ . '/../controllers/estadisticasController.php';
+        break;
+    case 'ventas_por_dia':
+    case 'ingresos_por_rubro':
+    case 'stock_bajo_minimo':
         require_once __DIR__ . '/../controllers/estadisticasController.php';
         break;
 

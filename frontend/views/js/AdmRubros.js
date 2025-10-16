@@ -88,12 +88,21 @@ function renderRubros() {
       <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
     ` : '';
     return `
-      <tr>
-        <td>${r.nombre}</td>
+      <tr data-rubro-row="${r.id_rubro}">
+        <td class="rubro-nombre">${r.nombre}</td>
         ${esAdmin ? `<td>${acciones}</td>` : ''}
       </tr>
     `;
   }).join('');
+
+  // Click en fila (ignorando botones) para detalle
+  tbodyRubros.querySelectorAll('tr[data-rubro-row]').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const id = tr.getAttribute('data-rubro-row');
+      mostrarProductosRubro(id);
+    });
+  });
 
   renderPaginacionRubros(total, paginaRubro, PAGE_SIZE_RUBRO);
 }
@@ -202,3 +211,37 @@ btnNuevoRubro.addEventListener('click', () => {
       renderPaginacionRubros(0, 1, PAGE_SIZE_RUBRO);
     });
 })();
+
+// ---- Productos por Rubro ----
+const modalProductosRubro = new bootstrap.Modal(document.getElementById('modalProductosRubro'));
+const tbodyProdPorRubro = document.getElementById('tbodyProdPorRubro');
+const tituloProductosRubro = document.getElementById('tituloProductosRubro');
+
+async function mostrarProductosRubro(idRubro){
+  const rubro = rubros.find(r => String(r.id_rubro) === String(idRubro));
+  tituloProductosRubro.textContent = `Productos del Rubro: ${rubro?.nombre || ''}`;
+  tbodyProdPorRubro.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Cargando...</td></tr>';
+  modalProductosRubro.show();
+  try {
+    // Reutilizamos endpoint de productos y filtramos client-side (si fuera muy grande convendría endpoint dedicado)
+    const res = await fetch(API_URL + 'productos');
+    if (!res.ok) throw new Error('Error obteniendo productos');
+    const productos = await res.json();
+    const filtrados = productos.filter(p => String(p.id_rubro) === String(idRubro));
+    if (!filtrados.length){
+      tbodyProdPorRubro.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Sin productos</td></tr>';
+      return;
+    }
+    tbodyProdPorRubro.innerHTML = filtrados.map(p => `
+      <tr>
+        <td>${p.nombre || ''}</td>
+        <td>${p.descripcion || ''}</td>
+        <td>${p.precio_venta ?? ''}</td>
+        <td>${p.stock ?? ''}</td>
+        <td>${p.codigo_barras || ''}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbodyProdPorRubro.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${e.message}</td></tr>`;
+  }
+}

@@ -33,8 +33,29 @@ switch ($recurso) {
 
     case 'login':
     if ($metodo === 'POST') {
-        $datos = json_decode(file_get_contents("php://input"), true);
-        $usuario = loginUsuario($pdo, $datos['email'], $datos['contrasena']);
+        // Soportar JSON y x-www-form-urlencoded
+        $raw = file_get_contents("php://input");
+        $datos = [];
+        if ($raw) {
+            $json = json_decode($raw, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $datos = $json;
+            }
+        }
+        if (empty($datos)) {
+            $datos = $_POST; // Fallback si el servidor pobló $_POST
+        }
+
+        $email = $datos['email'] ?? null;
+        $contrasena = $datos['contrasena'] ?? null;
+
+        if (!$email || !$contrasena) {
+            http_response_code(400);
+            echo json_encode(["error" => "Faltan credenciales"]);
+            break;
+        }
+
+        $usuario = loginUsuario($pdo, $email, $contrasena);
         
         if ($usuario) {
             // Guardar datos en sesión (sin iniciar nuevamente)
@@ -46,7 +67,9 @@ switch ($recurso) {
             ];
             
             // Regenerar ID para prevenir ataques
-            session_regenerate_id(true);
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_regenerate_id(true);
+            }
             
             echo json_encode(["mensaje" => "Login exitoso"]);
         } else {
