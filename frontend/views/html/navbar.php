@@ -15,9 +15,9 @@
       <span class="d-none d-sm-inline"></span>
     </a>
 
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContenido" aria-controls="navbarContenido" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
+      <button class="navbar-toggler" type="button" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
     <div class="collapse navbar-collapse" id="navbarContenido">
   <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
@@ -96,55 +96,57 @@
     </div>
   </nav>
 
-<!-- Modal Ingreso -->
-<div class="modal fade" id="modalIngreso" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-success text-white">
-        <h5 class="modal-title">Ingreso de Dinero</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formIngreso">
-          <div class="mb-3">
-            <label for="montoIngreso" class="form-label">Monto</label>
-            <input type="number" class="form-control" id="montoIngreso" required>
-          </div>
-          <div class="mb-3">
-            <label for="detalleIngreso" class="form-label">Detalle</label>
-            <textarea class="form-control" id="detalleIngreso"></textarea>
-          </div>
-          <button type="submit" class="btn btn-success">Guardar</button>
-        </form>
+  <!-- Modal Ingreso -->
+  <div class="modal fade" id="modalIngreso" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">Ingreso de Dinero</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formIngreso">
+            <div class="mb-3">
+              <label for="montoIngreso" class="form-label">Monto</label>
+              <input type="number" class="form-control" id="montoIngreso" required>
+            </div>
+            <div class="mb-3">
+              <label for="detalleIngreso" class="form-label">Detalle</label>
+              <textarea class="form-control" id="detalleIngreso"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Guardar</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Modal Cierre -->
-<div class="modal fade" id="modalCierre" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title">Cierre de Caja</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <form id="formCierre">
-          <div class="mb-3">
-            <label for="montoCierre" class="form-label">Monto Final</label>
-            <input type="number" class="form-control" id="montoCierre" required>
-          </div>
-          <div class="mb-3">
-            <label for="detalleCierre" class="form-label">Observaciones</label>
-            <textarea class="form-control" id="detalleCierre"></textarea>
-          </div>
-          <button type="submit" class="btn btn-danger">Registrar Cierre</button>
-        </form>
+  <!-- Modal Cierre -->
+  <div class="modal fade" id="modalCierre" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Cierre de Caja</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+            aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formCierre">
+            <div class="mb-3">
+              <label for="montoCierre" class="form-label">Monto Final</label>
+              <input type="number" class="form-control" id="montoCierre" required>
+            </div>
+            <div class="mb-3">
+              <label for="detalleCierre" class="form-label">Observaciones</label>
+              <textarea class="form-control" id="detalleCierre"></textarea>
+            </div>
+            <button type="submit" class="btn btn-danger">Registrar Cierre</button>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <!-- JS de logout (se asume Bootstrap ya cargado por la vista contenedora) -->
   <script src="../js/logout.js"></script>
