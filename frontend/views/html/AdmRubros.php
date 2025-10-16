@@ -47,7 +47,7 @@
         <thead class="table-dark">
           <tr>
             <th>Nombre</th>
-            <th id="thAccionesRubros" style="width:160px; display:none;">Acciones</th>
+            <th id="thAccionesRubros" class="acciones-col" style="display:none;">Acciones</th>
           </tr>
         </thead>
         <tbody id="tbodyRubros">

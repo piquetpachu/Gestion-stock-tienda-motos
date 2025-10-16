@@ -106,7 +106,7 @@ function renderRubros() {
     return `
       <tr data-rubro-row="${r.id_rubro}">
         <td class="rubro-nombre">${r.nombre}</td>
-        ${esAdmin ? `<td>${acciones}</td>` : ''}
+        ${esAdmin ? `<td class="acciones-col">${acciones}</td>` : ''}
       </tr>
     `;
   }).join('');

@@ -52,7 +52,7 @@
             <th>Teléfono</th>
             <th>Email</th>
             <th>Dirección</th>
-            <th id="thAccionesProveedores" style="width:160px; display:none;">Acciones</th>
+            <th id="thAccionesProveedores" class="acciones-col" style="display:none;">Acciones</th>
           </tr>
         </thead>
         <tbody id="tbodyProveedores">

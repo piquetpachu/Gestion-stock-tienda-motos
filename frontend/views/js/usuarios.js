@@ -158,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${u.nombre}</td>
         <td>${u.email}</td>
         <td>${u.rol}</td>
-        <td>
+        <td class="acciones-col">
           <button class="btn btn-warning btn-sm" title="Editar" aria-label="Editar" onclick="editarUsuario(${u.id_usuario})">${SVG_EDIT}</button>
           <button class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="eliminarUsuario(${u.id_usuario})">${SVG_TRASH}</button>
         </td>`;

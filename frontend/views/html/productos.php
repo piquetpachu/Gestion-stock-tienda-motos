@@ -59,7 +59,7 @@
             <th>Mínimo</th>
             <th>Cód. Barras</th>
             <th>fecha</th>
-            <th id="colAcciones" style="display: none;">Acciones</th>
+            <th id="colAcciones" class="acciones-col" style="display: none;">Acciones</th>
             <!-- <th>Acciones</th> -->
           </tr>
         </thead>

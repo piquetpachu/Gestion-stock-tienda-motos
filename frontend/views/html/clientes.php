@@ -51,7 +51,7 @@
             <th>Dirección</th>
             <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
-            <th id="colAcciones" style="display: none;">Acciones</th>
+            <th id="colAcciones" class="acciones-col" style="display: none;">Acciones</th>
             <!-- <th>Acciones</th> -->
           </tr>
         </thead>

@@ -118,7 +118,7 @@ function renderProveedores() {
         <td>${p.telefono || ''}</td>
         <td>${p.email || ''}</td>
         <td>${p.direccion || ''}</td>
-        ${esAdminProv ? `<td>${acciones}</td>` : ''}
+        ${esAdminProv ? `<td class="acciones-col">${acciones}</td>` : ''}
       </tr>
     `;
   }).join('');

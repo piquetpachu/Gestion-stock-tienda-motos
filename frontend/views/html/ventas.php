@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registrar Venta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
 </head>
 
@@ -61,7 +61,7 @@
           <div class="mb-3">
             <label for="seleccionar_cliente" class="form-label">Cliente</label>
             <div class="input-group">
-              <select class="form-select form-select-dark" id="seleccionar_cliente">
+              <select class="form-select" id="seleccionar_cliente">
                 <option value="0" selected>Consumidor Final</option>
               </select>
               <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente">+</button>
@@ -82,7 +82,7 @@
             </div>
           </div>
 
-          <div id="bloque_varios_metodos" class="mb-3 p-2 rounded border">
+          <div id="bloque_varios_metodos" class="mb-3 p-2 rounded border" style="display:none;">
             <label class="form-label">Varios métodos</label>
             <div class="small">
               <div class="form-check mb-1">

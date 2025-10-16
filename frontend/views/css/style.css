@@ -305,3 +305,46 @@ body.dark-theme .btn-danger {
 /* Aumentar el tamaño del icono SOLO en el título de Clientes */
 #titulo-clientes .title-icon { width: 1.25em; height: 1.25em; vertical-align: -0.22em; }
 
+/* ===== Columnas de Acciones: auto-ajuste al contenido ===== */
+.table th.acciones-col,
+.table td.acciones-col {
+  width: 1%;           /* pide el ancho mínimo posible */
+  white-space: nowrap; /* evita salto de línea en botones */
+  text-align: center;  /* centra botones */
+}
+
+/* Celdas: mantener comportamiento de tabla y evitar quiebre */
+.table td.acciones-col {
+  white-space: nowrap;
+  text-align: center;
+  vertical-align: middle;
+}
+/* Espaciado entre botones dentro de acciones */
+.table td.acciones-col > * + * { margin-left: .375rem; }
+
+/* ===== Tom Select theming (light/dark) ===== */
+.ts-wrapper.form-control, .ts-control, .ts-dropdown, .ts-input, .ts-control input {
+  color: var(--bs-body-color) !important;
+}
+.ts-control, .ts-input {
+  background-color: var(--bs-body-bg, #fff) !important;
+  border-color: var(--custom-border-table) !important;
+}
+.ts-dropdown {
+  background-color: var(--bs-body-bg, #fff) !important;
+  border-color: var(--custom-border-table) !important;
+}
+.ts-dropdown .option, .ts-dropdown .optgroup-header {
+  color: var(--bs-body-color) !important;
+}
+.ts-dropdown .active {
+  background-color: var(--custom-bg-tr-hover) !important;
+  color: var(--bs-body-color) !important;
+}
+[data-bs-theme="dark"] .ts-control, [data-bs-theme="dark"] .ts-input, [data-bs-theme="dark"] .ts-dropdown {
+  background-color: #1b1f24 !important;
+  color: var(--bs-body-color) !important;
+  border-color: #2a3138 !important;
+}
+[data-bs-theme="dark"] .ts-dropdown .active { background-color: rgba(255,255,255,0.08) !important; }
+
