@@ -1,4 +1,3 @@
-
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
@@ -38,7 +37,9 @@ const formatearMoneda = valor =>
 
 // -------------------- CARGA DE DATOS --------------------
 
-// Cargar productos
+function buscarProductoPorCodigo(codigo) {
+    return productosLista.find(p => p.codigo_barras === codigo);
+}
 
 // Cargar productos
 function cargarProductos() {
@@ -50,41 +51,80 @@ function cargarProductos() {
         .then(data => {
             productosLista = data;
 
-            // Inicializamos TomSelect solo si no está creado
+            // Inicializamos TomSelect solo si no existe
             if (!tomSelectProducto) {
                 tomSelectProducto = new TomSelect(selectProducto, {
                     create: false,
                     sortField: { field: "nombre", direction: "asc" },
-                    valueField: "codigo_barras",  // lo que usa internamente
-                    labelField: "nombre",         // lo que se muestra
-                    searchField: ["nombre", "codigo_barras"],  // permite búsqueda por ambos
-                    placeholder: "Seleccionar producto"
+                    valueField: "value",
+                    labelField: "nombre",
+                    searchField: ["nombre", "codigo_barras"],
+                    placeholder: "Seleccionar producto",
+                    openOnFocus: false, // NO abrir solo por focus (evita desplegar al cargar)
+                    onItemAdd: function (value) {
+                        agregarProducto(value);
+                        this.clear();
+                        setTimeout(() => this.close(), 50);
+                    }
                 });
             } else {
                 tomSelectProducto.clearOptions();
             }
 
-            // Agregar opciones a TomSelect
+            // Agregar todas las opciones
             data.forEach(prod => {
                 tomSelectProducto.addOption({
-                    codigo_barras: prod.codigo_barras,
+                    value: prod.codigo_barras,
                     nombre: prod.nombre
                 });
             });
 
-            // Manejar selección de item
-            tomSelectProducto.on('item_add', function (value) {
-                agregarProducto(value);
-            });
+            // Refrescar opciones y cerrar dropdown
+            tomSelectProducto.refreshOptions();
+            tomSelectProducto.close();
 
-            // Manejar ENTER para agregar producto
-            tomSelectProducto.on('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    const val = tomSelectProducto.getValue();
-                    agregarProducto(val);
+            // --- AÑADIMOS: permitir abrir con CLICK ---
+            // TomSelect expone el input real en control_input
+            setTimeout(() => {
+                const inputTom = tomSelectProducto.control_input;
+                if (inputTom) {
+                    // Al hacer click en el input, abrimos el dropdown manualmente
+                    inputTom.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
+
+                    // También abrir al hacer mousedown (mejor sensación de clic)
+                    inputTom.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
                 }
-            });
+            }, 50);
+
+            // ENTER desde input (scanner o nombre completo)
+            const inputTomEnter = tomSelectProducto.control_input;
+            if (inputTomEnter) {
+                inputTomEnter.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const texto = inputTomEnter.value.trim();
+                        if (!texto) return;
+
+                        const producto = productosLista.find(p =>
+                            p.nombre.toLowerCase() === texto.toLowerCase() ||
+                            p.codigo_barras === texto
+                        );
+
+                        if (producto) {
+                            agregarProducto(producto.codigo_barras);
+                        }
+
+                        tomSelectProducto.clear();
+                        tomSelectProducto.focus();
+                    }
+                });
+            }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
@@ -95,26 +135,28 @@ function cargarProductos() {
 
 // Cargar métodos de pago
 function cargarMetodosPago() {
+    // Conservar fetch para que la app siga conectada a la BD
     fetch(API_URL + 'medios_pago')
-        .then(res => {
-            if (!res.ok) throw new Error('Error al obtener métodos de pago');
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            metodosPagoLista = data;
-            selectMetodoPago.innerHTML = '<option value="" disabled selected>Seleccionar método de pago</option>';
-            data.forEach(metodo => {
-                const opcion = document.createElement('option');
-                opcion.value = metodo.id_medio_pago;
-                opcion.textContent = metodo.descripcion || 'Sin nombre';
-                selectMetodoPago.appendChild(opcion);
-            });
+            metodosPagoLista = data; // guardamos la info por si se necesita
+
+            // Sobrescribimos el select con las opciones que queremos mostrar
+            selectMetodoPago.innerHTML = `
+                <option value="" disabled selected>Seleccionar método</option>
+                <option value="1">Efectivo</option>
+                <option value="2">Transferencia Bancaria</option>
+                <option value="3">Mercado Pago</option>
+                <option value="4">Tarjeta</option>
+                <option value="6">Cuenta Corriente</option>
+            `;
         })
         .catch(error => {
             console.error('Error cargando métodos de pago:', error);
             alert('No se pudieron cargar los métodos de pago.');
         });
 }
+
 
 // Cargar clientes
 
@@ -125,20 +167,29 @@ function cargarClientes(seleccionarId = null) {
             return res.json();
         })
         .then(data => {
-            // Siempre incluir "Consumidor Final" al inicio
-            selectCliente.innerHTML = `
-                <option value="0" selected>Consumidor Final</option>
-            `;
+            // Limpiamos select
+            selectCliente.innerHTML = '';
 
-            // Agregar los clientes que vienen de la BD
-            data.forEach(cliente => {
+            // Tomamos el primer cliente que sea "Consumidor Final" de la BD
+            const consumidorFinal = data.find(c => c.id_cliente == 1);
+            if (consumidorFinal) {
                 const opcion = document.createElement('option');
-                opcion.value = cliente.id_cliente;
-                opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                opcion.value = consumidorFinal.id_cliente;
+                opcion.textContent = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
                 selectCliente.appendChild(opcion);
+            }
+
+            // Agregamos el resto de clientes
+            data.forEach(cliente => {
+                if (cliente.id_cliente != 0) {
+                    const opcion = document.createElement('option');
+                    opcion.value = cliente.id_cliente;
+                    opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
+                    selectCliente.appendChild(opcion);
+                }
             });
 
-            // Refrescar TomSelect
+            // Inicializamos o refrescamos TomSelect
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
@@ -146,17 +197,19 @@ function cargarClientes(seleccionarId = null) {
                 });
             } else {
                 tomSelectCliente.clearOptions();
-                tomSelectCliente.addOption({ value: "0", text: "Consumidor Final" });
-                data.forEach(cliente =>
-                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` })
-                );
+                data.forEach(cliente => {
+                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
+                });
                 tomSelectCliente.refreshOptions();
             }
 
+            // Seleccionamos por defecto
             if (seleccionarId) {
-                tomSelectCliente.addItem(seleccionarId);
-            } else {
-                tomSelectCliente.addItem("0"); // Consumidor Final por defecto
+                tomSelectCliente.addItem(seleccionarId, true);
+            } else if (consumidorFinal) {
+                tomSelectCliente.addItem(consumidorFinal.id_cliente, true);
+            } else if (data.length > 0) {
+                tomSelectCliente.addItem(data[0].id_cliente, true); // Primer cliente de la lista si no hay Consumidor Final
             }
         })
         .catch(error => {
@@ -229,9 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // -------------------- PRODUCTOS Y VENTA --------------------
 
-function buscarProductoPorCodigo(codigo) {
-    return productosLista.find(p => p.codigo_barras === codigo);
-}
+
 
 function agregarProducto(codigoSeleccionado = null) {
     let codigo = codigoSeleccionado || tomSelectProducto.getValue();
@@ -257,13 +308,15 @@ function agregarProducto(codigoSeleccionado = null) {
     actualizarTotales();
 
     if (tomSelectProducto) {
-        tomSelectProducto.clear();
-        tomSelectProducto.focus();
+        tomSelectProducto.clear();          // Limpiar el input
+        setTimeout(() => tomSelectProducto.close(), 50);  // Esperar 50ms y cerrar el dropdown
+        tomSelectProducto.focus();          // Volver a enfocar para seguir agregando productos
     }
+
 }
 
 // -------------------- TABLA Y TOTALES --------------------
-// -------------------- TABLA Y TOTALES --------------------
+
 
 function actualizarTabla() {
     tablaProductosBody.innerHTML = '';
@@ -287,21 +340,38 @@ function actualizarTabla() {
         inputCant.min = '1';
         inputCant.value = prod.cantidad;
         inputCant.className = 'form-control form-control-sm text-center';
+
+        let valorAnterior = prod.cantidad; // 👈 guardamos el valor anterior
+
         inputCant.addEventListener('input', e => {
-            let val = parseInt(e.target.value);
-            if (!isNaN(val) && val >= 1) {
-                productosVenta[idx].cantidad = val;
+            const val = e.target.value.trim();
+
+            // Permitir que quede vacío mientras escribe
+            if (val === '') return;
+
+            const num = parseInt(val);
+            if (!isNaN(num) && num >= 1) {
+                productosVenta[idx].cantidad = num;
+                valorAnterior = num; // actualizamos el valor anterior
                 actualizarTotales();
             } else {
-                e.target.value = productosVenta[idx].cantidad;
+                e.target.value = valorAnterior; // 👈 volvemos al último válido
             }
         });
+
+        inputCant.addEventListener('blur', e => {
+            // Si deja vacío y sale del input, volver al valor anterior
+            if (e.target.value.trim() === '') {
+                e.target.value = valorAnterior;
+            }
+        });
+
         tdCantidad.appendChild(inputCant);
         fila.appendChild(tdCantidad);
 
         // Precio total por producto
         const tdPrecio = document.createElement('td');
-        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        tdPrecio.textContent = (prod.precio * prod.cantidad).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         fila.appendChild(tdPrecio);
 
         // Acciones
@@ -321,6 +391,7 @@ function actualizarTabla() {
     });
 }
 
+
 function actualizarTotales() {
     // Calcular subtotal
     const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
@@ -333,11 +404,12 @@ function actualizarTotales() {
     const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
 
     // Aplicar IVA
+
     const totalFinal = montoConDescuento * (1 + ivaPerc / 100);
 
     // Actualizar campo total en formato moneda
     if (inputTotalVenta) {
-        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { style: 'currency', currency: 'ARS' });
+        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 }
 
@@ -349,45 +421,89 @@ if (inputDescuento) {
 
 // -------------------- MÉTODO DE PAGO --------------------
 
+
 function cambiarCamposMetodoPago() {
     const metodo = selectMetodoPago.value;
     divCamposAdicionalesPago.innerHTML = '';
 
-    if (metodo === '2') { // tarjeta
+    if (metodo === '1' || metodo === '2' || metodo === '3' || metodo === '6') {
+        // Efectivo, Transferencia bancaria, Mercado Pago, Cuenta corriente → nada extra
+        divCamposAdicionalesPago.innerHTML = '';
+    }
+
+    if (metodo === '4' || metodo === '5') {
+        // Tarjeta → mostrar tipo (crédito/débito)
+
         divCamposAdicionalesPago.innerHTML = `
           <div class="mb-3">
-            <label for="cuit_tarjeta" class="form-label">CUIT/CUIL</label>
-            <input type="text" class="form-control" id="cuit_tarjeta" placeholder="Ej: 20-12345678-9" pattern="^\\d{2}-\\d{8}-\\d{1}$" maxlength="13" required>
-            <div class="form-text">Formato: 20-12345678-9</div>
+            <label class="form-label">Tipo de tarjeta</label>
+            <select class="form-select" id="tipo_tarjeta" required>
+                <option value="" disabled selected>Seleccione</option>
+                <option value="credito">Crédito</option>
+                <option value="debito">Débito</option>
+            </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Fecha actual</label>
-            <input type="text" class="form-control" value="${new Date().toLocaleDateString('es-AR')}" disabled>
+          <div class="mb-3" id="bloque_cuotas" style="display:none;">
+            <label class="form-label">Cuotas</label>
+            <select class="form-select" id="cuotas">
+                <option value="1">1 cuota</option>
+                <option value="3">3 cuotas</option>
+                <option value="6">6 cuotas</option>
+                <option value="12">12 cuotas</option>
+            </select>
           </div>
         `;
 
-        const inputCuit = document.getElementById('cuit_tarjeta');
-        inputCuit.addEventListener('input', () => {
-            let val = inputCuit.value;
-            val = val.replace(/[^0-9\-]/g, '');
-            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
-            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-            if (val.length > 13) val = val.slice(0, 13);
-            inputCuit.value = val;
+        const selectTipoTarjeta = document.getElementById('tipo_tarjeta');
+        const bloqueCuotas = document.getElementById('bloque_cuotas');
+
+        selectTipoTarjeta.addEventListener('change', () => {
+            if (selectTipoTarjeta.value === 'credito') {
+                bloqueCuotas.style.display = 'block';
+                selectMetodoPago.value = '4'; // Tarjeta crédito ID BD
+            } else if (selectTipoTarjeta.value === 'debito') {
+                bloqueCuotas.style.display = 'none';
+                selectMetodoPago.value = '5'; // Tarjeta débito ID BD
+            }
         });
     }
 }
 
-function getNombreMetodoPago(id) {
-    const metodo = metodosPagoLista.find(m => m.id_medio_pago == id);
-    return metodo ? metodo.descripcion : 'Desconocido';
-}
+// Escucha cambios en el select de método de pago
+selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
 
 // -------------------- RECIBO --------------------
+function getNombreMetodoPago(id) {
+    switch (id) {
+        case '1': return 'Efectivo';
+        case '2': return 'Transferencia Bancaria';
+        case '3': return 'Mercado Pago';
+        case '4': return 'Tarjeta Crédito';
+        case '5': return 'Tarjeta Débito';
+        case '6': return 'Cuenta Corriente';
+        default: return 'Desconocido';
+    }
+}
+
 
 function mostrarRecibo(data) {
     const fechaActual = new Date().toLocaleDateString('es-AR');
     const horaActual = new Date().toLocaleTimeString('es-AR', { hour12: false });
+
+    // Determinar los pagos
+    // Determinar los pagos
+    let pagosTexto = '';
+    if (data.pagos && data.pagos.length > 0) {
+        // Solo mostrar nombres de los métodos de pago
+        pagosTexto = data.pagos
+            .map(p => getNombreMetodoPago(String(p.id_medio_pago)))
+            .join('<br>');
+    } else {
+        // Si solo hay un método seleccionado en el select
+        pagosTexto = getNombreMetodoPago(selectMetodoPago.value);
+    }
+
+
 
     // Generar el contenido del recibo
     reciboGuardado = `
@@ -395,12 +511,18 @@ function mostrarRecibo(data) {
       <head>
         <title>Recibo de Venta</title>
         <style>
-          body { font-family: monospace; padding: 20px; }
-          h2 { text-align: center; }
-          .info { margin-bottom: 15px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-          th, td { border: 1px solid #000; padding: 6px; text-align: left; }
-          .totales { margin-top: 20px; font-weight: bold; }
+          body { font-family: 'Arial', sans-serif; margin: 20px; color: #333; }
+          h2 { text-align: center; font-size: 24px; margin-bottom: 20px; color: #0d6efd; }
+          .info p { margin: 4px 0; font-size: 14px; }
+          table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+          th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+          th { background-color: #f8f9fa; }
+          tr:nth-child(even) { background-color: #f2f2f2; }
+          .totales { margin-top: 20px; font-weight: bold; font-size: 16px; }
+          .totales p { margin: 4px 0; }
+          .totales p span { float: right; }
+          .gracias { text-align: center; margin-top: 30px; font-size: 16px; color: #198754; font-weight: bold; }
+          @media print { body { margin: 0; padding: 10px; font-size: 12px; } h2 { font-size: 20px; } .totales { font-size: 14px; } }
         </style>
       </head>
       <body>
@@ -408,7 +530,7 @@ function mostrarRecibo(data) {
         <div class="info">
           <p><strong>Fecha:</strong> ${fechaActual}</p>
           <p><strong>Hora:</strong> ${horaActual}</p>
-          <p><strong>Método de pago:</strong> ${getNombreMetodoPago(selectMetodoPago.value)}</p>
+          <p><strong>Métodos de pago:</strong><br>${pagosTexto}</p>
           ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
         </div>
         <table>
@@ -438,25 +560,21 @@ function mostrarRecibo(data) {
           </tbody>
         </table>
         <div class="totales">
-            <p>Subtotal: ${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</p>
-            <p>Descuento: ${inputDescuento.value || 0}%</p>
-            <p>IVA: ${inputIVA.value || 0}%</p>
-            <p>Total Final: ${inputTotalVenta.value}</p>
+            <p>Subtotal: <span>${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</span></p>
+            <p>Descuento: <span>${inputDescuento.value || 0}%</span></p>
+            <p>IVA: <span>${inputIVA.value || 0}%</span></p>
+            <p>Total Final: <span>${inputTotalVenta.value}</span></p>
         </div>
-        <div style="text-align: center; margin-top: 30px;">
+        <div class="gracias">
           <p>¡Gracias por su compra!</p>
         </div>
       </body>
     </html>
   `;
 
-    // ✅ Habilitar el botón de imprimir solo después de generar el recibo
     botonImprimirRecibo.disabled = false;
-    // Cambiar la clase de color de gris a verde
     botonImprimirRecibo.classList.remove('btn-secondary');
     botonImprimirRecibo.classList.add('btn-success');
-
-    // 🔹 Forzar colores para evitar que el estilo de "disabled" lo deje gris
     botonImprimirRecibo.style.backgroundColor = '#198754';
     botonImprimirRecibo.style.borderColor = '#198754';
     botonImprimirRecibo.style.color = '#fff';
@@ -477,14 +595,17 @@ botonImprimirRecibo.addEventListener('click', () => {
 });
 
 // -------------------- VENTA --------------------
-
 function finalizarVenta() {
     if (productosVenta.length === 0) {
         alert('Debe agregar al menos un producto a la venta.');
         return;
     }
 
-    if (!selectMetodoPago.value) {
+    // Verificar si hay varios métodos seleccionados
+    const variosActivos = document.querySelectorAll('#bloque_varios .pago-check:checked');
+    const tieneVarios = variosActivos.length > 0;
+
+    if (!tieneVarios && !selectMetodoPago.value) {
         alert('Debe seleccionar un método de pago.');
         return;
     }
@@ -495,7 +616,6 @@ function finalizarVenta() {
         return;
     }
 
-    const metodoPago = selectMetodoPago.value;
     const items = productosVenta.map(p => ({
         id_producto: p.id_producto,
         cantidad: p.cantidad,
@@ -504,51 +624,59 @@ function finalizarVenta() {
         iva: parseFloat(inputIVA.value) || 0
     }));
 
-    const venta = {
-        monto_total: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
-        tipo_comprobante: 'A', // o el que corresponda
-        nro_comprobante: '0001-00000001', // generar dinámicamente si quieres
-        id_usuario: Number(idUsuario), // ahora toma el valor correcto
-        id_iva: parseFloat(inputIVA.value) || 0,
-        items: items,
-        pagos: [{
-            id_medio_pago: selectMetodoPago.value,
-            monto: parseFloat(inputTotalVenta.value.replace(/[^0-9.-]+/g, "")) || 0,
-            cuil_cuit: selectMetodoPago.value === '2' ? document.getElementById('cuit_tarjeta')?.value || null : null
-        }]
-    };
+    let pagos = [];
+    const totalVenta = parseFloat(inputTotalVenta.value.replace(/\./g, '').replace(',', '.')) || 0;
 
-    const montoTotal = parseFloat(inputTotalVenta.value.replace(/[^\d.-]/g, '')) || 0;
+    if (tieneVarios) {
+        variosActivos.forEach(chk => {
+            const idMetodo = parseInt(chk.id.replace('mp_', ''));
+            const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
+            const montoRaw = montoInput?.value || '0';
 
-    const pago = {
-        id_medio_pago: parseInt(metodoPago),
-        monto: montoTotal
-    };
+            // Quitar formato de moneda antes de parsear
+            const monto = parseFloat(
+                montoRaw.replace(/\./g, '').replace(',', '.').replace('$', '')
+            ) || 0;
 
-    if (metodoPago === '2') {
-        const cuitInput = document.getElementById('cuit_tarjeta');
-        if (!cuitInput || !cuitInput.value) {
-            alert('Debe ingresar un CUIT válido para tarjeta.');
+            if (monto > 0) {
+                pagos.push({
+                    id_medio_pago: idMetodo,
+                    monto: monto
+                });
+            }
+        });
+
+        // Validar que la suma coincida con el total
+        const sumaPagos = pagos.reduce((acc, p) => acc + p.monto, 0);
+        const diferencia = Math.abs(sumaPagos - totalVenta);
+
+        if (diferencia > 0.01) { // tolerancia mínima
+            alert(`La suma de los métodos de pago (${sumaPagos.toFixed(2)}) no coincide con el total (${totalVenta.toFixed(2)}).`);
             return;
         }
-        pago.cuil_cuit = cuitInput.value;
+
+    } else {
+        const metodoPago = parseInt(selectMetodoPago.value);
+        pagos.push({
+            id_medio_pago: metodoPago,
+            monto: totalVenta
+        });
     }
 
-    venta.pagos = [pago];
-    venta.id_cliente = selectCliente.value || null;
+    const data = {
+        items,
+        pagos,
+        monto_total: totalVenta,
+        tipo_comprobante: 'TICKET',
+        nro_comprobante: Date.now().toString(),
+        id_iva: 1,
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+        id_usuario: Number(idUsuario)
+    };
 
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
-    const data = {
-        items,
-        pagos: [pago],
-        monto_total: montoTotal,
-        tipo_comprobante: 'TICKET', // Valor por defecto
-        nro_comprobante: Date.now().toString(), // Generar número único
-        id_iva: 1, // ID del IVA por defecto (ajusta según tu DB)
-        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
-        id_usuario: Number(idUsuario) // ahora toma el valor correcto
-    };
+
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -562,16 +690,18 @@ function finalizarVenta() {
             mensajeResultado.textContent = 'Venta registrada con éxito';
             mensajeResultado.classList.remove('text-danger');
             mensajeResultado.classList.add('text-success');
-
-
             mostrarRecibo(data);
 
-
+            // Limpiar y resetear
             productosVenta = [];
             actualizarTabla();
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
+
+            setTimeout(() => {
+                location.reload();
+            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -584,6 +714,7 @@ function finalizarVenta() {
             botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
+
 
 
 botonFinalizar.addEventListener('click', finalizarVenta);
@@ -608,18 +739,119 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-    // -------------------- BOTÓN VARIOS MÉTODOS --------------------
-    const bloqueVariosMetodos = document.getElementById('bloque_varios_metodos');
-    const btnVariosMetodos = document.getElementById('btn_varios_metodos');
 
-    // Ocultar bloque al inicio
-    bloqueVariosMetodos.style.display = 'none';
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+const btnVarios = document.getElementById('btn_varios');
+const contenedorVarios = document.getElementById('bloque_varios');
+let mostrandoVarios = false;
+let pagosVarios = [];
 
-    // Listener del botón
-    btnVariosMetodos.addEventListener('click', () => {
-        bloqueVariosMetodos.style.display =
-            (bloqueVariosMetodos.style.display === 'none' || bloqueVariosMetodos.style.display === '')
-                ? 'block'
-                : 'none';
+btnVarios?.addEventListener('click', () => {
+    mostrandoVarios = !mostrandoVarios;
+    if (!contenedorVarios) return;
+    contenedorVarios.innerHTML = '';
+    if (!mostrandoVarios) return;
+
+    const html = document.createElement('div');
+    html.className = 'card bg-dark text-white p-3';
+    html.innerHTML = `<h6 class="text-center mb-3">Varios métodos de pago</h6>`;
+    contenedorVarios.appendChild(html);
+
+    // IDs según la BD: 1-Efectivo, 2-Transferencia, 3-Mercado Pago, 4-Tarjeta Crédito, 5-Tarjeta Débito, 6-Cta Corriente
+    const metodos = [
+        { id: 1, nombre: 'Efectivo' },
+        { id: 2, nombre: 'Transferencia' },
+        { id: 3, nombre: 'Mercado Pago' },
+        { id: 4, nombre: 'Tarjeta Crédito/Débito' },
+        { id: 6, nombre: 'Cuenta corriente' }
+    ];
+
+    metodos.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'form-check mb-2 metodo-pago';
+        div.dataset.id = m.id;
+
+        div.innerHTML = `
+           <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
+           <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
+           <div class="detalles-pago mt-2"></div>
+       `;
+
+        html.appendChild(div);
+
+        const chk = div.querySelector('.pago-check');
+        const detalles = div.querySelector('.detalles-pago');
+
+        chk.addEventListener('change', () => {
+            detalles.innerHTML = '';
+            if (!chk.checked) return;
+
+            // Si es tarjeta (id 4)
+            if (m.id === 4) {
+                detalles.innerHTML = `
+                   <select class="form-select mb-2 tipo-tarjeta">
+                       <option value="">Seleccione tipo</option>
+                       <option value="debito">Débito</option>
+                       <option value="credito">Crédito</option>
+                   </select>
+                   <div class="cuotas-container mb-2" style="display:none;">
+                       <select class="form-select cuotas">
+                           <option value="1">1 cuota</option>
+                           <option value="3">3 cuotas</option>
+                           <option value="6">6 cuotas</option>
+                           <option value="12">12 cuotas</option>
+                       </select>
+                   </div>
+                   <input type="text" class="form-control monto" placeholder="Monto $">
+               `;
+
+                const tipoSel = detalles.querySelector('.tipo-tarjeta');
+                const cuotasDiv = detalles.querySelector('.cuotas-container');
+
+                tipoSel.addEventListener('change', () => {
+                    cuotasDiv.style.display = tipoSel.value === 'credito' ? 'block' : 'none';
+                });
+            } else {
+                detalles.innerHTML = `<input type="text" class="form-control monto" placeholder="Monto $">`;
+            }
+
+            // Formatear montos
+            detalles.querySelectorAll('.monto').forEach(input => {
+                // permitir solo números al escribir
+                // permitir números y decimales
+input.addEventListener('input', e => {
+    // solo dígitos y coma/punto
+    e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+});
+
+
+                // aplicar formato recién al salir
+                input.addEventListener('blur', e => {
+                    e.target.value = formatoMoneda(e.target.value);
+                });
+            });
+
     });
+});
 
+// Función para formato de moneda sin decimales
+    
+    function formatoMoneda(valor) {
+        if (valor == null || valor === '') return '';
+
+        // Reemplazar comas por puntos y dejar solo dígitos y un punto
+        valor = String(valor).replace(',', '.').replace(/[^\d.]/g, '');
+
+        // Convertir a número
+        const numero = parseFloat(valor);
+        if (isNaN(numero)) return '';
+
+        // Formatear con separador de miles y 2 decimales
+        return '$' + numero.toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+
+});

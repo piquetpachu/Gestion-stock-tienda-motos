@@ -87,71 +87,72 @@
         .catch(err => console.error('clientes.js: error cargando clientes', err));
     }
 
-    // Mostrar clientes (paginado + filtro + orden)
-    function mostrarClientes() {
-      if (!tabla) return;
-      const filtro = (busqueda?.value || '').toLowerCase();
-      const campoOrden = ordenarPor?.value || '';
+function mostrarClientes() {
+  if (!tabla) return;
+  const filtro = (busqueda?.value || '').toLowerCase();
+  const campoOrden = ordenarPor?.value || '';
 
-      const filtrados = (clientes || [])
-        .filter(c => {
-          const term = filtro;
-          return (
-            (c.nombre && c.nombre.toLowerCase().includes(term)) ||
-            (c.email && c.email.toLowerCase().includes(term)) ||
-            (c.cuil_cuit && c.cuil_cuit.toString().toLowerCase().includes(term)) ||
-            (c.telefono && c.telefono.toString().toLowerCase().includes(term)) ||
-            (c.direccion && c.direccion.toLowerCase().includes(term)) ||
-            (c.fecha_alta && c.fecha_alta.toLowerCase().includes(term))
-          );
-        })
-        .sort((a, b) => {
-          if (!campoOrden) return 0;
-          let A = a[campoOrden] || '', B = b[campoOrden] || '';
-          if (typeof A === 'string') A = A.toLowerCase();
-          if (typeof B === 'string') B = B.toLowerCase();
-          return A > B ? 1 : A < B ? -1 : 0;
-        });
+  const filtrados = (clientes || [])
+    .filter(c => {
+      const term = filtro;
+      return (
+        (c.nombre && c.nombre.toLowerCase().includes(term)) ||
+        (c.email && c.email.toLowerCase().includes(term)) ||
+        (c.cuil_cuit && c.cuil_cuit.toString().toLowerCase().includes(term)) ||
+        (c.telefono && c.telefono.toString().toLowerCase().includes(term)) ||
+        (c.direccion && c.direccion.toLowerCase().includes(term)) ||
+        (c.fecha_alta && c.fecha_alta.toLowerCase().includes(term))
+      );
+    })
+    .sort((a, b) => {
+      if (!campoOrden) return 0;
+      let A = a[campoOrden] || '', B = b[campoOrden] || '';
+      if (typeof A === 'string') A = A.toLowerCase();
+      if (typeof B === 'string') B = B.toLowerCase();
+      return A > B ? 1 : A < B ? -1 : 0;
+    });
 
-      const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
-      const inicio = (paginaActual - 1) * porPagina;
-      const clientesPagina = filtrados.slice(inicio, inicio + porPagina);
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
+  const inicio = (paginaActual - 1) * porPagina;
+  const clientesPagina = filtrados.slice(inicio, inicio + porPagina);
 
-      tabla.innerHTML = clientesPagina.map(c => {
-        let botones = '';
-        let tdAcciones = '';
-        if (usuarioRol === 'admin') {
-          botones = `
-            <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
-            <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
-          `;
-          tdAcciones = `<td>${botones}</td>`;
-        } else {
-          tdAcciones = `<td style='display:none'></td>`;
-        }
-        return `
-          <tr>
-            <td>${c.nombre} ${c.apellido || ''}</td>
-            <td>${c.email}</td>
-            <td>${c.telefono || '-'}</td>
-            <td>${c.direccion || '-'}</td>
-            <td>${c.cuil_cuit}</td>
-            <td>${c.fecha_alta || '-'}</td>
-            ${tdAcciones}
-          </tr>`;
-      }).join('');
-
-      // paginación
-      if (paginacion) {
-        paginacion.innerHTML = '';
-        for (let i = 1; i <= totalPaginas; i++) {
-          paginacion.innerHTML += `
-            <li class="page-item ${i === paginaActual ? 'active' : ''}">
-              <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
-            </li>`;
-        }
-      }
+  // 🔹 renderizamos las filas
+  tabla.innerHTML = clientesPagina.map(c => {
+    let botones = '';
+    let tdAcciones = '';
+    if (usuarioRol === 'admin') {
+      botones = `
+        <button class="btn btn-warning btn-sm" onclick='editarCliente(${JSON.stringify(c)})'>✏️</button>
+        <button class="btn btn-danger btn-sm" onclick='borrarCliente(${c.id_cliente})'>🗑️</button>
+      `;
+      tdAcciones = `<td>${botones}</td>`;
+    } else {
+      tdAcciones = `<td style='display:none'></td>`;
     }
+
+    return `
+      <tr data-id="${c.id_cliente}">
+        <td>${c.nombre} ${c.apellido || ''}</td>
+        <td>${c.email}</td>
+        <td>${c.telefono || '-'}</td>
+        <td>${c.cuil_cuit}</td>
+        <td>${c.fecha_alta || '-'}</td>
+        ${tdAcciones}
+      </tr>`;
+  }).join(''); // 👈 Esto es lo que faltaba
+  
+
+  // 🔹 paginación
+  if (paginacion) {
+    paginacion.innerHTML = '';
+    for (let i = 1; i <= totalPaginas; i++) {
+      paginacion.innerHTML += `
+        <li class="page-item ${i === paginaActual ? 'active' : ''}">
+          <button class="page-link" onclick="cambiarPagina(${i})">${i}</button>
+        </li>`;
+    }
+  }
+}
 
     // Exponer cambiarPagina a window (se usa desde HTML generado)
     window.cambiarPagina = function(n) {
@@ -184,13 +185,35 @@
     };
 
     // Borrar cliente
-    window.borrarCliente = function(id) {
-      if (!confirm('¿Eliminar cliente?')) return;
-      fetch(API_URL + 'borrar_cliente/' + id, { method: 'DELETE' })
-        .then(res => res.json())
-        .then(() => cargarClientes())
-        .catch(err => console.error('clientes.js: error borrando cliente', err));
-    };
+window.borrarCliente = function(id) {
+  if (!confirm('¿Eliminar cliente?')) return;
+
+  fetch(API_URL + 'borrar_cliente/' + id, { method: 'DELETE' })
+    .then(async res => {
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        // Si el backend devuelve error, lo mostramos
+        const msg = data.error || 'No se pudo eliminar el cliente.';
+        // alert('⚠️ ' + msg);
+        throw new Error(msg);
+      }
+      return data;
+    })
+    .then(() => {
+      alert('✅ Cliente eliminado correctamente.');
+      cargarClientes();
+    })
+    .catch(err => {
+      // Si el servidor no pudo borrar (FK constraint)
+      if (err.message.includes('foreign key') || err.message.includes('1451')) {
+        alert('❌ No se puede eliminar este cliente porque tiene ventas asociadas.');
+      } else {
+        console.error('clientes.js: error borrando cliente', err);
+        alert('❌ Error al eliminar cliente.');
+      }
+    });
+};
+
 
     // Attach submit handler (si existe el form)
     if (form) {
@@ -274,5 +297,37 @@
 
     // Inicializar carga
     cargarClientes();
+// === Mostrar detalles al hacer clic en una fila ===
+if (tabla) {
+  tabla.addEventListener('click', (e) => {
+    if (e.target.closest('button')) return;
+    const fila = e.target.closest('tr');
+    if (!fila) return;
+
+    const id = fila.dataset.id;
+    if (!id) return;
+
+    const cliente = clientes.find(c => String(c.id_cliente) === String(id));
+    if (!cliente) return;
+
+    const detalleHTML = `
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><b>Nombre y Apellido:</b> ${cliente.nombre} ${cliente.apellido || ''}</li>
+        <li class="list-group-item"><b>Email:</b> ${cliente.email}</li>
+        <li class="list-group-item"><b>Teléfono:</b> ${cliente.telefono || '-'}</li>
+        <li class="list-group-item"><b>Dirección:</b> ${cliente.direccion || '-'}</li>
+        <li class="list-group-item"><b>CUIL/CUIT:</b> ${cliente.cuil_cuit}</li>
+        <li class="list-group-item"><b>Fecha de Alta:</b> ${cliente.fecha_alta || '-'}</li>
+      </ul>
+    `;
+
+    document.getElementById('detalleCliente').innerHTML = detalleHTML;
+    document.getElementById('modalDetallesClienteLabel').textContent = `Detalles de ${cliente.nombre}`;
+    new bootstrap.Modal(document.getElementById('modalDetallesCliente')).show();
+  });
+}
+
+
+
   }); // DOMContentLoaded
 })();
