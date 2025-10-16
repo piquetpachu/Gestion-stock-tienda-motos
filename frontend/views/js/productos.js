@@ -17,7 +17,7 @@
 
     let productos = [];
     let paginaActual = 1;
-    const porPagina = 30;
+    const porPagina = 10;
     let usuarioRol = null;
     let productoModalPrevio = false;
 
