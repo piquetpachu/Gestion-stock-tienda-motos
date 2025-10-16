@@ -7,51 +7,29 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
-  <style>
-    body {
-      background-color: #f8f9fa;
-    }
-    .table-responsive {
-      margin-top: 20px;
-    }
-    .pagination {
-      margin-top: 20px;
-    }
-    /* style.css */
-body.dark-theme .btn {
-  background-color: #222;
-  color: #fff;
-  border-color: #444;
-}
-body.dark-theme .btn-warning {
-  background-color: #444;
-  color: #ffd700;
-}
-body.dark-theme .btn-danger {
-  background-color: #880000;
-  color: #fff;
-}
-    body { 
-            display: none; /* Oculta toda la página inicialmente */
-        }
-        
-  </style>
-  
 </head>
-
 <body>
-      <?php include 'navbar.php'; ?>
+  <?php include 'navbar.php'; ?>
 
-  <div class="container mt-5">
+  <div class="container page-container">
+    <div class="page-card">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h1>👥 Gestión de Clientes</h1>
-      <button class="btn btn-success" onclick="nuevoCliente()" id="btnAgregarCliente" style="display: none;">➕ Agregar Cliente</button>
+      <h1 id="titulo-clientes" class="d-flex align-items-center gap-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+          <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+        </svg>
+        Gestión de Clientes
+      </h1>
+      <button class="btn btn-success d-flex align-items-center gap-1" onclick="nuevoCliente()" id="btnAgregarCliente" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/></svg>
+        Agregar Cliente
+      </button>
     </div>
 
     <!-- Filtros -->
     <div class="row mb-3">
       <div class="col-md-6">
-        <input type="text" id="busqueda" class="form-control" placeholder="🔍 Buscar por nombre, email o DNI..." />
+  <input type="text" id="busqueda" class="form-control" placeholder="Buscar por nombre, email o DNI..." />
       </div>
       <div class="col-md-6">
         <select id="ordenarPor" class="form-select">
@@ -84,6 +62,7 @@ body.dark-theme .btn-danger {
     <nav>
       <ul class="pagination justify-content-center" id="paginacion"></ul>
     </nav>
+    </div>
   </div>
 
   <!-- Modal Cliente -->
@@ -159,6 +138,6 @@ body.dark-theme .btn-danger {
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-    <script src="../js/clientes.js"></script>
+  <script src="../js/clientes.js"></script>
 </body>
 </html>
