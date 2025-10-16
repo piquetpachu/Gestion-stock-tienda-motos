@@ -1,3 +1,0 @@
-tienda_motos.sql 
-tiene una primera version de la base de datos con algunos datos de prueba
-abierta a cambios y modificacione aun
