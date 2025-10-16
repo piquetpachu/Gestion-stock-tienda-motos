@@ -84,8 +84,8 @@ function renderRubros() {
 
   tbodyRubros.innerHTML = pageItems.map(r => {
     const acciones = esAdmin ? `
-      <button class="btn btn-sm btn-warning me-1" onclick="editarRubro(${r.id_rubro})">Editar</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
+      <button class="btn btn-warning btn-sm me-1" title="Editar" aria-label="Editar" onclick="editarRubro(${r.id_rubro})">✏️</button>
+      <button class="btn btn-danger btn-sm" title="Borrar" aria-label="Borrar" onclick="eliminarRubro(${r.id_rubro})">🗑️</button>
     ` : '';
     return `
       <tr data-rubro-row="${r.id_rubro}">

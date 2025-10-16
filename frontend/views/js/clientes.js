@@ -21,6 +21,23 @@
     const porPagina = 30;
     let usuarioRol = null;
 
+    // Formateo seguro para mostrar valores en la UI
+    function fmt(v, fallback = '-') {
+      if (v === null || v === undefined) return fallback;
+      if (typeof v === 'string') {
+        const s = v.trim();
+        if (!s || s.toLowerCase() === 'null' || s.toLowerCase() === 'undefined') return fallback;
+        return s;
+      }
+      return String(v);
+    }
+
+    // Para inputs: convertir null/"null"/vacíos en cadena vacía
+    function toInput(v) {
+      const s = fmt(v, '');
+      return s;
+    }
+
     // Helpers para localStorage
     function saveFormToStorage(formEl, key) {
       if (!formEl) return;
@@ -130,13 +147,16 @@ function mostrarClientes() {
       tdAcciones = `<td style='display:none'></td>`;
     }
 
+    const nombreCompleto = fmt([c.nombre, c.apellido].filter(Boolean).join(' ').trim());
+
     return `
       <tr data-id="${c.id_cliente}">
-        <td>${c.nombre} ${c.apellido || ''}</td>
-        <td>${c.email}</td>
-        <td>${c.telefono || '-'}</td>
-        <td>${c.cuil_cuit}</td>
-        <td>${c.fecha_alta || '-'}</td>
+        <td>${nombreCompleto}</td>
+        <td>${fmt(c.email)}</td>
+        <td>${fmt(c.telefono)}</td>
+        <td>${fmt(c.direccion)}</td>
+        <td>${fmt(c.cuil_cuit)}</td>
+        <td>${fmt(c.fecha_alta)}</td>
         ${tdAcciones}
       </tr>`;
   }).join(''); // 👈 Esto es lo que faltaba
@@ -174,12 +194,12 @@ function mostrarClientes() {
       localStorage.removeItem(STORAGE_KEY);
       if (form) {
         if (document.getElementById('id_cliente')) document.getElementById('id_cliente').value = cliente.id_cliente;
-        if (document.getElementById('nombre')) document.getElementById('nombre').value = cliente.nombre || '';
-        if (document.getElementById('apellido')) document.getElementById('apellido').value = cliente.apellido || '';
-        if (document.getElementById('cuil_cuit')) document.getElementById('cuil_cuit').value = cliente.cuil_cuit || '';
-        if (document.getElementById('email')) document.getElementById('email').value = cliente.email || '';
-        if (document.getElementById('telefono')) document.getElementById('telefono').value = cliente.telefono || '';
-        if (document.getElementById('direccion')) document.getElementById('direccion').value = cliente.direccion || '';
+        if (document.getElementById('nombre')) document.getElementById('nombre').value = toInput(cliente.nombre);
+        if (document.getElementById('apellido')) document.getElementById('apellido').value = toInput(cliente.apellido);
+        if (document.getElementById('cuil_cuit')) document.getElementById('cuil_cuit').value = toInput(cliente.cuil_cuit);
+        if (document.getElementById('email')) document.getElementById('email').value = toInput(cliente.email);
+        if (document.getElementById('telefono')) document.getElementById('telefono').value = toInput(cliente.telefono);
+        if (document.getElementById('direccion')) document.getElementById('direccion').value = toInput(cliente.direccion);
       }
       new bootstrap.Modal(document.getElementById('modalCliente')).show();
     };
@@ -312,17 +332,17 @@ if (tabla) {
 
     const detalleHTML = `
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><b>Nombre y Apellido:</b> ${cliente.nombre} ${cliente.apellido || ''}</li>
-        <li class="list-group-item"><b>Email:</b> ${cliente.email}</li>
-        <li class="list-group-item"><b>Teléfono:</b> ${cliente.telefono || '-'}</li>
-        <li class="list-group-item"><b>Dirección:</b> ${cliente.direccion || '-'}</li>
-        <li class="list-group-item"><b>CUIL/CUIT:</b> ${cliente.cuil_cuit}</li>
-        <li class="list-group-item"><b>Fecha de Alta:</b> ${cliente.fecha_alta || '-'}</li>
+        <li class="list-group-item"><b>Nombre y Apellido:</b> ${fmt([cliente.nombre, cliente.apellido].filter(Boolean).join(' ').trim())}</li>
+        <li class="list-group-item"><b>Email:</b> ${fmt(cliente.email)}</li>
+        <li class="list-group-item"><b>Teléfono:</b> ${fmt(cliente.telefono)}</li>
+        <li class="list-group-item"><b>Dirección:</b> ${fmt(cliente.direccion)}</li>
+        <li class="list-group-item"><b>CUIL/CUIT:</b> ${fmt(cliente.cuil_cuit)}</li>
+        <li class="list-group-item"><b>Fecha de Alta:</b> ${fmt(cliente.fecha_alta)}</li>
       </ul>
     `;
 
     document.getElementById('detalleCliente').innerHTML = detalleHTML;
-    document.getElementById('modalDetallesClienteLabel').textContent = `Detalles de ${cliente.nombre}`;
+    document.getElementById('modalDetallesClienteLabel').textContent = `Detalles de ${fmt(cliente.nombre, 'Cliente')}`;
     new bootstrap.Modal(document.getElementById('modalDetallesCliente')).show();
   });
 }

@@ -143,8 +143,8 @@ document.addEventListener('DOMContentLoaded', () => {
         <td>${u.email}</td>
         <td>${u.rol}</td>
         <td>
-          <button class="btn btn-warning btn-sm" onclick="editarUsuario(${u.id_usuario})">Editar</button>
-          <button class="btn btn-danger btn-sm" onclick="eliminarUsuario(${u.id_usuario})">Eliminar</button>
+          <button class="btn btn-warning btn-sm" title="Editar" aria-label="Editar" onclick="editarUsuario(${u.id_usuario})">✏️</button>
+          <button class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="eliminarUsuario(${u.id_usuario})">🗑️</button>
         </td>`;
       tablaUsuarios.appendChild(tr);
     });

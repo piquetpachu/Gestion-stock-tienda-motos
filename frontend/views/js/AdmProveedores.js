@@ -92,8 +92,8 @@ function renderProveedores() {
 
   tbodyProveedores.innerHTML = pageItems.map(p => {
     const acciones = esAdminProv ? `
-      <button class="btn btn-sm btn-warning me-1" onclick="editarProveedor(${p.id_proveedor})">Editar</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarProveedor(${p.id_proveedor})">Borrar</button>
+      <button class="btn btn-warning btn-sm me-1" title="Editar" aria-label="Editar" onclick="editarProveedor(${p.id_proveedor})">✏️</button>
+      <button class="btn btn-danger btn-sm" title="Borrar" aria-label="Borrar" onclick="eliminarProveedor(${p.id_proveedor})">🗑️</button>
     ` : '';
     return `
       <tr data-prov-row="${p.id_proveedor}" data-prov-nombre="${p.nombre}">
