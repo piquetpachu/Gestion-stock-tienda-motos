@@ -78,7 +78,7 @@
                 <option value="tarjeta">Tarjeta</option>
                 <option value="transferencia">Transferencia</option>
               </select>
-              <button class="btn btn-secondary" type="button" id="btn_varios_metodos">Varios</button>
+              <button class="btn btn-success" type="button" id="btn_varios_metodos">Varios</button>
             </div>
           </div>
 
