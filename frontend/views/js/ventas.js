@@ -51,8 +51,11 @@ function cargarProductos() {
         .then(data => {
             productosLista = data;
 
-            // Inicializamos TomSelect solo si no existe
-            if (!tomSelectProducto) {
+            // Inicializamos TomSelect solo si no existe (o reutilizamos si ya está)
+            if (selectProducto.tomselect) {
+                tomSelectProducto = selectProducto.tomselect;
+                tomSelectProducto.clearOptions();
+            } else if (!tomSelectProducto) {
                 tomSelectProducto = new TomSelect(selectProducto, {
                     create: false,
                     sortField: { field: "nombre", direction: "asc" },
@@ -60,7 +63,7 @@ function cargarProductos() {
                     labelField: "nombre",
                     searchField: ["nombre", "codigo_barras"],
                     placeholder: "Seleccionar producto",
-                    openOnFocus: false, // NO abrir solo por focus (evita desplegar al cargar)
+                    openOnFocus: true,
                     onItemAdd: function (value) {
                         agregarProducto(value);
                         this.clear();
@@ -83,24 +86,7 @@ function cargarProductos() {
             tomSelectProducto.refreshOptions();
             tomSelectProducto.close();
 
-            // --- AÑADIMOS: permitir abrir con CLICK ---
-            // TomSelect expone el input real en control_input
-            setTimeout(() => {
-                const inputTom = tomSelectProducto.control_input;
-                if (inputTom) {
-                    // Al hacer click en el input, abrimos el dropdown manualmente
-                    inputTom.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        tomSelectProducto.open();
-                    });
-
-                    // También abrir al hacer mousedown (mejor sensación de clic)
-                    inputTom.addEventListener('mousedown', (e) => {
-                        e.stopPropagation();
-                        tomSelectProducto.open();
-                    });
-                }
-            }, 50);
+            // El dropdown abre al focus/click por configuración
 
             // ENTER desde input (scanner o nombre completo)
             const inputTomEnter = tomSelectProducto.control_input;
@@ -189,19 +175,22 @@ function cargarClientes(seleccionarId = null) {
                 }
             });
 
-            // Inicializamos o refrescamos TomSelect
+            // Inicializamos o refrescamos TomSelect (reutilizar si ya está)
+            if (selectCliente.tomselect) {
+                tomSelectCliente = selectCliente.tomselect;
+            }
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    sortField: { field: "text", direction: "asc" }
+                    sortField: { field: "text", direction: "asc" },
+                    openOnFocus: true
                 });
-            } else {
-                tomSelectCliente.clearOptions();
-                data.forEach(cliente => {
-                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
-                });
-                tomSelectCliente.refreshOptions();
             }
+            tomSelectCliente.clearOptions();
+            data.forEach(cliente => {
+                tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
+            });
+            tomSelectCliente.refreshOptions();
 
             // Seleccionamos por defecto
             if (seleccionarId) {
@@ -214,7 +203,28 @@ function cargarClientes(seleccionarId = null) {
         })
         .catch(error => {
             console.error('Error cargando clientes:', error);
-            alert('No se pudieron cargar los clientes. Revisa la consola.');
+            // Fallback: dejar Consumidor Final para poder operar sin lista remota
+            selectCliente.innerHTML = '';
+            const opcion = document.createElement('option');
+            opcion.value = '0';
+            opcion.textContent = 'Consumidor Final';
+            selectCliente.appendChild(opcion);
+
+            if (selectCliente.tomselect) {
+                tomSelectCliente = selectCliente.tomselect;
+            }
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, {
+                    create: false,
+                    openOnFocus: true
+                });
+            }
+            tomSelectCliente.clearOptions();
+            tomSelectCliente.addOption({ value: '0', text: 'Consumidor Final' });
+            tomSelectCliente.refreshOptions();
+
+            tomSelectCliente.clear(true);
+            tomSelectCliente.addItem('0', true);
         });
 }
 
@@ -601,8 +611,8 @@ function finalizarVenta() {
         return;
     }
 
-    // Verificar si hay varios métodos seleccionados
-    const variosActivos = document.querySelectorAll('#bloque_varios .pago-check:checked');
+    // Verificar si hay varios métodos seleccionados en el bloque visible
+    const variosActivos = document.querySelectorAll('#bloque_varios_metodos .form-check-input:checked');
     const tieneVarios = variosActivos.length > 0;
 
     if (!tieneVarios && !selectMetodoPago.value) {
@@ -629,20 +639,20 @@ function finalizarVenta() {
 
     if (tieneVarios) {
         variosActivos.forEach(chk => {
-            const idMetodo = parseInt(chk.id.replace('mp_', ''));
-            const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
-            const montoRaw = montoInput?.value || '0';
+            let idMetodo = null;
+            if (chk.id === 'varios_efectivo') idMetodo = 1;
+            else if (chk.id === 'varios_transferencia') idMetodo = 2;
+            else if (chk.id === 'varios_tarjeta') idMetodo = 4; // Tarjeta (crédito/débito genérico)
 
-            // Quitar formato de moneda antes de parsear
-            const monto = parseFloat(
-                montoRaw.replace(/\./g, '').replace(',', '.').replace('$', '')
-            ) || 0;
+            const cont = chk.closest('.form-check');
+            const montoInput = cont ? cont.querySelector('input.form-control') : null;
+            const montoRaw = (montoInput?.value || '0').toString();
 
-            if (monto > 0) {
-                pagos.push({
-                    id_medio_pago: idMetodo,
-                    monto: monto
-                });
+            // Parsear número (permite coma o punto)
+            const monto = parseFloat(montoRaw.replace(/\./g, '').replace(',', '.')) || 0;
+
+            if (idMetodo && monto > 0) {
+                pagos.push({ id_medio_pago: idMetodo, monto });
             }
         });
 
@@ -726,10 +736,7 @@ botonCancelar.addEventListener('click', () => {
     cambiarCamposMetodoPago();
     mensajeResultado.textContent = '';
 });
-
-// Cambios en método de pago
-selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
-
+ 
 // -------------------- INICIALIZACIÓN --------------------
 document.addEventListener('DOMContentLoaded', () => {
     cargarProductos();
@@ -741,103 +748,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
-// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
-const btnVarios = document.getElementById('btn_varios');
-const contenedorVarios = document.getElementById('bloque_varios');
-let mostrandoVarios = false;
-let pagosVarios = [];
-
-btnVarios?.addEventListener('click', () => {
-    mostrandoVarios = !mostrandoVarios;
-    if (!contenedorVarios) return;
-    contenedorVarios.innerHTML = '';
-    if (!mostrandoVarios) return;
-
-    const html = document.createElement('div');
-    html.className = 'card bg-dark text-white p-3';
-    html.innerHTML = `<h6 class="text-center mb-3">Varios métodos de pago</h6>`;
-    contenedorVarios.appendChild(html);
-
-    // IDs según la BD: 1-Efectivo, 2-Transferencia, 3-Mercado Pago, 4-Tarjeta Crédito, 5-Tarjeta Débito, 6-Cta Corriente
-    const metodos = [
-        { id: 1, nombre: 'Efectivo' },
-        { id: 2, nombre: 'Transferencia' },
-        { id: 3, nombre: 'Mercado Pago' },
-        { id: 4, nombre: 'Tarjeta Crédito/Débito' },
-        { id: 6, nombre: 'Cuenta corriente' }
-    ];
-
-    metodos.forEach(m => {
-        const div = document.createElement('div');
-        div.className = 'form-check mb-2 metodo-pago';
-        div.dataset.id = m.id;
-
-        div.innerHTML = `
-           <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
-           <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
-           <div class="detalles-pago mt-2"></div>
-       `;
-
-        html.appendChild(div);
-
-        const chk = div.querySelector('.pago-check');
-        const detalles = div.querySelector('.detalles-pago');
-
-        chk.addEventListener('change', () => {
-            detalles.innerHTML = '';
-            if (!chk.checked) return;
-
-            // Si es tarjeta (id 4)
-            if (m.id === 4) {
-                detalles.innerHTML = `
-                   <select class="form-select mb-2 tipo-tarjeta">
-                       <option value="">Seleccione tipo</option>
-                       <option value="debito">Débito</option>
-                       <option value="credito">Crédito</option>
-                   </select>
-                   <div class="cuotas-container mb-2" style="display:none;">
-                       <select class="form-select cuotas">
-                           <option value="1">1 cuota</option>
-                           <option value="3">3 cuotas</option>
-                           <option value="6">6 cuotas</option>
-                           <option value="12">12 cuotas</option>
-                       </select>
-                   </div>
-                   <input type="text" class="form-control monto" placeholder="Monto $">
-               `;
-
-                const tipoSel = detalles.querySelector('.tipo-tarjeta');
-                const cuotasDiv = detalles.querySelector('.cuotas-container');
-
-                tipoSel.addEventListener('change', () => {
-                    cuotasDiv.style.display = tipoSel.value === 'credito' ? 'block' : 'none';
-                });
-            } else {
-                detalles.innerHTML = `<input type="text" class="form-control monto" placeholder="Monto $">`;
-            }
-
-            // Formatear montos
-            detalles.querySelectorAll('.monto').forEach(input => {
-                // permitir solo números al escribir
-                // permitir números y decimales
-input.addEventListener('input', e => {
-    // solo dígitos y coma/punto
-    e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
-});
-
-
-                // aplicar formato recién al salir
-                input.addEventListener('blur', e => {
-                    e.target.value = formatoMoneda(e.target.value);
-                });
-            });
-
-    });
+const btnVarios = document.getElementById('btn_varios_metodos');
+const bloqueVarios = document.getElementById('bloque_varios_metodos');
+btnVarios?.addEventListener('click', (e) => {
+    e.preventDefault();
+    const visible = bloqueVarios.style.display !== 'none';
+    bloqueVarios.style.display = visible ? 'none' : 'block';
 });
 
 // Función para formato de moneda sin decimales
-    
-    function formatoMoneda(valor) {
+function formatoMoneda(valor) {
         if (valor == null || valor === '') return '';
 
         // Reemplazar comas por puntos y dejar solo dígitos y un punto
@@ -853,5 +773,3 @@ input.addEventListener('input', e => {
             maximumFractionDigits: 2
         });
     }
-
-});

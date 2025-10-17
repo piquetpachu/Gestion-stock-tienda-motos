@@ -21,6 +21,22 @@ let ordenarRubro = 'nombre_asc';
 let paginaRubro = 1;
 const PAGE_SIZE_RUBRO = 10;
 
+// ---------- Iconos SVG inline ----------
+const SVG_EDIT = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <line x1="3" y1="13" x2="13" y2="3"></line>
+    <polygon points="12,2 14,4 13,5 11,3" fill="currentColor" stroke="currentColor"></polygon>
+    <rect x="2" y="12" width="3" height="2" fill="currentColor" stroke="none"></rect>
+  </svg>`;
+const SVG_TRASH = `
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <rect x="4" y="5" width="8" height="9" rx="1"></rect>
+    <line x1="6" y1="7" x2="6" y2="13"></line>
+    <line x1="10" y1="7" x2="10" y2="13"></line>
+    <polyline points="5,5 5,3 11,3 11,5"></polyline>
+    <line x1="4" y1="5" x2="12" y2="5"></line>
+  </svg>`;
+
 // ---------- Util ----------
 function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
 function compararNombre(a, b){
@@ -84,16 +100,25 @@ function renderRubros() {
 
   tbodyRubros.innerHTML = pageItems.map(r => {
     const acciones = esAdmin ? `
-      <button class="btn btn-sm btn-warning me-1" onclick="editarRubro(${r.id_rubro})">Editar</button>
-      <button class="btn btn-sm btn-danger" onclick="eliminarRubro(${r.id_rubro})">Borrar</button>
+      <button class="btn btn-warning btn-sm me-1" title="Editar" aria-label="Editar" onclick="editarRubro(${r.id_rubro})">${SVG_EDIT}</button>
+      <button class="btn btn-danger btn-sm" title="Borrar" aria-label="Borrar" onclick="eliminarRubro(${r.id_rubro})">${SVG_TRASH}</button>
     ` : '';
     return `
-      <tr>
-        <td>${r.nombre}</td>
-        ${esAdmin ? `<td>${acciones}</td>` : ''}
+      <tr data-rubro-row="${r.id_rubro}">
+        <td class="rubro-nombre">${r.nombre}</td>
+        ${esAdmin ? `<td class="acciones-col">${acciones}</td>` : ''}
       </tr>
     `;
   }).join('');
+
+  // Click en fila (ignorando botones) para detalle
+  tbodyRubros.querySelectorAll('tr[data-rubro-row]').forEach(tr => {
+    tr.addEventListener('click', (e) => {
+      if (e.target.closest('button')) return;
+      const id = tr.getAttribute('data-rubro-row');
+      mostrarProductosRubro(id);
+    });
+  });
 
   renderPaginacionRubros(total, paginaRubro, PAGE_SIZE_RUBRO);
 }
@@ -202,3 +227,37 @@ btnNuevoRubro.addEventListener('click', () => {
       renderPaginacionRubros(0, 1, PAGE_SIZE_RUBRO);
     });
 })();
+
+// ---- Productos por Rubro ----
+const modalProductosRubro = new bootstrap.Modal(document.getElementById('modalProductosRubro'));
+const tbodyProdPorRubro = document.getElementById('tbodyProdPorRubro');
+const tituloProductosRubro = document.getElementById('tituloProductosRubro');
+
+async function mostrarProductosRubro(idRubro){
+  const rubro = rubros.find(r => String(r.id_rubro) === String(idRubro));
+  tituloProductosRubro.textContent = `Productos del Rubro: ${rubro?.nombre || ''}`;
+  tbodyProdPorRubro.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Cargando...</td></tr>';
+  modalProductosRubro.show();
+  try {
+    // Reutilizamos endpoint de productos y filtramos client-side (si fuera muy grande convendría endpoint dedicado)
+    const res = await fetch(API_URL + 'productos');
+    if (!res.ok) throw new Error('Error obteniendo productos');
+    const productos = await res.json();
+    const filtrados = productos.filter(p => String(p.id_rubro) === String(idRubro));
+    if (!filtrados.length){
+      tbodyProdPorRubro.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">Sin productos</td></tr>';
+      return;
+    }
+    tbodyProdPorRubro.innerHTML = filtrados.map(p => `
+      <tr>
+        <td>${p.nombre || ''}</td>
+        <td>${p.descripcion || ''}</td>
+        <td>${p.precio_venta ?? ''}</td>
+        <td>${p.stock ?? ''}</td>
+        <td>${p.codigo_barras || ''}</td>
+      </tr>
+    `).join('');
+  } catch (e) {
+    tbodyProdPorRubro.innerHTML = `<tr><td colspan="5" class="text-center text-danger">${e.message}</td></tr>`;
+  }
+}

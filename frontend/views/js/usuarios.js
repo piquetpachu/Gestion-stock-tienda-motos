@@ -6,7 +6,28 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalUsuarioEl = document.getElementById('modalUsuario');
   const btnAgregarUsuario = document.getElementById('btnAgregarUsuario');
   const tablaUsuarios = document.getElementById('tablaUsuarios');
+  const inputBusqueda = document.getElementById('busquedaUsuario');
+  const selectOrden = document.getElementById('ordenarUsuario');
+  let usuariosCache = [];
+  let filtroActual = '';
+  let ordenActual = '';
   let justSaved = false;
+
+  // Iconos SVG inline (coherentes con otras vistas)
+  const SVG_EDIT = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="3" y1="13" x2="13" y2="3"></line>
+      <polygon points="12,2 14,4 13,5 11,3" fill="currentColor" stroke="currentColor"></polygon>
+      <rect x="2" y="12" width="3" height="2" fill="currentColor" stroke="none"></rect>
+    </svg>`;
+  const SVG_TRASH = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4" y="5" width="8" height="9" rx="1"></rect>
+      <line x1="6" y1="7" x2="6" y2="13"></line>
+      <line x1="10" y1="7" x2="10" y2="13"></line>
+      <polyline points="5,5 5,3 11,3 11,5"></polyline>
+      <line x1="4" y1="5" x2="12" y2="5"></line>
+    </svg>`;
 
   // -----------------------------------
   // Helpers localStorage / UI
@@ -72,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------
   async function verificarAdmin() {
     try {
-      const res = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+  const res = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
       if (!res.ok) return false;
       const user = await res.json();
       if (user.rol !== 'admin') {
@@ -97,29 +118,62 @@ document.addEventListener('DOMContentLoaded', () => {
   // -----------------------------------
   async function cargarUsuarios() {
     try {
-      const res = await fetch('/Gestion-stock-tienda-motos/app/usuarios');
+      const res = await fetch(`${API_URL}usuarios`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error('No se pudieron cargar usuarios');
-      const usuarios = await res.json();
-      if (!tablaUsuarios) return;
-      tablaUsuarios.innerHTML = '';
-      usuarios.forEach(u => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${u.id_usuario}</td>
-          <td>${u.nombre}</td>
-          <td>${u.email}</td>
-          <td>${u.rol}</td>
-          <td>
-            <button class="btn btn-warning btn-sm" onclick="editarUsuario(${u.id_usuario})">Editar</button>
-            <button class="btn btn-danger btn-sm" onclick="eliminarUsuario(${u.id_usuario})">Eliminar</button>
-          </td>`;
-        tablaUsuarios.appendChild(tr);
-      });
+      usuariosCache = await res.json();
+      renderUsuarios();
     } catch (e) {
       console.error(e);
       mostrarError('Error cargando usuarios');
     }
   }
+
+  function normalizarTexto(v) { return String(v || '').toLowerCase(); }
+
+  function renderUsuarios() {
+    if (!tablaUsuarios) return;
+    const filtro = normalizarTexto(filtroActual);
+    const campoOrden = ordenActual;
+
+    const lista = (usuariosCache || [])
+      .filter(u => {
+        if (!filtro) return true;
+        return (
+          normalizarTexto(u.nombre).includes(filtro) ||
+          normalizarTexto(u.email).includes(filtro) ||
+          normalizarTexto(u.rol).includes(filtro)
+        );
+      })
+      .sort((a,b) => {
+        if (!campoOrden) return 0;
+        let A = normalizarTexto(a[campoOrden]);
+        let B = normalizarTexto(b[campoOrden]);
+        return A > B ? 1 : A < B ? -1 : 0;
+      });
+
+    tablaUsuarios.innerHTML = '';
+    lista.forEach(u => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${u.nombre}</td>
+        <td>${u.email}</td>
+        <td>${u.rol}</td>
+        <td class="acciones-col">
+          <button class="btn btn-warning btn-sm" title="Editar" aria-label="Editar" onclick="editarUsuario(${u.id_usuario})">${SVG_EDIT}</button>
+          <button class="btn btn-danger btn-sm" title="Eliminar" aria-label="Eliminar" onclick="eliminarUsuario(${u.id_usuario})">${SVG_TRASH}</button>
+        </td>`;
+      tablaUsuarios.appendChild(tr);
+    });
+  }
+
+  // Debounce utilitario
+  function debounce(fn, ms) { let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); }; }
+
+  const onBuscar = debounce(() => { filtroActual = inputBusqueda?.value || ''; renderUsuarios(); }, 250);
+  const onOrdenar = () => { ordenActual = selectOrden?.value || ''; renderUsuarios(); };
+
+  inputBusqueda?.addEventListener('input', onBuscar);
+  selectOrden?.addEventListener('change', onOrdenar);
 
   // Guardar (crear/actualizar)
   if (formUsuario) {
@@ -140,14 +194,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const res = await fetch(url, {
           method: metodo,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(datos)
+          body: JSON.stringify(datos),
+          credentials: 'same-origin'
         });
         if (!res.ok) {
           let text = 'Error al guardar usuario';
           try { const json = await res.json(); if (json && json.error) text = json.error; } catch {}
           throw new Error(text);
         }
-        await cargarUsuarios();
+        await cargarUsuarios(); // respeta el filtro/orden actuales con renderUsuarios
         justSaved = true;
         bootstrap.Modal.getInstance(modalUsuarioEl)?.hide();
       } catch (err) {
@@ -164,6 +219,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (idInput) idInput.value = '';
       const restored = restoreFormFromStorage();
       if (!restored && formUsuario) formUsuario.reset();
+      // Ajustar etiqueta de contraseña para modo creación
+      const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+      if (passLabel) passLabel.textContent = 'Contraseña';
       bootstrap.Modal.getOrCreateInstance(modalUsuarioEl).show();
     });
   }
@@ -172,7 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.editarUsuario = async function (id) {
     try {
       localStorage.removeItem(STORAGE_KEY);
-      const res = await fetch(`/Gestion-stock-tienda-motos/app/usuario/${id}`);
+  const res = await fetch(`${API_URL}usuario/${id}`, { credentials: 'same-origin' });
       if (!res.ok) throw new Error('No se encontró usuario');
       const usuario = await res.json();
       document.getElementById('usuario_id').value = usuario.id_usuario || '';
@@ -181,7 +239,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('usuario_rol').value = usuario.rol || '';
       document.getElementById('usuario_contrasena').value = '';
 
-      const resInfo = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+    // Cambiar etiqueta de contraseña en modo edición
+    const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+    if (passLabel) passLabel.textContent = 'Cambiar Contraseña';
+
+  const resInfo = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
       const user = resInfo.ok ? await resInfo.json() : null;
       const rolSel = document.getElementById('usuario_rol');
       if (rolSel) rolSel.disabled = (user && user.id === usuario.id_usuario);
@@ -203,7 +265,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const user = resUser.ok ? await resUser.json() : null;
       if (user && user.id === id) { alert('No puede eliminar su usuario actual.'); return; }
       if (!confirm('¿Eliminar usuario?')) return;
-      const res = await fetch(`/Gestion-stock-tienda-motos/app/borrar_usuario/${id}`, { method: 'DELETE' });
+  const res = await fetch(`${API_URL}borrar_usuario/${id}`, { method: 'DELETE', credentials: 'same-origin' });
       if (!res.ok) throw new Error('Error al eliminar usuario');
       await cargarUsuarios();
     } catch (e) {
@@ -240,6 +302,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isEditing) restoreFormFromStorage();
         const adv = document.getElementById('pass-warning'); if (adv) adv.style.display = 'none';
         const alertDiv = modalUsuarioEl.querySelector('#user-alert'); if (alertDiv) alertDiv.remove();
+        // Asegurar etiqueta correcta según modo
+        const passLabel = document.querySelector('label[for="usuario_contrasena"]');
+        if (passLabel) passLabel.textContent = isEditing ? 'Cambiar Contraseña' : 'Contraseña';
       } catch (e) { console.error(e); }
     });
 

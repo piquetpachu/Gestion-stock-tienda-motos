@@ -6,55 +6,52 @@
   <title>Panel de Usuarios</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../css/style.css">
-  <style>
-    body.dark-theme {
-      background-color: #181818;
-      color: #eee;
-    }
-    body.dark-theme .table-dark {
-      background-color: #222;
-      color: #fff;
-    }
-    body.dark-theme .card, body.dark-theme .modal-content {
-      background-color: #222;
-      color: #fff;
-    }
-    body.dark-theme .btn {
-      background-color: #222;
-      color: #fff;
-      border-color: #444;
-    }
-    body.dark-theme .btn-warning {
-      background-color: #444;
-      color: #ffd700;
-    }
-    body.dark-theme .btn-danger {
-      background-color: #880000;
-      color: #fff;
-    }
-  </style>
 </head>
-<body style="display:none;">
+<body>
   <?php include 'navbar.php'; ?>
-  <div class="container mt-5" id="usuarios-panel">
-    <h1>👤 Panel de Control de Usuarios</h1>
+  <div class="container page-container" id="usuarios-panel">
+    <div class="page-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h1 class="m-0">
+        <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0M9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1M11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0m2 5.755V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-.245S4 12 8 12s5 1.755 5 1.755"/>
+        </svg>
+        Panel de Control de Usuarios
+      </h1>
+      <button class="btn btn-success d-inline-flex align-items-center gap-1" id="btnAgregarUsuario">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+        </svg>
+        Agregar Usuario
+      </button>
+    </div>
     <div id="admin-alert" class="alert alert-danger d-none" role="alert"></div>
-    <div class="mb-3 text-end">
-      <button class="btn btn-success" id="btnAgregarUsuario">➕ Registrar Usuario</button>
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <input type="text" id="busquedaUsuario" class="form-control" placeholder="Buscar por nombre, email o rol..." />
+      </div>
+      <div class="col-md-6">
+        <select id="ordenarUsuario" class="form-select">
+          <option value="">Sin orden</option>
+          <option value="nombre">Nombre</option>
+          <option value="email">Email</option>
+          <option value="rol">Rol</option>
+        </select>
+      </div>
     </div>
     <div class="table-responsive">
       <table class="table table-striped table-hover table-bordered align-middle">
         <thead class="table-dark">
           <tr>
-            <th>ID</th>
             <th>Nombre</th>
             <th>Email</th>
             <th>Rol</th>
-            <th>Acciones</th>
+            <th class="acciones-col">Acciones</th>
           </tr>
         </thead>
         <tbody id="tablaUsuarios"></tbody>
       </table>
+    </div>
     </div>
   </div>
 
@@ -101,22 +98,27 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="../js/usuarios.js"></script>
   <script>
-    // Mostrar el body solo si es admin
+    // Controlar acceso: mostrar/ocultar panel pero nunca ocultar el body
     document.addEventListener('DOMContentLoaded', async function() {
       try {
-        const res = await fetch('/Gestion-stock-tienda-motos/app/usuario-info');
+        const res = await fetch(`${API_URL}usuario-info`, { credentials: 'same-origin' });
         if (!res.ok) throw new Error('No autenticado');
         const user = await res.json();
         if (user.rol !== 'admin') {
           document.getElementById('usuarios-panel').style.display = 'none';
           document.getElementById('admin-alert').textContent = 'Acceso solo para administradores.';
           document.getElementById('admin-alert').classList.remove('d-none');
-          document.body.style.display = '';
         } else {
-          document.body.style.display = '';
+          // admin: el JS usuarios.js se encargará de cargar la tabla
         }
-      } catch {
-        window.location.href = 'login.html';
+      } catch (e) {
+        const panel = document.getElementById('usuarios-panel');
+        if (panel) panel.style.display = 'none';
+        const alert = document.getElementById('admin-alert');
+        if (alert) {
+          alert.textContent = 'No autenticado. Inicie sesión para continuar.';
+          alert.classList.remove('d-none');
+        }
       }
     });
   </script>

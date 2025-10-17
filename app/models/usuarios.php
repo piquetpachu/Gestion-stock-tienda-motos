@@ -56,12 +56,40 @@ function crearUsuario($pdo, $datos)
 // Verificar login
 function loginUsuario($pdo, $email, $contrasena)
 {
-    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE email = ?");
+    $email = trim((string)$email);
+    $contrasena = (string)$contrasena;
+
+    // Comparación case-insensitive por email
+    $stmt = $pdo->prepare("SELECT * FROM usuario WHERE LOWER(email) = LOWER(?)");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($usuario && password_verify($contrasena, $usuario['contrasena'])) {
-        // Devolver solo datos necesarios para sesión
+    if (!$usuario) {
+        return false;
+    }
+
+    $hashAlmacenado = $usuario['contrasena'] ?? '';
+
+    $coincide = false;
+    if ($hashAlmacenado) {
+        // Caso 1: ya está hasheado con bcrypt (prefijo $2y$, $2a$ o $2b$)
+        $pref = substr((string)$hashAlmacenado, 0, 4);
+        if (in_array($pref, ['$2y$', '$2a$', '$2b$'], true)) {
+            $coincide = password_verify($contrasena, $hashAlmacenado);
+        } else {
+            // Caso 2: puede venir en texto plano desde el dump de SQL
+            $coincide = hash_equals((string)$hashAlmacenado, (string)$contrasena);
+            if ($coincide) {
+                // Migrar a bcrypt inmediatamente
+                $nuevoHash = password_hash($contrasena, PASSWORD_BCRYPT);
+                $upd = $pdo->prepare("UPDATE usuario SET contrasena = ? WHERE id_usuario = ?");
+                $upd->execute([$nuevoHash, $usuario['id_usuario']]);
+                $hashAlmacenado = $nuevoHash;
+            }
+        }
+    }
+
+    if ($coincide) {
         return [
             'id_usuario' => $usuario['id_usuario'],
             'nombre' => $usuario['nombre'],
@@ -69,6 +97,7 @@ function loginUsuario($pdo, $email, $contrasena)
             'rol' => $usuario['rol']
         ];
     }
+
     return false;
 }
 
