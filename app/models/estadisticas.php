@@ -1,37 +1,48 @@
 <?php
 function obtenerResumenEstadisticas($pdo) {
-    $hoy = date('Y-m-d');
-    $inicioMes = date('Y-m-01');
-    $inicioAnio = date('Y-01-01');
-
     $resumen = [];
 
-    // Total ganado hoy
-    $stmt = $pdo->prepare("SELECT SUM(monto_total) AS ganancias_brutas_hoy
-FROM venta
-WHERE DATE(fecha) = ?;");
-    $stmt->execute([$hoy]);
-    $resumen['ganancia_hoy'] = (float) $stmt->fetchColumn() ?: 0;
-
-    // Total ganado en el mes
-    $stmt = $pdo->prepare("SELECT SUM(monto_total) AS total FROM venta WHERE fecha >= ?");
-    $stmt->execute([$inicioMes]);
-    $resumen['ganancia_mes'] = (float) $stmt->fetchColumn() ?: 0;
-
-    // Total ganado en el año
-    $stmt = $pdo->prepare("SELECT SUM(monto_total) AS total FROM venta WHERE fecha >= ?");
-    $stmt->execute([$inicioAnio]);
-    $resumen['ganancia_anio'] = (float) $stmt->fetchColumn() ?: 0;
-
-    // Producto más vendido
-    $stmt = $pdo->query("
-        SELECT p.nombre, SUM(vi.cantidad) AS total_vendidos
-        FROM venta_item vi
+    // Ganancia hoy (ingresos - costo - descuentos), IVA NO suma a la ganancia
+    $sqlHoy = "
+        SELECT COALESCE(SUM(
+            (vi.cantidad * (vi.precio_unitario - COALESCE(p.precio_compra,0)))
+            - COALESCE(vi.descuento,0)
+        ),0) AS ganancia
+        FROM venta v
+        JOIN venta_item vi ON vi.id_venta = v.id_venta
         JOIN producto p ON p.id_producto = vi.id_producto
-        GROUP BY vi.id_producto
-        ORDER BY total_vendidos DESC
-        LIMIT 1
-    ");
+        WHERE DATE(v.fecha) = CURDATE()
+    ";
+    $resumen['ganancia_hoy'] = (float) $pdo->query($sqlHoy)->fetchColumn();
+
+    // Ganancia del mes
+    $sqlMes = "
+        SELECT COALESCE(SUM(
+            (vi.cantidad * (vi.precio_unitario - COALESCE(p.precio_compra,0)))
+            - COALESCE(vi.descuento,0)
+        ),0) AS ganancia
+        FROM venta v
+        JOIN venta_item vi ON vi.id_venta = v.id_venta
+        JOIN producto p ON p.id_producto = vi.id_producto
+        WHERE DATE(v.fecha) >= DATE_FORMAT(CURDATE(), '%Y-%m-01')
+    ";
+    $resumen['ganancia_mes'] = (float) $pdo->query($sqlMes)->fetchColumn();
+
+    // Ganancia del año
+    $sqlAnio = "
+        SELECT COALESCE(SUM(
+            (vi.cantidad * (vi.precio_unitario - COALESCE(p.precio_compra,0)))
+            - COALESCE(vi.descuento,0)
+        ),0) AS ganancia
+        FROM venta v
+        JOIN venta_item vi ON vi.id_venta = v.id_venta
+        JOIN producto p ON p.id_producto = vi.id_producto
+        WHERE DATE(v.fecha) >= DATE_FORMAT(CURDATE(), '%Y-01-01')
+    ";
+    $resumen['ganancia_anio'] = (float) $pdo->query($sqlAnio)->fetchColumn();
+
+    // Producto más vendido (histórico)
+    $stmt = $pdo->query("\n        SELECT p.nombre, SUM(vi.cantidad) AS total_vendidos\n        FROM venta_item vi\n        JOIN producto p ON p.id_producto = vi.id_producto\n        GROUP BY vi.id_producto\n        ORDER BY total_vendidos DESC\n        LIMIT 1\n    ");
     $fila = $stmt->fetch();
     $resumen['producto_mas_vendido'] = $fila['nombre'] ?? 'Sin datos';
 
@@ -58,9 +69,13 @@ function obtenerVentasPorDia($pdo, $desde = null, $hasta = null) {
     if (!$desde) $desde = date('Y-01-01');
     if (!$hasta) $hasta = date('Y-m-d');
 
+    // Ganancia neta por día: (precio_venta - precio_compra) * cantidad - descuento; IVA NO suma a ganancia
     $sql = "
-        SELECT DATE(v.fecha) AS dia, SUM(v.monto_total) AS total
+        SELECT DATE(v.fecha) AS dia,
+               COALESCE(SUM((vi.cantidad * (vi.precio_unitario - COALESCE(p.precio_compra,0))) - COALESCE(vi.descuento,0)), 0) AS total
         FROM venta v
+        JOIN venta_item vi ON vi.id_venta = v.id_venta
+        JOIN producto p ON p.id_producto = vi.id_producto
         WHERE DATE(v.fecha) BETWEEN ? AND ?
         GROUP BY DATE(v.fecha)
         ORDER BY dia

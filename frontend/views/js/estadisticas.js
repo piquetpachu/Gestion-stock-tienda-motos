@@ -40,7 +40,7 @@ async function cargarVentasPorDia() {
     data: {
       labels,
       datasets: [{
-        label: 'Ventas ($)',
+        label: 'Ganancia neta ($)',
         data: datos,
   borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bs-success').trim() || '#22c55e',
   backgroundColor: 'rgba(34,197,94,0.15)',

@@ -71,7 +71,7 @@
                   <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
                     <path d="M0 0h1v15H0zM2 14h14v1H2zM3 12l3-3 2 2 4-5 3 4v2l-3-4-4 5-2-2-3 3z"/>
                   </svg>
-                  Ventas por día (año en curso)
+                  Ganancia neta por día (año en curso)
                 </h6>
                 <div id="msgVentasPorDia" class="text-center text-secondary small">Cargando...</div>
                 <canvas id="graficoVentasPorDia" height="140" style="display:none"></canvas>
