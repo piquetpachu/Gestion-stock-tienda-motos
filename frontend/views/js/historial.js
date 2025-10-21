@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
             maximumFractionDigits: 2
         });
 
-    const formatearFecha = (f) => new Date(f).toLocaleString();
+    const formatearFecha = f => new Date(f).toLocaleString();
 
     const orden = [
         "efectivo",
@@ -32,14 +32,14 @@ document.addEventListener("DOMContentLoaded", () => {
         resumen.innerHTML = "";
 
         try {
-            // <-- Cambié la ruta para que coincida con api.php y tus rutas amigables
-            const res = await fetch(`../../../app/routes/api.php?ruta=historial&desde=${fDesde}&hasta=${fHasta}`);
-
+            const res = await fetch(`http://localhost/Gestion-stock-tienda-motos/app/api.php/historial?desde=${fDesde}&hasta=${fHasta}`);
             if (!res.ok) throw new Error('Error al cargar historial');
 
-            const data = await res.json();
+            const response = await res.json();
+            const data = response.datos || {};
 
             resultados.innerHTML = "";
+
             if (!data.ventas || data.ventas.length === 0) {
                 resultados.innerHTML = `<div class="text-center text-muted py-3">No hay ventas en este rango.</div>`;
             } else {
@@ -55,12 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <small>${formatearFecha(v.fecha)}</small>
                             </div>
                             <div class="text-end">
-                                <b>Total:</b> ${formatoMoneda(v.total)}
+                                <b>Total:</b> ${formatoMoneda(parseFloat(String(v.total).replace(',', '.')))}
                             </div>
                         </div>
                         <div class="text-muted small mt-1">
                             ${pagos.length
-                            ? pagos.map(p => `${p.medio_pago}: ${formatoMoneda(p.monto)}`).join(" · ")
+                            ? pagos.map(p => {
+                                const medio = p.medio_pago || "Sin medio";
+                                const monto = parseFloat(String(p.monto || 0).replace(',', '.'));
+                                return `${medio}: ${formatoMoneda(monto)}`;
+                            }).join(" · ")
                             : "Sin pagos registrados"}
                         </div>
                     `;
@@ -68,15 +72,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             }
 
+            // Inicializar resumen con 0
             const resumenData = {};
             orden.forEach(m => resumenData[m] = 0);
 
             if (data.resumen) {
                 Object.keys(data.resumen).forEach(m => {
-                    resumenData[m.toLowerCase()] = parseFloat(data.resumen[m]) || 0;
+                    const clave = m.toLowerCase();
+                    if (resumenData.hasOwnProperty(clave)) {
+                        // Reemplazar coma decimal si existiera
+                        resumenData[clave] = parseFloat(String(data.resumen[m]).replace(',', '.')) || 0;
+                    }
                 });
             }
 
+            // Renderizar resumen
             orden.forEach(m => {
                 const li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
@@ -95,6 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnBuscar.addEventListener("click", cargarHistorial);
 
+    // Inicializar con la fecha de hoy
     const hoy = new Date().toISOString().split("T")[0];
     desde.value = hoy;
     hasta.value = hoy;

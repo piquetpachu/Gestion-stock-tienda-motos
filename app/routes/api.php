@@ -145,13 +145,13 @@ switch ($recurso) {
         break;
 
     // Historial
+    // Historial
     case 'historial':
     case 'historial_ventas':
-        require_once __DIR__ . '/../config/database.php'; // Esto ya crea $pdo
         require_once __DIR__ . '/../controllers/historialController.php';
+        require_once __DIR__ . '/../../config/database.php'; // conexión PDO (si no está ya cargada)
 
-        $controller = new historialController($pdo);
-        $controller->obtenerHistorial();
+        obtenerHistorialController($pdo); // Llamada a la función del controlador
         break;
 
     default:

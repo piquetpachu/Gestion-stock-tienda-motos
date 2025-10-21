@@ -1,24 +1,29 @@
 <?php
-require_once __DIR__ . '/../models/historial.php';
 
-class HistorialController
+require_once __DIR__ . '/../models/historial.php';  // Importa el modelo
+
+function obtenerHistorialController($pdo)
 {
-    private $pdo;
+    // Obtener parámetros GET si existen
+    $desde = isset($_GET['desde']) ? $_GET['desde'] : null;
+    $hasta = isset($_GET['hasta']) ? $_GET['hasta'] : null;
 
-    public function __construct($pdo)
-    {
-        $this->pdo = $pdo;
-    }
+    try {
+        $resultado = obtenerHistorialPorFechas($pdo, $desde, $hasta);
 
-    public function obtenerHistorial()
-    {
+        // Respuesta JSON
         header('Content-Type: application/json');
-        $desde = $_GET['desde'] ?? '';
-        $hasta = $_GET['hasta'] ?? '';
-
-        $modelo = new Historial($this->pdo);
-        $data = $modelo->obtenerPorFechas($desde, $hasta);
-
-        echo json_encode($data);
+        echo json_encode([
+            'success' => true,
+            'data' => $resultado
+        ]);
+    } catch (Exception $e) {
+        // Manejo de errores
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Error al obtener el historial',
+            'detalle' => $e->getMessage()
+        ]);
     }
 }
