@@ -738,7 +738,7 @@ function finalizarVenta() {
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar Venta';
+            botonFinalizar.textContent = 'Realizar venta';
         });
 }
 

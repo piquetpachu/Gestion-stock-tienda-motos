@@ -121,7 +121,7 @@
 
           <!-- Botones -->
           <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Finalizar</button>
+            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Realizar venta</button>
             <button class="btn btn-danger flex-grow-1" id="boton_cancelar">Cancelar</button>
           </div>
 
@@ -129,7 +129,7 @@
           <div class="d-flex align-items-center gap-2">
             <h6 class="mb-0">Recibo</h6>
             <button id="btn_imprimir_recibo" class="btn btn-secondary btn-sm" disabled>Imprimir</button>
-            <button id="btn_omitir_recibo" class="btn btn-outline-secondary btn-sm" disabled>Omitir</button>
+            <button id="btn_omitir_recibo" class="btn btn-outline-secondary btn-sm" disabled>Finalizar</button>
           </div>
 
           <div id="mensaje_resultado" class="mt-3"></div>
