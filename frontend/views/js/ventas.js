@@ -708,10 +708,7 @@ function finalizarVenta() {
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-
-            setTimeout(() => {
-                location.reload();
-            }, 10000);
+            // Nota: Se elimina el auto-reload para mantener habilitado el botón de imprimir
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
