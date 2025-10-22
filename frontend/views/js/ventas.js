@@ -238,7 +238,7 @@ function cargarClientes(seleccionarId = null) {
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    openOnFocus: false,
+                    openOnFocus: true,
                     openOnClick: true,
                     dropdownParent: 'body'
                 });
