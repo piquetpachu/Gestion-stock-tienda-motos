@@ -64,6 +64,8 @@ function cargarProductos() {
                     searchField: ["nombre", "codigo_barras"],
                     placeholder: "Seleccionar producto",
                     openOnFocus: true,
+                    openOnClick: true,
+                    dropdownParent: 'body',
                     onItemAdd: function (value) {
                         agregarProducto(value);
                         this.clear();
@@ -115,6 +117,24 @@ function cargarProductos() {
         .catch(error => {
             console.error('Error cargando productos:', error);
             alert('No se pudieron cargar los productos. Revisa la consola.');
+
+            // Asegurar que el selector siga siendo usable (aunque sin datos)
+            try {
+                if (!selectProducto.tomselect && !tomSelectProducto) {
+                    tomSelectProducto = new TomSelect(selectProducto, {
+                        create: false,
+                        valueField: 'value',
+                        labelField: 'nombre',
+                        searchField: ['nombre', 'codigo_barras'],
+                        placeholder: 'Seleccionar producto',
+                        openOnFocus: true,
+                        openOnClick: true,
+                        dropdownParent: 'body'
+                    });
+                }
+            } catch (e) {
+                // Si TomSelect no está disponible, continuar con el select nativo
+            }
         });
 }
 
@@ -183,7 +203,9 @@ function cargarClientes(seleccionarId = null) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    openOnFocus: true
+                    openOnFocus: true,
+                    openOnClick: true,
+                    dropdownParent: 'body'
                 });
             }
             tomSelectCliente.clearOptions();
@@ -216,7 +238,9 @@ function cargarClientes(seleccionarId = null) {
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    openOnFocus: true
+                    openOnFocus: false,
+                    openOnClick: true,
+                    dropdownParent: 'body'
                 });
             }
             tomSelectCliente.clearOptions();
