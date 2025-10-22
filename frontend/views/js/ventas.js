@@ -1,5 +1,9 @@
 // Referencias a elementos DOM
 const selectProducto = document.getElementById('seleccionar_producto');
+// Evitar que una opción placeholder seleccionada bloquee la apertura del dropdown
+if (selectProducto) {
+    try { selectProducto.selectedIndex = -1; } catch (_) {}
+}
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
 // const inputPrecioUnitario = document.getElementById('precio_unitario');
@@ -43,7 +47,7 @@ function buscarProductoPorCodigo(codigo) {
 
 // Cargar productos
 function cargarProductos() {
-    fetch(API_URL + 'productos')
+    fetch(API_URL + 'productos', { credentials: 'same-origin' })
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener productos');
             return res.json();
@@ -63,15 +67,31 @@ function cargarProductos() {
                     labelField: "nombre",
                     searchField: ["nombre", "codigo_barras"],
                     placeholder: "Seleccionar producto",
-                    openOnFocus: true,
+                    openOnFocus: false,
                     openOnClick: true,
+                    allowEmptyOption: true,
                     dropdownParent: 'body',
+                    render: {
+                        no_results: function(data, escape) {
+                            return '<div class="no-results p-2 text-muted">Sin resultados</div>';
+                        }
+                    },
                     onItemAdd: function (value) {
                         agregarProducto(value);
                         this.clear();
                         setTimeout(() => this.close(), 50);
                     }
                 });
+                // Asegurar apertura confiable al click
+                setTimeout(() => {
+                    const wrap = tomSelectProducto?.wrapper;
+                    if (wrap && !wrap.dataset.clickOpener) {
+                        wrap.dataset.clickOpener = '1';
+                        wrap.addEventListener('mousedown', () => {
+                            if (!tomSelectProducto.isOpen) tomSelectProducto.open();
+                        });
+                    }
+                }, 0);
             } else {
                 tomSelectProducto.clearOptions();
             }
@@ -83,6 +103,11 @@ function cargarProductos() {
                     nombre: prod.nombre
                 });
             });
+
+            // Si no hay datos, mostrar una opción informativa deshabilitada
+            if (!data || data.length === 0) {
+                tomSelectProducto.addOption({ value: '__no_data__', nombre: 'Sin productos disponibles', disabled: true });
+            }
 
             // Refrescar opciones y cerrar dropdown
             tomSelectProducto.refreshOptions();
@@ -127,10 +152,22 @@ function cargarProductos() {
                         labelField: 'nombre',
                         searchField: ['nombre', 'codigo_barras'],
                         placeholder: 'Seleccionar producto',
-                        openOnFocus: true,
+                        openOnFocus: false,
                         openOnClick: true,
+                        allowEmptyOption: true,
                         dropdownParent: 'body'
                     });
+                    // Mostrar opción informativa
+                    tomSelectProducto.addOption({ value: '__no_data__', nombre: 'Sin productos (error de carga)', disabled: true });
+                    setTimeout(() => {
+                        const wrap = tomSelectProducto?.wrapper;
+                        if (wrap && !wrap.dataset.clickOpener) {
+                            wrap.dataset.clickOpener = '1';
+                            wrap.addEventListener('mousedown', () => {
+                                if (!tomSelectProducto.isOpen) tomSelectProducto.open();
+                            });
+                        }
+                    }, 0);
                 }
             } catch (e) {
                 // Si TomSelect no está disponible, continuar con el select nativo
@@ -142,7 +179,7 @@ function cargarProductos() {
 // Cargar métodos de pago
 function cargarMetodosPago() {
     // Conservar fetch para que la app siga conectada a la BD
-    fetch(API_URL + 'medios_pago')
+    fetch(API_URL + 'medios_pago', { credentials: 'same-origin' })
         .then(res => res.json())
         .then(data => {
             metodosPagoLista = data; // guardamos la info por si se necesita
@@ -167,7 +204,7 @@ function cargarMetodosPago() {
 // Cargar clientes
 
 function cargarClientes(seleccionarId = null) {
-    fetch(API_URL + 'clientes')
+    fetch(API_URL + 'clientes', { credentials: 'same-origin' })
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener clientes');
             return res.json();
@@ -203,16 +240,28 @@ function cargarClientes(seleccionarId = null) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    openOnFocus: true,
+                    openOnFocus: false,
                     openOnClick: true,
+                    allowEmptyOption: true,
                     dropdownParent: 'body'
                 });
+                // Asegurar apertura confiable al click
+                setTimeout(() => {
+                    const wrap = tomSelectCliente?.wrapper;
+                    if (wrap && !wrap.dataset.clickOpener) {
+                        wrap.dataset.clickOpener = '1';
+                        wrap.addEventListener('mousedown', () => {
+                            if (!tomSelectCliente.isOpen) tomSelectCliente.open();
+                        });
+                    }
+                }, 0);
             }
             tomSelectCliente.clearOptions();
             data.forEach(cliente => {
                 tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
             });
             tomSelectCliente.refreshOptions();
+            tomSelectCliente.close();
 
             // Seleccionamos por defecto
             if (seleccionarId) {
@@ -222,6 +271,7 @@ function cargarClientes(seleccionarId = null) {
             } else if (data.length > 0) {
                 tomSelectCliente.addItem(data[0].id_cliente, true); // Primer cliente de la lista si no hay Consumidor Final
             }
+            tomSelectCliente.close();
         })
         .catch(error => {
             console.error('Error cargando clientes:', error);
@@ -238,10 +288,20 @@ function cargarClientes(seleccionarId = null) {
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    openOnFocus: true,
+                    openOnFocus: false,
                     openOnClick: true,
+                    allowEmptyOption: true,
                     dropdownParent: 'body'
                 });
+                setTimeout(() => {
+                    const wrap = tomSelectCliente?.wrapper;
+                    if (wrap && !wrap.dataset.clickOpener) {
+                        wrap.dataset.clickOpener = '1';
+                        wrap.addEventListener('mousedown', () => {
+                            if (!tomSelectCliente.isOpen) tomSelectCliente.open();
+                        });
+                    }
+                }, 0);
             }
             tomSelectCliente.clearOptions();
             tomSelectCliente.addOption({ value: '0', text: 'Consumidor Final' });
@@ -249,6 +309,7 @@ function cargarClientes(seleccionarId = null) {
 
             tomSelectCliente.clear(true);
             tomSelectCliente.addItem('0', true);
+            tomSelectCliente.close();
         });
 }
 
@@ -279,6 +340,7 @@ guardarClienteBtn.addEventListener('click', () => {
     fetch(API_URL + 'crear_cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(nuevoCliente)
     })
         .then(res => {
@@ -714,6 +776,7 @@ function finalizarVenta() {
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
         .then(res => {
