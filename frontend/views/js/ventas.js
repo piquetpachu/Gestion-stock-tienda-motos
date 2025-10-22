@@ -15,7 +15,6 @@ const botonCancelar = document.getElementById('boton_cancelar');
 const mensajeResultado = document.getElementById('mensaje_resultado');
 
 const botonImprimirRecibo = document.getElementById('btn_imprimir_recibo'); // Botón imprimir
-const botonOmitirRecibo = document.getElementById('btn_omitir_recibo'); // Botón omitir
 
 // CLIENTES
 const selectCliente = document.getElementById('seleccionar_cliente');
@@ -64,7 +63,7 @@ function cargarProductos() {
                     labelField: "nombre",
                     searchField: ["nombre", "codigo_barras"],
                     placeholder: "Seleccionar producto",
-                    openOnFocus: false,
+                    openOnFocus: true,
                     onItemAdd: function (value) {
                         agregarProducto(value);
                         this.clear();
@@ -184,7 +183,7 @@ function cargarClientes(seleccionarId = null) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    openOnFocus: false
+                    openOnFocus: true
                 });
             }
             tomSelectCliente.clearOptions();
@@ -217,7 +216,7 @@ function cargarClientes(seleccionarId = null) {
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    openOnFocus: false
+                    openOnFocus: true
                 });
             }
             tomSelectCliente.clearOptions();
@@ -589,7 +588,6 @@ function mostrarRecibo(data) {
     botonImprimirRecibo.style.backgroundColor = '#198754';
     botonImprimirRecibo.style.borderColor = '#198754';
     botonImprimirRecibo.style.color = '#fff';
-    if (botonOmitirRecibo) botonOmitirRecibo.disabled = false;
 }
 
 
@@ -604,24 +602,6 @@ botonImprimirRecibo.addEventListener('click', () => {
     ventanaRecibo.document.close();
     ventanaRecibo.focus();
     ventanaRecibo.print();
-});
-
-// Omitir recibo: limpia el recibo guardado y deshabilita botones
-botonOmitirRecibo?.addEventListener('click', () => {
-    reciboGuardado = null;
-    // Resetear botón Imprimir a estado deshabilitado y estilo por defecto
-    if (botonImprimirRecibo) {
-        botonImprimirRecibo.disabled = true;
-        botonImprimirRecibo.classList.remove('btn-success');
-        if (!botonImprimirRecibo.classList.contains('btn-secondary')) {
-            botonImprimirRecibo.classList.add('btn-secondary');
-        }
-        botonImprimirRecibo.style.backgroundColor = '';
-        botonImprimirRecibo.style.borderColor = '';
-        botonImprimirRecibo.style.color = '';
-    }
-    // Deshabilitar botón Omitir
-    botonOmitirRecibo.disabled = true;
 });
 
 // -------------------- VENTA --------------------
@@ -728,7 +708,10 @@ function finalizarVenta() {
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-            // Nota: Se elimina el auto-reload para mantener habilitado el botón de imprimir
+
+            setTimeout(() => {
+                location.reload();
+            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -738,7 +721,7 @@ function finalizarVenta() {
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Realizar venta';
+            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 
@@ -752,18 +735,6 @@ botonCancelar.addEventListener('click', () => {
     selectMetodoPago.value = '';
     cambiarCamposMetodoPago();
     mensajeResultado.textContent = '';
-    // Resetear botones de recibo
-    if (botonImprimirRecibo) {
-        botonImprimirRecibo.disabled = true;
-        botonImprimirRecibo.classList.add('btn-secondary');
-        botonImprimirRecibo.classList.remove('btn-success');
-        botonImprimirRecibo.style.backgroundColor = '';
-        botonImprimirRecibo.style.borderColor = '';
-        botonImprimirRecibo.style.color = '';
-    }
-    if (botonOmitirRecibo) {
-        botonOmitirRecibo.disabled = true;
-    }
 });
  
 // -------------------- INICIALIZACIÓN --------------------

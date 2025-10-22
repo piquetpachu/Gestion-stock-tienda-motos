@@ -121,7 +121,7 @@
 
           <!-- Botones -->
           <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">
-            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Realizar venta</button>
+            <button class="btn btn-success flex-grow-1" id="boton_finalizar">Finalizar</button>
             <button class="btn btn-danger flex-grow-1" id="boton_cancelar">Cancelar</button>
           </div>
 
