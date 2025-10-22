@@ -129,6 +129,7 @@
           <div class="d-flex align-items-center gap-2">
             <h6 class="mb-0">Recibo</h6>
             <button id="btn_imprimir_recibo" class="btn btn-secondary btn-sm" disabled>Imprimir</button>
+            <button id="btn_omitir_recibo" class="btn btn-outline-secondary btn-sm" disabled>Omitir</button>
           </div>
 
           <div id="mensaje_resultado" class="mt-3"></div>
