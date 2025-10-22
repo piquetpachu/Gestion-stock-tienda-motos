@@ -636,7 +636,6 @@ function finalizarVenta() {
     };
 
     botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
 
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
@@ -660,10 +659,6 @@ function finalizarVenta() {
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-
-            setTimeout(() => {
-                location.reload();
-            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -673,7 +668,6 @@ function finalizarVenta() {
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 

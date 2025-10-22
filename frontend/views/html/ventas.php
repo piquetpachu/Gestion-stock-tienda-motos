@@ -170,7 +170,7 @@
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-  <script src="../js/ventas.js"></script>
+  <script src="../js/ventas.js?v=20251022"></script>
 </body>
 
 </html>
