@@ -145,6 +145,6 @@
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/AdmProveedores.js"></script>
+  <script src="../js/AdmProveedores.js?v=20251022"></script>
 </body>
 </html>
