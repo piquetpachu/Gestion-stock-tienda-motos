@@ -64,7 +64,7 @@ function cargarProductos() {
                     labelField: "nombre",
                     searchField: ["nombre", "codigo_barras"],
                     placeholder: "Seleccionar producto",
-                    openOnFocus: true,
+                    openOnFocus: false,
                     onItemAdd: function (value) {
                         agregarProducto(value);
                         this.clear();
@@ -184,7 +184,7 @@ function cargarClientes(seleccionarId = null) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
                     sortField: { field: "text", direction: "asc" },
-                    openOnFocus: true
+                    openOnFocus: false
                 });
             }
             tomSelectCliente.clearOptions();
@@ -217,7 +217,7 @@ function cargarClientes(seleccionarId = null) {
             if (!tomSelectCliente) {
                 tomSelectCliente = new TomSelect(selectCliente, {
                     create: false,
-                    openOnFocus: true
+                    openOnFocus: false
                 });
             }
             tomSelectCliente.clearOptions();
