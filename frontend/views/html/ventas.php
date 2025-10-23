@@ -150,9 +150,9 @@
           <form id="form_cliente">
             <div class="mb-2"><label class="form-label">Nombre</label><input type="text" class="form-control" id="cliente_nombre" required></div>
             <div class="mb-2"><label class="form-label">Apellido</label><input type="text" class="form-control" id="cliente_apellido"></div>
-            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control" id="cliente_cuit" required></div>
+            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control" id="cliente_cuit" required maxlength="13" inputmode="numeric" pattern="\d{2}-\d{8}-\d"></div>
             <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control" id="cliente_email" required></div>
-            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="cliente_telefono"></div>
+            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="cliente_telefono" maxlength="15" inputmode="numeric" pattern="\d+"></div>
             <div class="mb-2"><label class="form-label">Dirección</label><input type="text" class="form-control" id="cliente_direccion"></div>
           </form>
         </div>
@@ -170,7 +170,7 @@
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-  <script src="../js/ventas.js?v=20251022"></script>
+  <script src="../js/ventas.js?v=20251022-02"></script>
 </body>
 
 </html>

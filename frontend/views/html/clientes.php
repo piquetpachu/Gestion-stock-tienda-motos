@@ -66,40 +66,30 @@
     </div>
   </div>
 
-  <!-- Modal Cliente -->
-  <div class="modal fade" id="modalCliente" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <form id="formCliente" class="modal-content">
+  <!-- Modal Cliente (alineado con Ventas) -->
+  <div class="modal fade" id="modalCliente" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Cliente</h5>
+          <h5 class="modal-title">Agregar Cliente</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
-        <div class="modal-body row g-3">
-          <input type="hidden" id="id_cliente" />
-          <div class="col-md-6">
-            <input type="text" id="nombre" class="form-control" placeholder="Nombre" required />
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="apellido" class="form-control" placeholder="Apellido" required />
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="cuil_cuit" class="form-control" placeholder="CUIL/CUIT"  maxlength="11"/>
-          </div>
-          <div class="col-md-6">
-            <input type="email" id="email" class="form-control" placeholder="Email" required />
-          </div>
-          <div class="col-md-6">
-            <input type="tel" id="telefono" class="form-control" placeholder="Teléfono" />
-          </div>
-          <div class="col-12">
-            <input type="text" id="direccion" class="form-control" placeholder="Dirección" />
-          </div>
+        <div class="modal-body">
+          <form id="form_cliente">
+            <input type="hidden" id="id_cliente" />
+            <div class="mb-2"><label class="form-label">Nombre</label><input type="text" class="form-control" id="cliente_nombre" required></div>
+            <div class="mb-2"><label class="form-label">Apellido</label><input type="text" class="form-control" id="cliente_apellido"></div>
+            <div class="mb-2"><label class="form-label">CUIT/CUIL</label><input type="text" class="form-control" id="cliente_cuit" required></div>
+            <div class="mb-2"><label class="form-label">Email</label><input type="email" class="form-control" id="cliente_email" required></div>
+            <div class="mb-2"><label class="form-label">Teléfono</label><input type="text" class="form-control" id="cliente_telefono" maxlength="15" inputmode="numeric" pattern="\d+"></div>
+            <div class="mb-2"><label class="form-label">Dirección</label><input type="text" class="form-control" id="cliente_direccion"></div>
+          </form>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Guardar</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button class="btn btn-primary" id="guardar_cliente">Guardar</button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -109,6 +99,6 @@
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
-  <script src="../js/clientes.js?v=20251022"></script>
+  <script src="../js/clientes.js?v=20251022-02"></script>
 </body>
 </html>

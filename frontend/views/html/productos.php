@@ -195,7 +195,7 @@
   </div>
 </div>
 
-<!-- Modal para nuevo proveedor -->
+<!-- Modal para nuevo proveedor (alineado con validaciones de Ventas) -->
 <div class="modal fade" id="modalNuevoProveedor" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
     <form id="form-nuevo-proveedor" class="modal-content">
@@ -205,24 +205,24 @@
       </div>
       <div class="modal-body">
         <div class="mb-2">
-          <label class="form-label">Nombre <span class="text-danger">*</span></label>
-          <input type="text" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
+          <label class="form-label" for="prov_nombre">Nombre <span class="text-danger">*</span></label>
+          <input type="text" id="prov_nombre" name="proveedor_nombre" class="form-control" placeholder="Nombre del proveedor" required />
         </div>
         <div class="mb-2">
-          <label class="form-label">CUIT</label>
-          <input type="text" name="proveedor_cuit" class="form-control" placeholder="CUIT (opcional)" />
+          <label class="form-label" for="prov_cuit">CUIT</label>
+          <input type="text" id="prov_cuit" name="proveedor_cuit" class="form-control" placeholder="##-########-#" maxlength="13" inputmode="numeric" pattern="\d{2}-\d{8}-\d" />
         </div>
         <div class="mb-2">
-          <label class="form-label">Teléfono</label>
-          <input type="tel" name="proveedor_telefono" class="form-control" placeholder="Teléfono (opcional)" />
+          <label class="form-label" for="prov_telefono">Teléfono</label>
+          <input type="tel" id="prov_telefono" name="proveedor_telefono" class="form-control" placeholder="Solo números" maxlength="15" inputmode="numeric" pattern="\d+" />
         </div>
         <div class="mb-2">
-          <label class="form-label">Email</label>
-          <input type="email" name="proveedor_email" class="form-control" placeholder="Email (opcional)" />
+          <label class="form-label" for="prov_email">Email</label>
+          <input type="email" id="prov_email" name="proveedor_email" class="form-control" placeholder="Email (opcional)" />
         </div>
         <div class="mb-2">
-          <label class="form-label">Dirección</label>
-          <input type="text" name="proveedor_direccion" class="form-control" placeholder="Dirección (opcional)" />
+          <label class="form-label" for="prov_direccion">Dirección</label>
+          <input type="text" id="prov_direccion" name="proveedor_direccion" class="form-control" placeholder="Dirección (opcional)" />
         </div>
       </div>
       <div class="modal-footer">
@@ -238,6 +238,6 @@
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/productos.js?v=20251022"></script>
+  <script src="../js/productos.js?v=20251022-02"></script>
 </body>
 </html>

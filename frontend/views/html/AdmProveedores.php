@@ -117,11 +117,11 @@
           </div>
           <div class="col-md-6">
             <label class="form-label" for="prov_cuit">CUIT</label>
-            <input type="text" id="prov_cuit" name="cuit" class="form-control" maxlength="20">
+            <input type="text" id="prov_cuit" name="cuit" class="form-control" maxlength="13" inputmode="numeric" pattern="\d{2}-\d{8}-\d">
           </div>
           <div class="col-md-6">
             <label class="form-label" for="prov_telefono">Teléfono</label>
-            <input type="text" id="prov_telefono" name="telefono" class="form-control" maxlength="20">
+            <input type="tel" id="prov_telefono" name="telefono" class="form-control" maxlength="15" inputmode="numeric" pattern="\d+">
           </div>
           <div class="col-md-6">
             <label class="form-label" for="prov_email">Email</label>
@@ -145,6 +145,6 @@
   <script src="../js/config.js"></script>
   <script src="../js/dashboard-proteccion.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/AdmProveedores.js?v=20251022"></script>
+  <script src="../js/AdmProveedores.js?v=20251022-02"></script>
 </body>
 </html>

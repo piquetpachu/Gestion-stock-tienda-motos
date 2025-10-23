@@ -562,14 +562,27 @@
       .getElementById("form-nuevo-proveedor")
       ?.addEventListener("submit", async (e) => {
         e.preventDefault();
-        const nombre = e.target.proveedor_nombre.value;
+        const nombre = (e.target.proveedor_nombre?.value || '').trim();
+        const cuitDigits = (e.target.proveedor_cuit?.value || '').replace(/\D/g, '').slice(0,11);
+        const telDigits = (e.target.proveedor_telefono?.value || '').replace(/\D/g, '').slice(0,15);
+        const email = (e.target.proveedor_email?.value || '').trim();
+        const direccion = (e.target.proveedor_direccion?.value || '').trim();
+        if (!nombre){ alert('El nombre es obligatorio'); return; }
+
         const res = await fetch(API_URL + "crear_proveedor", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nombre }),
+          body: JSON.stringify({ nombre, cuit: cuitDigits, telefono: telDigits, email, direccion }),
         });
-        await res.json();
+        const data = await res.json();
+        const nuevoId = data?.id;
         await cargarProveedores();
+        // Preseleccionar el nuevo proveedor si el id fue devuelto
+        const selProv = document.getElementById("id_proveedor");
+        if (nuevoId && selProv){
+          if (selProv.tomselect){ selProv.tomselect.setValue(String(nuevoId)); }
+          else { selProv.value = String(nuevoId); }
+        }
         bootstrap.Modal.getInstance(
           document.getElementById("modalNuevoProveedor")
         )?.hide();
@@ -582,6 +595,68 @@
     // Inicializar rubros/proveedores
     cargarProveedores();
     cargarRubros();
+
+    // === Validaciones de entrada para modal de nuevo proveedor (igual que Ventas) ===
+    function isControlKey(e){
+      return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
+    }
+    function onlyDigitsKeydown(e){ if (isControlKey(e)) return; if (/^\d$/.test(e.key)) return; e.preventDefault(); }
+    function sanitizeDigitsPaste(e){
+      const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      const digits = data.replace(/\D+/g,'');
+      e.preventDefault();
+      const el = e.target;
+      const start = el.selectionStart; const end = el.selectionEnd;
+      const before = el.value.slice(0,start);
+      const after = el.value.slice(end);
+      el.value = before + digits + after;
+      const caret = (before + digits).length;
+      try { el.setSelectionRange(caret, caret); } catch {}
+      el.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+    function soloNumerosInput(e){
+      const cleaned = (e.target.value || '').replace(/\D+/g, '');
+      if (e.target.value !== cleaned){
+        const pos = e.target.selectionStart || 0;
+        e.target.value = cleaned;
+        try { e.target.setSelectionRange(pos - 1, pos - 1); } catch {}
+      }
+    }
+    function onlyDigitsForCUITKeydown(e){ if (isControlKey(e)) return; if (/^\d$/.test(e.key)) return; e.preventDefault(); }
+    function sanitizeCUITPaste(e){
+      const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      const digits = data.replace(/\D+/g,'').slice(0,11);
+      e.preventDefault();
+      const el = e.target;
+      const start = el.selectionStart; const end = el.selectionEnd;
+      const before = el.value.slice(0,start);
+      const after = el.value.slice(end);
+      let out = (before + digits + after).replace(/\D/g,'').slice(0,11);
+      if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+      if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+      if (out.length > 13) out = out.slice(0,13);
+      el.value = out;
+      const caret = el.value.length;
+      try { el.setSelectionRange(caret, caret); } catch {}
+    }
+    function maskCUITInput(e){
+      let val = (e.target.value || '').replace(/[^0-9\-]/g,'');
+      const digits = val.replace(/\D/g,'').slice(0,11);
+      let out = digits;
+      if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+      if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+      if (out.length > 13) out = out.slice(0,13);
+      e.target.value = out;
+    }
+
+    const provCuitInput = document.getElementById('prov_cuit');
+    const provTelInput = document.getElementById('prov_telefono');
+    provCuitInput?.addEventListener('keydown', onlyDigitsForCUITKeydown);
+    provCuitInput?.addEventListener('paste', sanitizeCUITPaste);
+    provCuitInput?.addEventListener('input', maskCUITInput);
+    provTelInput?.addEventListener('keydown', onlyDigitsKeydown);
+    provTelInput?.addEventListener('paste', sanitizeDigitsPaste);
+    provTelInput?.addEventListener('input', soloNumerosInput);
 
     // Añadir evento de clic a las filas de la tabla
 // === Click en producto para ver detalles ===

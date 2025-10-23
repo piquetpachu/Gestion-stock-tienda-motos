@@ -190,12 +190,22 @@ guardarClienteBtn.addEventListener('click', () => {
         return;
     }
 
+    // Sanitizar y validar CUIL/CUIT
+    const cuitDigits = (document.getElementById('cliente_cuit').value || '').replace(/\D/g, '');
+    if (cuitDigits.length !== 11) {
+        alert('El CUIL/CUIT debe tener 11 dígitos');
+        return;
+    }
+
+    // Sanitizar teléfono a solo dígitos (opcional vacío)
+    const telDigits = (document.getElementById('cliente_telefono').value || '').replace(/\D/g, '');
+
     const nuevoCliente = {
         nombre: document.getElementById('cliente_nombre').value.trim(),
         apellido: document.getElementById('cliente_apellido').value.trim(),
-        cuil_cuit: document.getElementById('cliente_cuit').value.trim(),
+        cuil_cuit: cuitDigits,
         email: document.getElementById('cliente_email').value.trim(),
-        telefono: document.getElementById('cliente_telefono').value.trim(),
+        telefono: telDigits,
         direccion: document.getElementById('cliente_direccion').value.trim()
     };
 
@@ -227,17 +237,60 @@ guardarClienteBtn.addEventListener('click', () => {
         });
 });
 
-// 🚀 Limitador CUIT también en modal de cliente
+// 🚀 Restricciones de entrada: CUIT/CUIL con máscara y Teléfono solo números
 document.addEventListener('DOMContentLoaded', () => {
     const inputCuitCliente = document.getElementById('cliente_cuit');
-    if (inputCuitCliente) {
-        inputCuitCliente.addEventListener('input', () => {
-            let val = inputCuitCliente.value;
-            val = val.replace(/[^0-9\-]/g, '');
-            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
-            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-            if (val.length > 13) val = val.slice(0, 13);
-            inputCuitCliente.value = val;
+    const inputTelefonoCliente = document.getElementById('cliente_telefono');
+
+    function isControlKey(e){
+        return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
+    }
+    function maskCUITInput(el){
+        let val = (el.value || '').replace(/[^0-9\-]/g,'');
+        const digits = val.replace(/\D/g,'').slice(0,11);
+        let out = digits;
+        if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+        if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+        if (out.length > 13) out = out.slice(0,13);
+        el.value = out;
+    }
+    function onlyDigitsKeydown(e){ if (!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); }
+    function sanitizeDigitsPaste(e){
+        const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+        const digits = data.replace(/\D+/g,'');
+        e.preventDefault();
+        const el = e.target;
+        const start = el.selectionStart; const end = el.selectionEnd;
+        const before = el.value.slice(0,start);
+        const after = el.value.slice(end);
+        el.value = before + digits + after;
+        const caret = (before + digits).length;
+        try { el.setSelectionRange(caret, caret); } catch {}
+        el.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+
+    if (inputCuitCliente){
+        inputCuitCliente.addEventListener('keydown', (e)=>{ if(!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); });
+        inputCuitCliente.addEventListener('paste', (e)=>{
+            const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const digits = data.replace(/\D+/g,'').slice(0,11);
+            e.preventDefault();
+            const el = e.target;
+            const start = el.selectionStart; const end = el.selectionEnd;
+            const before = el.value.slice(0,start);
+            const after = el.value.slice(end);
+            el.value = before + digits + after;
+            maskCUITInput(el);
+        });
+        inputCuitCliente.addEventListener('input', ()=> maskCUITInput(inputCuitCliente));
+    }
+
+    if (inputTelefonoCliente){
+        inputTelefonoCliente.addEventListener('keydown', onlyDigitsKeydown);
+        inputTelefonoCliente.addEventListener('paste', sanitizeDigitsPaste);
+        inputTelefonoCliente.addEventListener('input', (e)=>{
+            const cleaned = e.target.value.replace(/\D+/g,'');
+            if (e.target.value !== cleaned) e.target.value = cleaned;
         });
     }
 });

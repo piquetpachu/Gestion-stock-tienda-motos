@@ -5,7 +5,7 @@
   // Esperar a que el DOM esté listo
   document.addEventListener('DOMContentLoaded', () => {
     // Elementos (pueden ser null si tu HTML no tiene alguno; lo manejamos)
-    const form = document.getElementById('formCliente');
+  const form = document.getElementById('form_cliente');
     const tabla = document.getElementById('tablaClientes');
     const paginacion = document.getElementById('paginacion');
     const busqueda = document.getElementById('busqueda');
@@ -83,6 +83,93 @@
         return false;
       }
     }
+
+    // Restricciones de entrada: Teléfono solo números
+    function soloNumerosInput(e) {
+      const cleaned = (e.target.value || '').replace(/\D+/g, '');
+      if (e.target.value !== cleaned) {
+        const pos = e.target.selectionStart || 0;
+        e.target.value = cleaned;
+        try { e.target.setSelectionRange(pos - 1, pos - 1); } catch {}
+      }
+    }
+    function isControlKey(e){
+      return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
+    }
+    function onlyDigitsKeydown(e){
+      if (isControlKey(e)) return;
+      if (/^\d$/.test(e.key)) return;
+      // Evitar escribir letras u otros símbolos
+      e.preventDefault();
+    }
+    function sanitizeDigitsPaste(e){
+      const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      const digits = data.replace(/\D+/g,'');
+      e.preventDefault();
+      const el = e.target;
+      const start = el.selectionStart; const end = el.selectionEnd;
+      const before = el.value.slice(0,start);
+      const after = el.value.slice(end);
+      el.value = before + digits + after;
+      const caret = (before + digits).length;
+      try { el.setSelectionRange(caret, caret); } catch {}
+      // Disparar limpieza por si quedó algo
+      el.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+    // CUIT/CUIL con máscara como en Ventas: ##-########-#
+    function maskCUITInput(e){
+      let val = (e.target.value || '').replace(/[^0-9\-]/g,'');
+      const digits = val.replace(/\D/g,'').slice(0,11);
+      let out = digits;
+      if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+      if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+      if (out.length > 13) out = out.slice(0,13);
+      e.target.value = out;
+    }
+    // Formateo de CUIT para mostrar (tabla/detalle)
+    function formatCUITStr(v){
+      let s = (v ?? '').toString().replace(/\D/g,'');
+      if (!s) return '';
+      s = s.slice(0,11);
+      if (s.length > 2) s = s.slice(0,2) + '-' + s.slice(2);
+      if (s.length > 11) s = s.slice(0,11) + '-' + s.slice(11);
+      if (s.length > 13) s = s.slice(0,13);
+      return s;
+    }
+    function onlyDigitsForCUITKeydown(e){
+      if (isControlKey(e)) return;
+      // Permitimos solo dígitos; los guiones los agrega la máscara
+      if (/^\d$/.test(e.key)) return;
+      e.preventDefault();
+    }
+    function sanitizeCUITPaste(e){
+      const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+      const digits = data.replace(/\D+/g,'').slice(0,11);
+      e.preventDefault();
+      const el = e.target;
+      const start = el.selectionStart; const end = el.selectionEnd;
+      const before = el.value.slice(0,start);
+      const after = el.value.slice(end);
+      let out = before + digits + after;
+      // aplicar máscara sobre el resultado completo
+      out = out.replace(/\D/g,'').slice(0,11);
+      if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+      if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+      if (out.length > 13) out = out.slice(0,13);
+      el.value = out;
+      const caret = el.value.length;
+      try { el.setSelectionRange(caret, caret); } catch {}
+    }
+
+  const cuilInput = document.getElementById('cliente_cuit');
+    cuilInput?.addEventListener('keydown', onlyDigitsForCUITKeydown);
+    cuilInput?.addEventListener('paste', sanitizeCUITPaste);
+    cuilInput?.addEventListener('input', maskCUITInput);
+
+  const telInput = document.getElementById('cliente_telefono');
+    telInput?.addEventListener('keydown', onlyDigitsKeydown);
+    telInput?.addEventListener('paste', sanitizeDigitsPaste);
+    telInput?.addEventListener('input', soloNumerosInput);
 
     // API: mostrar/ocultar UI según rol
     fetch(API_URL + 'usuario-info')
@@ -164,7 +251,7 @@ function mostrarClientes() {
         <td>${fmt(c.email)}</td>
         <td>${fmt(c.telefono)}</td>
         <td>${fmt(c.direccion)}</td>
-        <td>${fmt(c.cuil_cuit)}</td>
+  <td>${fmt(formatCUITStr(c.cuil_cuit))}</td>
         <td>${fmt(c.fecha_alta)}</td>
         ${tdAcciones}
       </tr>`;
@@ -203,12 +290,20 @@ function mostrarClientes() {
       localStorage.removeItem(STORAGE_KEY);
       if (form) {
         if (document.getElementById('id_cliente')) document.getElementById('id_cliente').value = cliente.id_cliente;
-        if (document.getElementById('nombre')) document.getElementById('nombre').value = toInput(cliente.nombre);
-        if (document.getElementById('apellido')) document.getElementById('apellido').value = toInput(cliente.apellido);
-        if (document.getElementById('cuil_cuit')) document.getElementById('cuil_cuit').value = toInput(cliente.cuil_cuit);
-        if (document.getElementById('email')) document.getElementById('email').value = toInput(cliente.email);
-        if (document.getElementById('telefono')) document.getElementById('telefono').value = toInput(cliente.telefono);
-        if (document.getElementById('direccion')) document.getElementById('direccion').value = toInput(cliente.direccion);
+        if (document.getElementById('cliente_nombre')) document.getElementById('cliente_nombre').value = toInput(cliente.nombre);
+        if (document.getElementById('cliente_apellido')) document.getElementById('cliente_apellido').value = toInput(cliente.apellido);
+        if (document.getElementById('cliente_cuit')) {
+          const raw = toInput(cliente.cuil_cuit);
+          const digits = String(raw||'').replace(/\D/g,'');
+          let out = digits;
+          if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+          if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+          if (out.length > 13) out = out.slice(0,13);
+          document.getElementById('cliente_cuit').value = out;
+        }
+        if (document.getElementById('cliente_email')) document.getElementById('cliente_email').value = toInput(cliente.email);
+        if (document.getElementById('cliente_telefono')) document.getElementById('cliente_telefono').value = toInput(cliente.telefono);
+        if (document.getElementById('cliente_direccion')) document.getElementById('cliente_direccion').value = toInput(cliente.direccion);
       }
       new bootstrap.Modal(document.getElementById('modalCliente')).show();
     };
@@ -245,21 +340,27 @@ window.borrarCliente = function(id) {
 
 
     // Attach submit handler (si existe el form)
-    if (form) {
-      form.addEventListener('submit', e => {
+    // Soportar ambos: submit del form y click en botón Guardar (como en Ventas)
+    function handleGuardar(e){
         e.preventDefault();
         const datos = {
           id_cliente: document.getElementById('id_cliente')?.value || '',
-          nombre: document.getElementById('nombre')?.value || '',
-          apellido: document.getElementById('apellido')?.value || '',
-          cuil_cuit: document.getElementById('cuil_cuit')?.value || '',
-          email: document.getElementById('email')?.value || '',
-          telefono: document.getElementById('telefono')?.value || '',
-          direccion: document.getElementById('direccion')?.value || ''
+          nombre: document.getElementById('cliente_nombre')?.value || '',
+          apellido: document.getElementById('cliente_apellido')?.value || '',
+          // Enviar solo dígitos al backend
+          cuil_cuit: (document.getElementById('cliente_cuit')?.value || '').replace(/\D/g,''),
+          email: document.getElementById('cliente_email')?.value || '',
+          telefono: document.getElementById('cliente_telefono')?.value || '',
+          direccion: document.getElementById('cliente_direccion')?.value || ''
         };
 
         if (!datos.nombre || !datos.cuil_cuit || !datos.email) {
           alert('Nombre, CUIL/CUIT y Email son campos requeridos');
+          return;
+        }
+        // Validar longitud CUIT/CUIL (11 dígitos)
+        if (datos.cuil_cuit.length !== 11) {
+          alert('El CUIL/CUIT debe tener 11 dígitos');
           return;
         }
 
@@ -292,8 +393,9 @@ window.borrarCliente = function(id) {
             alert('Error: ' + error.message);
           }
         });
-      });
     }
+    if (form) form.addEventListener('submit', handleGuardar);
+    document.getElementById('guardar_cliente')?.addEventListener('click', handleGuardar);
 
     // Guardar al cerrar modal (solo si es nuevo)
     if (modalEl) {
@@ -345,7 +447,7 @@ if (tabla) {
         <li class="list-group-item"><b>Email:</b> ${fmt(cliente.email)}</li>
         <li class="list-group-item"><b>Teléfono:</b> ${fmt(cliente.telefono)}</li>
         <li class="list-group-item"><b>Dirección:</b> ${fmt(cliente.direccion)}</li>
-        <li class="list-group-item"><b>CUIL/CUIT:</b> ${fmt(cliente.cuil_cuit)}</li>
+  <li class="list-group-item"><b>CUIL/CUIT:</b> ${fmt(formatCUITStr(cliente.cuil_cuit))}</li>
         <li class="list-group-item"><b>Fecha de Alta:</b> ${fmt(cliente.fecha_alta)}</li>
       </ul>
     `;
