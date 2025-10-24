@@ -27,6 +27,34 @@ switch (true) {
         echo json_encode(borrarCuota($pdo, $matches[1]));
         break;
 
+    case 'crear_cuotas':
+    error_log("🟡 [DEBUG] Entrando al case crear_cuotas"); // Log básico
+    $data = json_decode(file_get_contents("php://input"), true);
+
+    // Si se está llamando desde include, puede que $_POST tenga los datos
+    if (!$data && isset($_POST['id_venta'])) {
+        $data = $_POST;
+    }
+
+    error_log("🟡 [DEBUG] Datos recibidos en crear_cuotas: " . print_r($data, true));
+
+    if (!isset($data['id_venta'], $data['monto_total'], $data['cuotas'])) {
+        error_log("🔴 [ERROR] Faltan datos para generar las cuotas");
+        echo json_encode(['error' => 'Faltan datos para generar las cuotas']);
+        exit;
+    }
+
+    $ok = crearCuotas($pdo, $data['id_venta'], $data['monto_total'], $data['cuotas']);
+
+    if ($ok) {
+        error_log("🟢 [OK] Cuotas generadas correctamente para venta ID {$data['id_venta']}");
+        echo json_encode(['message' => 'Cuotas generadas correctamente']);
+    } else {
+        error_log("🔴 [ERROR] Falló la generación de cuotas para venta ID {$data['id_venta']}");
+        echo json_encode(['error' => 'No se generaron las cuotas']);
+    }
+    break;
+
     default:
         echo json_encode(["error" => "Ruta no válida en venta_cuota"]);
         break;
