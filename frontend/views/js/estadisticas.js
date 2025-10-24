@@ -1,5 +1,9 @@
 // const API_URL = 'http://localhost/Gestion-stock-tienda-motos/app/';
 
+// Helpers de formato (AR)
+const formatNumber = (n) => Number(n ?? 0).toLocaleString('es-AR');
+const formatCurrency = (n) => Number(n ?? 0).toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 document.addEventListener('DOMContentLoaded', () => {
   cargarResumen();
   cargarTopProductos();
@@ -11,10 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function cargarResumen() {
   const res = await fetch(API_URL + 'estadisticas', { credentials: 'same-origin' });
   const data = await res.json();
-
-  document.getElementById('gananciaHoy').textContent = `$${data.ganancia_hoy || 0}`;
-  document.getElementById('gananciaMes').textContent = `$${data.ganancia_mes || 0}`;
-  document.getElementById('gananciaAnio').textContent = `$${data.ganancia_anio || 0}`;
+  document.getElementById('gananciaHoy').textContent = formatCurrency(data.ganancia_hoy || 0);
+  document.getElementById('gananciaMes').textContent = formatCurrency(data.ganancia_mes || 0);
+  document.getElementById('gananciaAnio').textContent = formatCurrency(data.ganancia_anio || 0);
   document.getElementById('productoMasVendido').textContent = data.producto_mas_vendido || 'Sin datos';
 }
 
@@ -40,7 +43,7 @@ async function cargarVentasPorDia() {
     data: {
       labels,
       datasets: [{
-        label: 'Ventas ($)',
+        label: 'Ingresos ($)',
         data: datos,
   borderColor: getComputedStyle(document.documentElement).getPropertyValue('--bs-success').trim() || '#22c55e',
   backgroundColor: 'rgba(34,197,94,0.15)',
@@ -51,9 +54,21 @@ async function cargarVentasPorDia() {
     },
     options: {
       responsive: true,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => ` ${formatCurrency(ctx.parsed.y)}`
+          }
+        }
+      },
       scales: {
-        y: { beginAtZero: true }
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: (value) => formatNumber(value)
+          }
+        }
       }
     }
     });
@@ -94,7 +109,7 @@ async function cargarIngresosPorRubro() {
         responsive: true,
         plugins: {
           legend: { position: 'bottom' },
-          tooltip: { callbacks: { label: c => ` $${c.parsed}` } }
+          tooltip: { callbacks: { label: (c) => ` ${formatCurrency(c.parsed)}` } }
         },
         cutout: '55%'
       }
@@ -163,7 +178,7 @@ async function cargarTopProductos() {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: ctx => ` ${ctx.parsed.y} ventas`
+            label: ctx => ` ${formatNumber(ctx.parsed.y)} ventas`
           }
         }
       },
@@ -171,7 +186,8 @@ async function cargarTopProductos() {
         y: {
           beginAtZero: true,
           ticks: {
-            stepSize: 1
+            stepSize: 1,
+            callback: (value) => formatNumber(value)
           }
         }
       }

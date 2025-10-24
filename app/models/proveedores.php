@@ -46,7 +46,15 @@ function actualizarProveedor($pdo, $id, $datos) {
 }
 
 function borrarProveedor($pdo, $id) {
-    $stmt = $pdo->prepare("DELETE FROM proveedor WHERE id_proveedor = ?");
-    $stmt->execute([$id]);
-    return $stmt->rowCount() > 0;
+    try {
+        $stmt = $pdo->prepare("DELETE FROM proveedor WHERE id_proveedor = ?");
+        $stmt->execute([$id]);
+        return $stmt->rowCount() > 0;
+    } catch (PDOException $e) {
+        if ($e->getCode() === '23000') {
+            // Clave foránea: hay productos u otros registros que dependen de este proveedor
+            throw new Exception('No se puede borrar: el proveedor tiene productos u otros datos asociados.');
+        }
+        throw $e;
+    }
 }

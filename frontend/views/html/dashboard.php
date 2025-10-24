@@ -69,12 +69,25 @@
               <div class="card-body">
                 <h6 class="mb-3">
                   <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <path d="M0 0h1v15H0zM2 14h14v1H2zM3 12l3-3 2 2 4-5 3 4v2l-3-4-4 5-2-2-3 3z"/>
+                    <path d="M3.75 0a1 1 0 0 0-.8.4L.1 4.2a.5.5 0  0 0-.1.3V15a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V4.5a.5.5 0 0 0-.1-.3L13.05.4a1 1 0 0 0-.8-.4zM15 4.667V5H1v-.333L1.5 4h6V1h1v3h6z"/>
                   </svg>
-                  Ventas por día (año en curso)
+                  Stock bajo mínimo
                 </h6>
-                <div id="msgVentasPorDia" class="text-center text-secondary small">Cargando...</div>
-                <canvas id="graficoVentasPorDia" height="140" style="display:none"></canvas>
+                <div class="table-responsive" style="max-height: 360px;">
+                  <table class="table table-sm table-striped align-middle">
+                    <thead>
+                      <tr>
+                        <th>Producto</th>
+                        <th>Rubro</th>
+                        <th class="text-end">Stock</th>
+                        <th class="text-end">Mín.</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tbodyStockBajoMinimo">
+                      <tr><td colspan="4" class="text-center text-secondary">Cargando...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -95,7 +108,23 @@
         </div>
 
         <div class="row g-4 mt-1">
-          <div class="col-lg-7">
+          <!-- Debajo: Ingresos por día -->
+          <div class="col-lg-6">
+            <div class="card h-100">
+              <div class="card-body">
+                <h6 class="mb-3">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                    <path d="M0 0h1v15H0zM2 14h14v1H2zM3 12l3-3 2 2 4-5 3 4v2l-3-4-4 5-2-2-3 3z"/>
+                  </svg>
+                  Ingresos por día (año en curso)
+                </h6>
+                <div id="msgVentasPorDia" class="text-center text-secondary small">Cargando...</div>
+                <canvas id="graficoVentasPorDia" height="140" style="display:none"></canvas>
+              </div>
+            </div>
+          </div>
+          <!-- A la derecha: Productos Más Vendidos cubre el área restante -->
+          <div class="col-lg-6">
             <div class="card h-100">
               <div class="card-body">
                 <h6 class="mb-3">
@@ -105,33 +134,6 @@
                   Productos Más Vendidos
                 </h6>
                 <canvas id="graficoTopProductos" height="160"></canvas>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-5">
-            <div class="card h-100">
-              <div class="card-body">
-                <h6 class="mb-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="title-icon" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
-                    <path d="M3.75 0a1 1 0 0 0-.8.4L.1 4.2a.5.5 0 0 0-.1.3V15a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V4.5a.5.5 0 0 0-.1-.3L13.05.4a1 1 0 0 0-.8-.4zM15 4.667V5H1v-.333L1.5 4h6V1h1v3h6z"/>
-                  </svg>
-                  Stock bajo mínimo
-                </h6>
-                <div class="table-responsive" style="max-height: 360px;">
-                  <table class="table table-sm table-striped align-middle">
-                    <thead>
-                      <tr>
-                        <th>Producto</th>
-                        <th>Rubro</th>
-                        <th class="text-end">Stock</th>
-                        <th class="text-end">Mín.</th>
-                      </tr>
-                    </thead>
-                    <tbody id="tbodyStockBajoMinimo">
-                      <tr><td colspan="4" class="text-center text-secondary">Cargando...</td></tr>
-                    </tbody>
-                  </table>
-                </div>
               </div>
             </div>
           </div>
