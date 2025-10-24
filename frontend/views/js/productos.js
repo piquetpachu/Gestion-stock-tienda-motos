@@ -17,7 +17,7 @@
 
     let productos = [];
     let paginaActual = 1;
-    const porPagina = 30;
+    const porPagina = 10;
     let usuarioRol = null;
     let productoModalPrevio = false;
 
@@ -616,7 +616,6 @@ async function mostrarDetalleProducto(idProducto) {
 
     const detalleHTML = `
       <ul class="list-group list-group-flush">
-        <li class="list-group-item"><b>ID:</b> ${producto.id_producto}</li>
         <li class="list-group-item"><b>Nombre:</b> ${producto.nombre}</li>
         <li class="list-group-item"><b>Descripción:</b> ${producto.descripcion || '-'}</li>
         <li class="list-group-item"><b>Precio Venta:</b> $${producto.precio_venta || 0}</li>

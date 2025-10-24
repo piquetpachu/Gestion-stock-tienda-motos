@@ -47,10 +47,8 @@ function crearVenta($pdo, $datos)
             $datos['nro_comprobante'],
             $datos['id_iva'],
             $datos['id_usuario'],
-            // Asegurarnos de que si no viene id_cliente o es null, se guarde NULL
             isset($datos['id_cliente']) && $datos['id_cliente'] !== '' ? $datos['id_cliente'] : null
         ]);
-
 
         $idVenta = $pdo->lastInsertId();
 
@@ -75,21 +73,28 @@ function crearVenta($pdo, $datos)
             ]);
         }
 
-        // Insertar medios de pago (con campos adicionales)
+        // Insertar medios de pago
         foreach ($datos['pagos'] as $pago) {
             agregarMedioPago($pdo, $idVenta, [
                 'id_medio_pago' => $pago['id_medio_pago'],
                 'monto' => $pago['monto'],
-                // Solo cuil_cuit para tarjeta, nada más
                 'cuil_cuit' => $pago['cuil_cuit'] ?? null
             ]);
         }
 
+        // 🟢 NUEVO BLOQUE: Generar cuotas automáticamente si corresponde
+        if (isset($datos['cuotas']) && $datos['cuotas'] > 1) {
+            require_once __DIR__ . '/venta_cuota.php';
+            error_log("🟢 Generando {$datos['cuotas']} cuotas para la venta $idVenta");
+            crearCuotas($pdo, $idVenta, $datos['monto_total'], $datos['cuotas']);
+        }
 
         $pdo->commit();
         return ["success" => true, "id_venta" => $idVenta];
+
     } catch (Exception $e) {
         $pdo->rollBack();
+        error_log("🔴 Error al crear venta: " . $e->getMessage());
         return ["error" => "Error al crear la venta", "detalle" => $e->getMessage()];
     }
 }

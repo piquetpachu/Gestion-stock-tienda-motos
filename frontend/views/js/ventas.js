@@ -673,19 +673,30 @@ function finalizarVenta() {
         });
     }
 
-    const data = {
-        items,
-        pagos,
-        monto_total: totalVenta,
-        tipo_comprobante: 'TICKET',
-        nro_comprobante: Date.now().toString(),
-        id_iva: 1,
-        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
-        id_usuario: Number(idUsuario)
-    };
+const data = {
+    items,
+    pagos,
+    monto_total: totalVenta,
+    tipo_comprobante: 'TICKET',
+    nro_comprobante: Date.now().toString(),
+    id_iva: 1,
+    id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+    id_usuario: Number(idUsuario)
+};
 
-    botonFinalizar.disabled = true;
-    botonFinalizar.textContent = 'Procesando...';
+// 👇 Agregamos este bloque ANTES del fetch
+if (selectMetodoPago.value === '4') { // Tarjeta crédito
+    const selectCuotas = document.getElementById('cuotas');
+    const cantidadCuotas = parseInt(selectCuotas?.value || '1');
+    data.cuotas = cantidadCuotas;
+} else {
+    data.cuotas = 1; // Por defecto
+}
+
+botonFinalizar.disabled = true;
+botonFinalizar.textContent = 'Procesando...';
+
+console.log("📦 Datos enviados a crear_venta:", data);
 
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
