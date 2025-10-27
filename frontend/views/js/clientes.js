@@ -335,7 +335,7 @@ window.borrarCliente = function(id) {
 // === Mostrar detalles al hacer clic en una fila ===
 if (tabla) {
   tabla.addEventListener('click', (e) => {
-    if (e.target.closest('button')) return;
+    if (e.target.closest('button')) return; // evitar conflicto con botones editar/borrar
     const fila = e.target.closest('tr');
     if (!fila) return;
 
@@ -345,6 +345,7 @@ if (tabla) {
     const cliente = clientes.find(c => String(c.id_cliente) === String(id));
     if (!cliente) return;
 
+    // --- HTML base con datos del cliente ---
     const detalleHTML = `
       <ul class="list-group list-group-flush">
         <li class="list-group-item"><b>Nombre y Apellido:</b> ${fmt([cliente.nombre, cliente.apellido].filter(Boolean).join(' ').trim())}</li>
@@ -356,11 +357,69 @@ if (tabla) {
       </ul>
     `;
 
-    document.getElementById('detalleCliente').innerHTML = detalleHTML;
-    document.getElementById('modalDetallesClienteLabel').textContent = `Detalles de ${fmt(cliente.nombre, 'Cliente')}`;
-    new bootstrap.Modal(document.getElementById('modalDetallesCliente')).show();
+    const modalBody = document.getElementById('detalleCliente');
+    modalBody.innerHTML = detalleHTML;
+
+    document.getElementById('modalDetallesClienteLabel').textContent = 
+      `Detalles de ${fmt(cliente.nombre, 'Cliente')}`;
+
+    const modal = new bootstrap.Modal(document.getElementById('modalDetallesCliente'));
+    modal.show();
+
+    // --- 🔹 Consultar cuotas pendientes y detalle ---
+    fetch(API_URL + 'detalle_cuotas/' + cliente.id_cliente)
+      .then(res => res.json())
+      .then(data => {
+        if (!Array.isArray(data) || data.length === 0) {
+          const li = document.createElement('li');
+          li.className = 'list-group-item text-success';
+          li.textContent = '✅ No tiene cuotas pendientes.';
+          modalBody.querySelector('.list-group').appendChild(li);
+          return;
+        }
+
+        // Mostrar resumen de pendientes
+        const pendientes = data.filter(c => c.estado_pago === 'pendiente').length;
+        const liResumen = document.createElement('li');
+        liResumen.className = 'list-group-item';
+        liResumen.innerHTML = `<b>Cuotas Pendientes:</b> ${pendientes}`;
+        modalBody.querySelector('.list-group').appendChild(liResumen);
+
+        // Crear tabla con detalle
+        const tablaHTML = `
+          <div class="mt-3">
+            <h6 class="mb-2 text-primary">📋 Detalle de Cuotas</h6>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th># Cuota</th>
+                    <th>Monto</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.map(c => `
+                    <tr>
+                      <td>${fmt(c.id_cuota)}</td>
+                      <td>$${fmt(c.valor)}</td>
+                      <td>${fmt(c.fecha_venc)}</td>
+                      <td class="${c.estado_pago === 'pendiente' ? 'text-danger' : 'text-success'} fw-bold">
+                        ${fmt(c.estado_pago)}
+                      </td>
+                    </tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+        modalBody.insertAdjacentHTML('beforeend', tablaHTML);
+      })
+      .catch(err => console.error('Error obteniendo detalle de cuotas:', err));
   });
 }
+
 
 
 

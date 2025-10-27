@@ -67,6 +67,7 @@ switch ($recurso) {
         break;
 
     case 'cuotas':
+    case 'detalle_cuotas':
     case 'crear_cuota':
     case (preg_match('/^actualizar_cuota\/\d+$/', $ruta) ? true : false):
     case (preg_match('/^borrar_cuota\/\d+$/', $ruta) ? true : false):

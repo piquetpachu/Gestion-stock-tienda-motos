@@ -6,6 +6,24 @@ function obtenerCuotasDeVenta($pdo, $idVenta) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function obtenerDetalleCuotasPendientes($pdo, $id_cliente) {
+    $stmt = $pdo->prepare("
+        SELECT 
+            vc.id_cuota,
+            vc.valor,
+            vc.fecha_venc,
+            vc.valor_pago,
+            v.id_venta
+        FROM venta_cuota vc
+        INNER JOIN venta v ON vc.id_venta = v.id_venta
+        WHERE v.id_cliente = ? 
+        ORDER BY vc.fecha_venc ASC
+    ");
+    $stmt->execute([$id_cliente]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
 function registrarCuota($pdo, $idVenta, $datos) {
     $stmt = $pdo->prepare("INSERT INTO venta_cuota 
         (id_venta, valor, fecha_venc, valor_venc, fecha_pago, valor_pago)
