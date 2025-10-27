@@ -59,6 +59,7 @@
             <th>Nombre</th>
             <th>Email</th>
             <th>Teléfono</th>
+            <th>Dirección</th>
             <th>Cuil-Cuit</th>
             <th>Fecha Alta</th>
             <th id="colAcciones" class="acciones-col" style="display: none;">Acciones</th>

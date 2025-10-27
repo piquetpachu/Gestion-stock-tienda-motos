@@ -107,22 +107,37 @@
     }
 
     // Obtener rol y mostrar botón de agregar si corresponde
-    fetch(API_URL + "usuario-info")
-      .then((r) => r.json())
-      .then((data) => {
-        usuarioRol = data.rol;
-        if (usuarioRol === "admin") {
-          const btn = document.getElementById("btnAgregarProducto");
-          if (btn) btn.style.display = "block";
-          const colAcc = document.getElementById("colAcciones");
-          if (colAcc) colAcc.style.display = "";
-        } else {
-          const colAcc = document.getElementById("colAcciones");
-          if (colAcc) colAcc.style.display = "none";
-        }
-        mostrarProductos();
-      })
-      .catch((err) => console.warn("productos.js: error usuario-info", err));
+// Obtener rol y mostrar botón de agregar si corresponde
+// === Obtener rol del usuario y luego cargar productos ===
+fetch(API_URL + "usuario-info")
+  .then((r) => r.json())
+  .then((data) => {
+    console.log("Rol detectado:", data.rol);
+    usuarioRol = data.rol;
+
+    const btn = document.getElementById("btnAgregarProducto");
+    const colAcc = document.getElementById("colAcciones");
+
+    if (usuarioRol === "admin") {
+      if (btn) btn.style.display = "block";
+      if (colAcc) colAcc.style.display = "";
+    } else {
+      if (btn) btn.style.display = "none";
+      if (colAcc) colAcc.style.display = "none";
+    }
+
+    // 🔹 Ahora sí, cargamos productos después de saber el rol
+    cargarProductos();
+  })
+  .catch((err) => {
+    console.warn("productos.js: error usuario-info", err);
+    // En caso de error igual cargamos productos, pero sin mostrar botón
+    usuarioRol = "vendedor";
+    const btn = document.getElementById("btnAgregarProducto");
+    if (btn) btn.style.display = "none";
+    cargarProductos();
+  });
+
 
     function cargarProductos() {
       fetch(API_URL + "productos")
