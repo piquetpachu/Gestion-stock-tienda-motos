@@ -119,10 +119,10 @@ fetch(API_URL + "usuario-info")
     const colAcc = document.getElementById("colAcciones");
 
     if (usuarioRol === "admin") {
-      if (btn) btn.style.display = "block";
+      if (btn) btn.classList.remove('d-none');
       if (colAcc) colAcc.style.display = "";
     } else {
-      if (btn) btn.style.display = "none";
+      if (btn) btn.classList.add('d-none');
       if (colAcc) colAcc.style.display = "none";
     }
 

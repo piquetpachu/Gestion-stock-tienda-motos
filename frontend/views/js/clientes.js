@@ -95,13 +95,13 @@
       .then(r => r.json())
       .then(data => {
         usuarioRol = data.rol;
+        const btn = document.getElementById('btnAgregarCliente');
+        const colAcc = document.getElementById('colAcciones');
         if (usuarioRol === 'admin') {
-          const btn = document.getElementById('btnAgregarCliente');
-          if (btn) btn.style.display = 'block';
-          const colAcc = document.getElementById('colAcciones');
+          if (btn) btn.classList.remove('d-none');
           if (colAcc) colAcc.style.display = '';
         } else {
-          const colAcc = document.getElementById('colAcciones');
+          if (btn) btn.classList.add('d-none');
           if (colAcc) colAcc.style.display = 'none';
         }
         mostrarClientes();
