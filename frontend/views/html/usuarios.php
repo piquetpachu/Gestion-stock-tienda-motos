@@ -96,7 +96,7 @@
   <script src="../js/theme.js"></script>
   <script src="../js/config.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/usuarios.js"></script>
+  <script src="../js/usuarios.js?v=20251022"></script>
   <script>
     // Controlar acceso: mostrar/ocultar panel pero nunca ocultar el body
     document.addEventListener('DOMContentLoaded', async function() {

@@ -27,24 +27,24 @@ const PAGE_SIZE_PROV = 10;
 
 // ---------- Iconos SVG (inline, sin dependencias) ----------
 const SVG_EDIT = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <line x1="3" y1="13" x2="13" y2="3"></line>
-    <polygon points="12,2 14,4 13,5 11,3" fill="currentColor" stroke="currentColor"></polygon>
-    <rect x="2" y="12" width="3" height="2" fill="currentColor" stroke="none"></rect>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pencil-fill" viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.175-.032l-.179.178a.5.5 0 0 0-.11.168l-2 5a.5.5 0 0 0 .65.65l5-2a.5.5 0 0 0 .168-.11z"/>
   </svg>`;
 const SVG_TRASH = `
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <rect x="4" y="5" width="8" height="9" rx="1"></rect>
-    <line x1="6" y1="7" x2="6" y2="13"></line>
-    <line x1="10" y1="7" x2="10" y2="13"></line>
-    <polyline points="5,5 5,3 11,3 11,5"></polyline>
-    <line x1="4" y1="5" x2="12" y2="5"></line>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash3-fill" viewBox="0 0 16 16" aria-hidden="true">
+    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5"/>
   </svg>`;
 
 // ---------- Util ----------
 function normalizar(txt){ return (txt||'').toString().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu,''); }
 function cmpNombre(a,b){ return normalizar(a.nombre).localeCompare(normalizar(b.nombre)); }
 function cmpCuit(a,b){ return String(a.cuit||'').localeCompare(String(b.cuit||'')); }
+// Muestra un guion cuando el campo está vacío, nulo o solo espacios
+function mostrarGuion(v){
+  if (v === null || v === undefined) return '-';
+  const s = String(v).trim();
+  return s.length ? s : '-';
+}
 function filaVaciaProveedores(msg='Sin proveedores') {
   // Columnas visibles: Nombre, CUIT, Teléfono, Email, Dirección (+ Acciones si admin)
   const baseCols = 5;
@@ -113,11 +113,11 @@ function renderProveedores() {
     ` : '';
     return `
       <tr data-prov-row="${p.id_proveedor}" data-prov-nombre="${p.nombre}">
-        <td class="fw-semibold">${p.nombre}</td>
-        <td>${p.cuit || ''}</td>
-        <td>${p.telefono || ''}</td>
-        <td>${p.email || ''}</td>
-        <td>${p.direccion || ''}</td>
+        <td class="fw-semibold">${mostrarGuion(p.nombre)}</td>
+        <td>${mostrarGuion(p.cuit)}</td>
+        <td>${mostrarGuion(p.telefono)}</td>
+        <td>${mostrarGuion(p.email)}</td>
+        <td>${mostrarGuion(p.direccion)}</td>
         ${esAdminProv ? `<td class="acciones-col">${acciones}</td>` : ''}
       </tr>
     `;
@@ -176,7 +176,8 @@ formProveedor.addEventListener('submit', async e => {
   const id = idProveedorInput.value.trim();
   const payload = {
     nombre: provNombre.value.trim(),
-    cuit: provCuit.value.trim(),
+    // Enviar CUIT solo dígitos al backend
+    cuit: provCuit.value.replace(/\D/g, '').trim(),
     telefono: provTel.value.trim(),
     email: provEmail.value.trim(),
     direccion: provDir.value.trim()
@@ -206,7 +207,8 @@ window.editarProveedor = id => {
   if(!p) return;
   idProveedorInput.value = p.id_proveedor;
   provNombre.value = p.nombre || '';
-  provCuit.value = p.cuit || '';
+  // Mostrar CUIT con máscara ##-########-# si hay datos
+  provCuit.value = formatCUIT(p.cuit || '');
   provTel.value = p.telefono || '';
   provEmail.value = p.email || '';
   provDir.value = p.direccion || '';
@@ -250,6 +252,92 @@ btnNuevoProveedor.addEventListener('click', () => {
       renderPaginacionProveedores(0, 1, PAGE_SIZE_PROV);
     });
 })();
+
+// ---------- Restricciones de entrada (solo números) ----------
+function soloNumerosInput(e) {
+  const cleaned = e.target.value.replace(/\D+/g, '');
+  if (e.target.value !== cleaned) {
+    const pos = e.target.selectionStart;
+    e.target.value = cleaned;
+    // Restaurar posición aproximada del cursor
+    try { e.target.setSelectionRange(pos - 1, pos - 1); } catch {}
+  }
+}
+
+// Formatear CUIT como en Ventas: ##-########-#
+function formatCUIT(v){
+  let s = (v ?? '').toString().replace(/\D/g,'');
+  if (!s) return '';
+  if (s.length > 11) s = s.slice(0,11);
+  if (s.length > 2) s = s.slice(0,2) + '-' + s.slice(2);
+  if (s.length > 11) s = s.slice(0,11) + '-' + s.slice(11);
+  return s.length > 13 ? s.slice(0,13) : s;
+}
+
+function maskCUITInput(e){
+  let val = e.target.value || '';
+  // Dejar solo dígitos y guiones; luego aplicar máscara
+  val = val.replace(/[^0-9\-]/g, '');
+  // Reconstruir desde dígitos para evitar posiciones incorrectas
+  const digits = val.replace(/\D/g,'').slice(0,11);
+  let out = digits;
+  if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+  if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+  if (out.length > 13) out = out.slice(0,13);
+  e.target.value = out;
+}
+
+function isControlKey(e){
+  return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
+}
+function onlyDigitsKeydown(e){
+  if (isControlKey(e)) return;
+  if (/^\d$/.test(e.key)) return;
+  e.preventDefault();
+}
+function sanitizeDigitsPaste(e){
+  const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+  const digits = data.replace(/\D+/g,'');
+  e.preventDefault();
+  const el = e.target;
+  const start = el.selectionStart; const end = el.selectionEnd;
+  const before = el.value.slice(0,start);
+  const after = el.value.slice(end);
+  el.value = before + digits + after;
+  const caret = (before + digits).length;
+  try { el.setSelectionRange(caret, caret); } catch {}
+  el.dispatchEvent(new Event('input', { bubbles:true }));
+}
+
+function onlyDigitsForCUITKeydown(e){
+  if (isControlKey(e)) return;
+  if (/^\d$/.test(e.key)) return;
+  // No permitir escribir guiones manualmente; los agrega la máscara
+  e.preventDefault();
+}
+function sanitizeCUITPaste(e){
+  const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+  const digits = data.replace(/\D+/g,'').slice(0,11);
+  e.preventDefault();
+  const el = e.target;
+  const start = el.selectionStart; const end = el.selectionEnd;
+  const before = el.value.slice(0,start);
+  const after = el.value.slice(end);
+  let out = (before + digits + after).replace(/\D/g,'').slice(0,11);
+  if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+  if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+  if (out.length > 13) out = out.slice(0,13);
+  el.value = out;
+  const caret = el.value.length;
+  try { el.setSelectionRange(caret, caret); } catch {}
+}
+
+provCuit?.addEventListener('keydown', onlyDigitsForCUITKeydown);
+provCuit?.addEventListener('paste', sanitizeCUITPaste);
+provCuit?.addEventListener('input', maskCUITInput);
+provTel?.addEventListener('keydown', onlyDigitsKeydown);
+provTel?.addEventListener('paste', sanitizeDigitsPaste);
+provTel?.addEventListener('input', soloNumerosInput);
 
 // ---- Productos por proveedor ----
 const modalProductosProveedor = new bootstrap.Modal(document.getElementById('modalProductosProveedor'));

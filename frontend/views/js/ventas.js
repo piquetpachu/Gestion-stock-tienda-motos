@@ -28,8 +28,7 @@ let productosLista = [];
 let productosVenta = [];
 let metodosPagoLista = [];
 let reciboGuardado = null;
-let tomSelectCliente = null; // TomSelect para clientes
-let tomSelectProducto = null; // TomSelect para productos
+// Select de clientes ahora es nativo (sin TomSelect)
 
 // Formateador de moneda
 const formatearMoneda = valor =>
@@ -43,78 +42,53 @@ function buscarProductoPorCodigo(codigo) {
 
 // Cargar productos
 function cargarProductos() {
-    fetch(API_URL + 'productos')
+    fetch(API_URL + 'productos', { credentials: 'same-origin' })
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener productos');
             return res.json();
         })
         .then(data => {
-            productosLista = data;
+            productosLista = data || [];
 
-            // Inicializamos TomSelect solo si no existe (o reutilizamos si ya está)
-            if (selectProducto.tomselect) {
-                tomSelectProducto = selectProducto.tomselect;
-                tomSelectProducto.clearOptions();
-            } else if (!tomSelectProducto) {
-                tomSelectProducto = new TomSelect(selectProducto, {
-                    create: false,
-                    sortField: { field: "nombre", direction: "asc" },
-                    valueField: "value",
-                    labelField: "nombre",
-                    searchField: ["nombre", "codigo_barras"],
-                    placeholder: "Seleccionar producto",
-                    openOnFocus: true,
-                    onItemAdd: function (value) {
-                        agregarProducto(value);
-                        this.clear();
-                        setTimeout(() => this.close(), 50);
-                    }
+            if (selectProducto) {
+                // Limpiar y agregar placeholder
+                selectProducto.innerHTML = '';
+                const optPlaceholder = document.createElement('option');
+                optPlaceholder.value = '';
+                optPlaceholder.textContent = 'Seleccionar producto';
+                optPlaceholder.disabled = true;
+                optPlaceholder.selected = true;
+                selectProducto.appendChild(optPlaceholder);
+
+                // Agregar opciones
+                productosLista.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.codigo_barras;
+                    opt.textContent = `${p.nombre}`;
+                    selectProducto.appendChild(opt);
                 });
-            } else {
-                tomSelectProducto.clearOptions();
-            }
 
-            // Agregar todas las opciones
-            data.forEach(prod => {
-                tomSelectProducto.addOption({
-                    value: prod.codigo_barras,
-                    nombre: prod.nombre
-                });
-            });
-
-            // Refrescar opciones y cerrar dropdown
-            tomSelectProducto.refreshOptions();
-            tomSelectProducto.close();
-
-            // El dropdown abre al focus/click por configuración
-
-            // ENTER desde input (scanner o nombre completo)
-            const inputTomEnter = tomSelectProducto.control_input;
-            if (inputTomEnter) {
-                inputTomEnter.addEventListener('keydown', function (e) {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        const texto = inputTomEnter.value.trim();
-                        if (!texto) return;
-
-                        const producto = productosLista.find(p =>
-                            p.nombre.toLowerCase() === texto.toLowerCase() ||
-                            p.codigo_barras === texto
-                        );
-
-                        if (producto) {
-                            agregarProducto(producto.codigo_barras);
-                        }
-
-                        tomSelectProducto.clear();
-                        tomSelectProducto.focus();
-                    }
-                });
+                if (productosLista.length === 0) {
+                    const noData = document.createElement('option');
+                    noData.value = '';
+                    noData.textContent = 'Sin productos disponibles';
+                    noData.disabled = true;
+                    selectProducto.appendChild(noData);
+                }
             }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
             alert('No se pudieron cargar los productos. Revisa la consola.');
+            if (selectProducto) {
+                selectProducto.innerHTML = '';
+                const optPlaceholder = document.createElement('option');
+                optPlaceholder.value = '';
+                optPlaceholder.textContent = 'Sin productos (error de carga)';
+                optPlaceholder.disabled = true;
+                optPlaceholder.selected = true;
+                selectProducto.appendChild(optPlaceholder);
+            }
         });
 }
 
@@ -122,7 +96,7 @@ function cargarProductos() {
 // Cargar métodos de pago
 function cargarMetodosPago() {
     // Conservar fetch para que la app siga conectada a la BD
-    fetch(API_URL + 'medios_pago')
+    fetch(API_URL + 'medios_pago', { credentials: 'same-origin' })
         .then(res => res.json())
         .then(data => {
             metodosPagoLista = data; // guardamos la info por si se necesita
@@ -147,87 +121,63 @@ function cargarMetodosPago() {
 // Cargar clientes
 
 function cargarClientes(seleccionarId = null) {
-    fetch(API_URL + 'clientes')
+    fetch(API_URL + 'clientes', { credentials: 'same-origin' })
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener clientes');
             return res.json();
         })
         .then(data => {
-            // Limpiamos select
+            const lista = Array.isArray(data) ? data : [];
+
+            // Limpiar y reconstruir select nativo
             selectCliente.innerHTML = '';
 
-            // Tomamos el primer cliente que sea "Consumidor Final" de la BD
-            const consumidorFinal = data.find(c => c.id_cliente == 1);
+            // Buscar "Consumidor Final" en BD
+            const consumidorFinal = lista.find(c => String(c.id_cliente) === '1');
             if (consumidorFinal) {
                 const opcion = document.createElement('option');
-                opcion.value = consumidorFinal.id_cliente;
+                opcion.value = String(consumidorFinal.id_cliente);
                 opcion.textContent = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
+                selectCliente.appendChild(opcion);
+            } else {
+                // Fallback a opción local "Consumidor Final"
+                const opcion = document.createElement('option');
+                opcion.value = '0';
+                opcion.textContent = 'Consumidor Final';
                 selectCliente.appendChild(opcion);
             }
 
-            // Agregamos el resto de clientes
-            data.forEach(cliente => {
-                if (cliente.id_cliente != 0) {
+            // Agregar el resto de clientes
+            lista.forEach(cliente => {
+                const idStr = String(cliente.id_cliente);
+                if (idStr !== '0' && idStr !== (consumidorFinal ? String(consumidorFinal.id_cliente) : '')) {
                     const opcion = document.createElement('option');
-                    opcion.value = cliente.id_cliente;
+                    opcion.value = idStr;
                     opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
                     selectCliente.appendChild(opcion);
                 }
             });
 
-            // Inicializamos o refrescamos TomSelect (reutilizar si ya está)
-            if (selectCliente.tomselect) {
-                tomSelectCliente = selectCliente.tomselect;
-            }
-            if (!tomSelectCliente) {
-                tomSelectCliente = new TomSelect(selectCliente, {
-                    create: false,
-                    sortField: { field: "text", direction: "asc" },
-                    openOnFocus: true
-                });
-            }
-            tomSelectCliente.clearOptions();
-            data.forEach(cliente => {
-                tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
-            });
-            tomSelectCliente.refreshOptions();
-
-            // Seleccionamos por defecto
+            // Seleccionar valor por defecto
             if (seleccionarId) {
-                tomSelectCliente.addItem(seleccionarId, true);
+                selectCliente.value = String(seleccionarId);
             } else if (consumidorFinal) {
-                tomSelectCliente.addItem(consumidorFinal.id_cliente, true);
-            } else if (data.length > 0) {
-                tomSelectCliente.addItem(data[0].id_cliente, true); // Primer cliente de la lista si no hay Consumidor Final
+                selectCliente.value = String(consumidorFinal.id_cliente);
+            } else {
+                selectCliente.value = '0';
             }
         })
         .catch(error => {
             console.error('Error cargando clientes:', error);
-            // Fallback: dejar Consumidor Final para poder operar sin lista remota
+            // Fallback: dejar "Consumidor Final"
             selectCliente.innerHTML = '';
             const opcion = document.createElement('option');
             opcion.value = '0';
             opcion.textContent = 'Consumidor Final';
             selectCliente.appendChild(opcion);
-
-            if (selectCliente.tomselect) {
-                tomSelectCliente = selectCliente.tomselect;
-            }
-            if (!tomSelectCliente) {
-                tomSelectCliente = new TomSelect(selectCliente, {
-                    create: false,
-                    openOnFocus: true
-                });
-            }
-            tomSelectCliente.clearOptions();
-            tomSelectCliente.addOption({ value: '0', text: 'Consumidor Final' });
-            tomSelectCliente.refreshOptions();
-
-            tomSelectCliente.clear(true);
-            tomSelectCliente.addItem('0', true);
+            selectCliente.value = '0';
         });
 }
-
 
 // -------------------- CLIENTES --------------------
 
@@ -240,12 +190,22 @@ guardarClienteBtn.addEventListener('click', () => {
         return;
     }
 
+    // Sanitizar y validar CUIL/CUIT
+    const cuitDigits = (document.getElementById('cliente_cuit').value || '').replace(/\D/g, '');
+    if (cuitDigits.length !== 11) {
+        alert('El CUIL/CUIT debe tener 11 dígitos');
+        return;
+    }
+
+    // Sanitizar teléfono a solo dígitos (opcional vacío)
+    const telDigits = (document.getElementById('cliente_telefono').value || '').replace(/\D/g, '');
+
     const nuevoCliente = {
         nombre: document.getElementById('cliente_nombre').value.trim(),
         apellido: document.getElementById('cliente_apellido').value.trim(),
-        cuil_cuit: document.getElementById('cliente_cuit').value.trim(),
+        cuil_cuit: cuitDigits,
         email: document.getElementById('cliente_email').value.trim(),
-        telefono: document.getElementById('cliente_telefono').value.trim(),
+        telefono: telDigits,
         direccion: document.getElementById('cliente_direccion').value.trim()
     };
 
@@ -255,6 +215,7 @@ guardarClienteBtn.addEventListener('click', () => {
     fetch(API_URL + 'crear_cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(nuevoCliente)
     })
         .then(res => {
@@ -266,7 +227,8 @@ guardarClienteBtn.addEventListener('click', () => {
             formCliente.reset();
             guardarClienteBtn.disabled = false;
             guardarClienteBtn.textContent = 'Guardar';
-            cargarClientes(clienteCreado.id);
+            const idNuevo = clienteCreado?.id || clienteCreado?.id_cliente || null;
+            cargarClientes(idNuevo);
         })
         .catch(err => {
             alert('Error al guardar cliente: ' + err.message);
@@ -275,17 +237,60 @@ guardarClienteBtn.addEventListener('click', () => {
         });
 });
 
-// 🚀 Limitador CUIT también en modal de cliente
+// 🚀 Restricciones de entrada: CUIT/CUIL con máscara y Teléfono solo números
 document.addEventListener('DOMContentLoaded', () => {
     const inputCuitCliente = document.getElementById('cliente_cuit');
-    if (inputCuitCliente) {
-        inputCuitCliente.addEventListener('input', () => {
-            let val = inputCuitCliente.value;
-            val = val.replace(/[^0-9\-]/g, '');
-            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
-            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
-            if (val.length > 13) val = val.slice(0, 13);
-            inputCuitCliente.value = val;
+    const inputTelefonoCliente = document.getElementById('cliente_telefono');
+
+    function isControlKey(e){
+        return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
+    }
+    function maskCUITInput(el){
+        let val = (el.value || '').replace(/[^0-9\-]/g,'');
+        const digits = val.replace(/\D/g,'').slice(0,11);
+        let out = digits;
+        if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
+        if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
+        if (out.length > 13) out = out.slice(0,13);
+        el.value = out;
+    }
+    function onlyDigitsKeydown(e){ if (!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); }
+    function sanitizeDigitsPaste(e){
+        const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+        const digits = data.replace(/\D+/g,'');
+        e.preventDefault();
+        const el = e.target;
+        const start = el.selectionStart; const end = el.selectionEnd;
+        const before = el.value.slice(0,start);
+        const after = el.value.slice(end);
+        el.value = before + digits + after;
+        const caret = (before + digits).length;
+        try { el.setSelectionRange(caret, caret); } catch {}
+        el.dispatchEvent(new Event('input', { bubbles:true }));
+    }
+
+    if (inputCuitCliente){
+        inputCuitCliente.addEventListener('keydown', (e)=>{ if(!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); });
+        inputCuitCliente.addEventListener('paste', (e)=>{
+            const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
+            const digits = data.replace(/\D+/g,'').slice(0,11);
+            e.preventDefault();
+            const el = e.target;
+            const start = el.selectionStart; const end = el.selectionEnd;
+            const before = el.value.slice(0,start);
+            const after = el.value.slice(end);
+            el.value = before + digits + after;
+            maskCUITInput(el);
+        });
+        inputCuitCliente.addEventListener('input', ()=> maskCUITInput(inputCuitCliente));
+    }
+
+    if (inputTelefonoCliente){
+        inputTelefonoCliente.addEventListener('keydown', onlyDigitsKeydown);
+        inputTelefonoCliente.addEventListener('paste', sanitizeDigitsPaste);
+        inputTelefonoCliente.addEventListener('input', (e)=>{
+            const cleaned = e.target.value.replace(/\D+/g,'');
+            if (e.target.value !== cleaned) e.target.value = cleaned;
         });
     }
 });
@@ -295,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function agregarProducto(codigoSeleccionado = null) {
-    let codigo = codigoSeleccionado || tomSelectProducto.getValue();
+    let codigo = codigoSeleccionado || (selectProducto ? selectProducto.value : null);
     if (!codigo) return;
 
     const producto = buscarProductoPorCodigo(codigo);
@@ -317,10 +322,9 @@ function agregarProducto(codigoSeleccionado = null) {
     actualizarTabla();
     actualizarTotales();
 
-    if (tomSelectProducto) {
-        tomSelectProducto.clear();          // Limpiar el input
-        setTimeout(() => tomSelectProducto.close(), 50);  // Esperar 50ms y cerrar el dropdown
-        tomSelectProducto.focus();          // Volver a enfocar para seguir agregando productos
+    // Volver a la opción placeholder para evitar agregar repetidamente el mismo producto
+    if (selectProducto) {
+        selectProducto.selectedIndex = 0; // placeholder
     }
 
 }
@@ -693,14 +697,12 @@ if (selectMetodoPago.value === '4') { // Tarjeta crédito
     data.cuotas = 1; // Por defecto
 }
 
-botonFinalizar.disabled = true;
-botonFinalizar.textContent = 'Procesando...';
-
-console.log("📦 Datos enviados a crear_venta:", data);
+    botonFinalizar.disabled = true;
 
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
         .then(res => {
@@ -719,10 +721,6 @@ console.log("📦 Datos enviados a crear_venta:", data);
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
-
-            setTimeout(() => {
-                location.reload();
-            }, 10000);
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -732,7 +730,6 @@ console.log("📦 Datos enviados a crear_venta:", data);
         })
         .finally(() => {
             botonFinalizar.disabled = false;
-            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 
@@ -754,6 +751,14 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMetodosPago();
     cargarClientes();
     actualizarTotales();
+
+    // Al seleccionar un producto en el select nativo, agregarlo y volver al placeholder
+    if (selectProducto) {
+        selectProducto.addEventListener('change', () => {
+            const val = selectProducto.value;
+            if (val) agregarProducto(val);
+        });
+    }
 });
 
 
