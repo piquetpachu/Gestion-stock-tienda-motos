@@ -10,6 +10,11 @@ switch (true) {
         echo json_encode(obtenerCuotasDeVenta($pdo, $matches[1]));
         break;
 
+    case preg_match('/^detalle_cuotas\/(\d+)$/', $ruta, $matches) && $metodo === 'GET':
+        autorizar(['admin', 'vendedor']);
+        echo json_encode(obtenerDetalleCuotasPendientes($pdo, $matches[1]));
+        break;
+
     case preg_match('/^crear_cuota\/(\d+)$/', $ruta, $matches) && $metodo === 'POST':
         autorizar(['admin']);
         $datos = json_decode(file_get_contents('php://input'), true);
