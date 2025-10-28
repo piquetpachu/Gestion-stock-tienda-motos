@@ -84,7 +84,7 @@
           </li>
         </ul>
 
-        <div class="d-flex align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2 ms-3">
           <div class="form-check form-switch m-0 text-white d-flex align-items-center">
             <input class="form-check-input" type="checkbox" id="switchTema" role="switch" aria-label="Cambiar tema">
           </div>
