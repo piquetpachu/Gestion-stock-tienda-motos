@@ -94,22 +94,22 @@
 
           <div class="col-md-6">
             <label for="apellido" class="form-label">Apellido</label>
-            <input type="text" id="apellido" class="form-control" placeholder="Ej: Pérez" required />
+            <input type="text" id="apellido" class="form-control" placeholder="Ej: Pérez"  />
           </div>
 
           <div class="col-md-6">
             <label for="cuil_cuit" class="form-label">CUIL/CUIT</label>
-            <input type="text" id="cuil_cuit" class="form-control" placeholder="Ej: 20123456789" maxlength="11" required />
+            <input type="number" id="cuil_cuit" class="form-control"  placeholder="Ej: 20123456789" oninput="if(this.value.length > 11) this.value = this.value.slice(0, 11);"  />
           </div>
 
           <div class="col-md-6">
             <label for="email" class="form-label">Email</label>
-            <input type="email" id="email" class="form-control" placeholder="Ej: juanperez@mail.com" required />
+            <input type="email" id="email" class="form-control"  placeholder="Ej: juanperez@mail.com"  />
           </div>
 
           <div class="col-md-6">
             <label for="telefono" class="form-label">Teléfono</label>
-            <input type="tel" id="telefono" class="form-control" placeholder="Ej: 3794000000" />
+            <input type="number" id="telefono" class="form-control" placeholder="Ej: 3794000000" />
           </div>
 
           <div class="col-12">
