@@ -25,11 +25,11 @@
       <div class="col-12 col-lg-8">
         <div class="venta-card">
           <h5>Productos</h5>
-          <div class="mb-3">
-            <label for="seleccionar_producto" class="form-label">Agregar producto</label>
-            <select class="form-select form-select" id="seleccionar_producto">
-              <option value="" selected>Seleccionar producto</option>
-            </select>
+          <!-- Buscador de productos (estilo Bootstrap) -->
+          <div class="mb-3 position-relative">
+            <label for="buscar_producto" class="form-label">Buscar producto</label>
+            <input type="text" id="buscar_producto" class="form-control" placeholder="Escribir nombre o código" autocomplete="off">
+            <ul id="sugerencias_productos" class="list-group position-absolute w-100 d-none" style="max-height:200px;overflow:auto;z-index:200;"></ul>
           </div>
           <div class="p-2 rounded border" style="max-height: 250px; overflow-y:auto;">
             <table class="table table-sm table-bordered text-center align-middle" id="tabla_productos">
@@ -54,13 +54,12 @@
           <h5>Detalles de venta</h5>
 
           <!-- Cliente -->
-          <div class="mb-3">
-            <label for="seleccionar_cliente" class="form-label">Cliente</label>
-            <div class="input-group">
-              <select class="form-select flex-grow-1" id="seleccionar_cliente">
-                <option value="0" selected>Consumidor Final</option>
-              </select>
-              <button class="btn btn-outline-primary" type="button" id="btn_agregar_cliente">+</button>
+          <div class="mb-3 position-relative">
+            <label for="buscar_cliente" class="form-label">Cliente</label>
+            <input type="text" id="buscar_cliente" class="form-control" placeholder="Buscar cliente por nombre o documento" autocomplete="off">
+            <ul id="sugerencias_clientes" class="list-group position-absolute w-100 d-none" style="max-height:200px;overflow:auto;z-index:200;"></ul>
+            <div class="mt-2">
+              <button type="button" id="btn_agregar_cliente" class="btn btn-outline-primary">+</button>
             </div>
           </div>
 

@@ -1,5 +1,4 @@
 // Referencias a elementos DOM
-const selectProducto = document.getElementById('seleccionar_producto');
 const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
 // const inputPrecioUnitario = document.getElementById('precio_unitario');
@@ -17,11 +16,19 @@ const mensajeResultado = document.getElementById('mensaje_resultado');
 const botonImprimirRecibo = document.getElementById('btn_imprimir_recibo'); // Botón imprimir
 
 // CLIENTES
-const selectCliente = document.getElementById('seleccionar_cliente');
 const btnAgregarCliente = document.getElementById('btn_agregar_cliente');
 const modalCliente = new bootstrap.Modal(document.getElementById('modalCliente'));
 const guardarClienteBtn = document.getElementById('guardar_cliente');
 const formCliente = document.getElementById('form_cliente');
+const buscarProductoInput = document.getElementById('buscar_producto');
+const sugerenciasProductos = document.getElementById('sugerencias_productos');
+const buscarClienteInput = document.getElementById('buscar_cliente');
+const sugerenciasClientes = document.getElementById('sugerencias_clientes');
+
+// Estado del cliente seleccionado (ya no hay select en la UI)
+let clienteSeleccionadoId = null;
+let clienteSeleccionadoNombre = 'Consumidor Final';
+let clientesLista = []; // almacenará los clientes para sugerencias
 
 // Estado interno
 let productosLista = [];
@@ -48,47 +55,14 @@ function cargarProductos() {
             return res.json();
         })
         .then(data => {
+            // Guardamos la lista de productos en memoria para búsquedas por código
             productosLista = data || [];
-
-            if (selectProducto) {
-                // Limpiar y agregar placeholder
-                selectProducto.innerHTML = '';
-                const optPlaceholder = document.createElement('option');
-                optPlaceholder.value = '';
-                optPlaceholder.textContent = 'Seleccionar producto';
-                optPlaceholder.disabled = true;
-                optPlaceholder.selected = true;
-                selectProducto.appendChild(optPlaceholder);
-
-                // Agregar opciones
-                productosLista.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.codigo_barras;
-                    opt.textContent = `${p.nombre}`;
-                    selectProducto.appendChild(opt);
-                });
-
-                if (productosLista.length === 0) {
-                    const noData = document.createElement('option');
-                    noData.value = '';
-                    noData.textContent = 'Sin productos disponibles';
-                    noData.disabled = true;
-                    selectProducto.appendChild(noData);
-                }
-            }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
             alert('No se pudieron cargar los productos. Revisa la consola.');
-            if (selectProducto) {
-                selectProducto.innerHTML = '';
-                const optPlaceholder = document.createElement('option');
-                optPlaceholder.value = '';
-                optPlaceholder.textContent = 'Sin productos (error de carga)';
-                optPlaceholder.disabled = true;
-                optPlaceholder.selected = true;
-                selectProducto.appendChild(optPlaceholder);
-            }
+            // En caso de error dejamos la lista vacía
+            productosLista = [];
         });
 }
 
@@ -128,54 +102,38 @@ function cargarClientes(seleccionarId = null) {
         })
         .then(data => {
             const lista = Array.isArray(data) ? data : [];
-
-            // Limpiar y reconstruir select nativo
-            selectCliente.innerHTML = '';
+            clientesLista = lista; // guardar para sugerencias
 
             // Buscar "Consumidor Final" en BD
             const consumidorFinal = lista.find(c => String(c.id_cliente) === '1');
-            if (consumidorFinal) {
-                const opcion = document.createElement('option');
-                opcion.value = String(consumidorFinal.id_cliente);
-                opcion.textContent = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
-                selectCliente.appendChild(opcion);
-            } else {
-                // Fallback a opción local "Consumidor Final"
-                const opcion = document.createElement('option');
-                opcion.value = '0';
-                opcion.textContent = 'Consumidor Final';
-                selectCliente.appendChild(opcion);
-            }
 
-            // Agregar el resto de clientes
-            lista.forEach(cliente => {
-                const idStr = String(cliente.id_cliente);
-                if (idStr !== '0' && idStr !== (consumidorFinal ? String(consumidorFinal.id_cliente) : '')) {
-                    const opcion = document.createElement('option');
-                    opcion.value = idStr;
-                    opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
-                    selectCliente.appendChild(opcion);
-                }
-            });
-
-            // Seleccionar valor por defecto
             if (seleccionarId) {
-                selectCliente.value = String(seleccionarId);
-            } else if (consumidorFinal) {
-                selectCliente.value = String(consumidorFinal.id_cliente);
-            } else {
-                selectCliente.value = '0';
+                // Si se pasó el id (cliente recién creado), intentar asignarlo
+                const encontrado = lista.find(c => String(c.id_cliente) === String(seleccionarId));
+                if (encontrado) {
+                    clienteSeleccionadoId = Number(encontrado.id_cliente);
+                    clienteSeleccionadoNombre = `${encontrado.nombre} ${encontrado.apellido}`;
+                }
             }
+
+            // Si no se seleccionó nada, preferimos consumidorFinal si existe
+            if (!clienteSeleccionadoId) {
+                if (consumidorFinal) {
+                    clienteSeleccionadoId = Number(consumidorFinal.id_cliente);
+                    clienteSeleccionadoNombre = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
+                } else {
+                    clienteSeleccionadoId = null;
+                    clienteSeleccionadoNombre = 'Consumidor Final';
+                }
+            }
+
+            if (buscarClienteInput) buscarClienteInput.value = clienteSeleccionadoNombre;
         })
         .catch(error => {
             console.error('Error cargando clientes:', error);
-            // Fallback: dejar "Consumidor Final"
-            selectCliente.innerHTML = '';
-            const opcion = document.createElement('option');
-            opcion.value = '0';
-            opcion.textContent = 'Consumidor Final';
-            selectCliente.appendChild(opcion);
-            selectCliente.value = '0';
+            clienteSeleccionadoId = null;
+            clienteSeleccionadoNombre = 'Consumidor Final';
+            if (buscarClienteInput) buscarClienteInput.value = clienteSeleccionadoNombre;
         });
 }
 
@@ -300,7 +258,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function agregarProducto(codigoSeleccionado = null) {
-    let codigo = codigoSeleccionado || (selectProducto ? selectProducto.value : null);
+    // Ahora se requiere pasar el código como parámetro (no hay select en la UI)
+    let codigo = codigoSeleccionado;
     if (!codigo) return;
 
     const producto = buscarProductoPorCodigo(codigo);
@@ -322,10 +281,7 @@ function agregarProducto(codigoSeleccionado = null) {
     actualizarTabla();
     actualizarTotales();
 
-    // Volver a la opción placeholder para evitar agregar repetidamente el mismo producto
-    if (selectProducto) {
-        selectProducto.selectedIndex = 0; // placeholder
-    }
+    // No hay select para resetear
 
 }
 
@@ -545,7 +501,7 @@ function mostrarRecibo(data) {
           <p><strong>Fecha:</strong> ${fechaActual}</p>
           <p><strong>Hora:</strong> ${horaActual}</p>
           <p><strong>Métodos de pago:</strong><br>${pagosTexto}</p>
-          ${selectCliente.value ? `<p><strong>Cliente:</strong> ${selectCliente.options[selectCliente.selectedIndex].text}</p>` : ''}
+          ${clienteSeleccionadoNombre ? `<p><strong>Cliente:</strong> ${clienteSeleccionadoNombre}</p>` : ''}
         </div>
         <table>
           <thead>
@@ -684,7 +640,7 @@ const data = {
     tipo_comprobante: 'TICKET',
     nro_comprobante: Date.now().toString(),
     id_iva: 1,
-    id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+    id_cliente: (clienteSeleccionadoId && clienteSeleccionadoId !== 0) ? Number(clienteSeleccionadoId) : null,
     id_usuario: Number(idUsuario)
 };
 
@@ -751,14 +707,107 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarMetodosPago();
     cargarClientes();
     actualizarTotales();
+    
+    // ---------------- Sugerencias para productos ----------------
+    function renderSugerenciasProductos(term) {
+        if (!sugerenciasProductos) return;
+        sugerenciasProductos.innerHTML = '';
+        const q = (term || '').trim().toLowerCase();
+        if (!q) { sugerenciasProductos.style.display = 'none'; return; }
 
-    // Al seleccionar un producto en el select nativo, agregarlo y volver al placeholder
-    if (selectProducto) {
-        selectProducto.addEventListener('change', () => {
-            const val = selectProducto.value;
-            if (val) agregarProducto(val);
+        const matches = productosLista.filter(p => {
+            const nombre = (p.nombre || '').toLowerCase();
+            const codigo = String(p.codigo_barras || '').toLowerCase();
+            return nombre.includes(q) || codigo.includes(q);
+        }).slice(0, 10);
+
+        if (matches.length === 0) { sugerenciasProductos.style.display = 'none'; return; }
+
+        matches.forEach(m => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action';
+            li.textContent = `${m.nombre} (${m.codigo_barras})`;
+            li.dataset.codigo = m.codigo_barras;
+            li.addEventListener('click', () => {
+                agregarProducto(li.dataset.codigo);
+                sugerenciasProductos.classList.add('d-none');
+                if (buscarProductoInput) buscarProductoInput.value = '';
+            });
+            sugerenciasProductos.appendChild(li);
+        });
+        sugerenciasProductos.classList.remove('d-none');
+    }
+
+    if (buscarProductoInput) {
+        buscarProductoInput.addEventListener('input', (e) => renderSugerenciasProductos(e.target.value));
+        buscarProductoInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                // intentar agregar la primera sugerencia
+                const first = sugerenciasProductos?.querySelector('li');
+                if (first) {
+                    agregarProducto(first.dataset.codigo);
+                    sugerenciasProductos.classList.add('d-none');
+                    buscarProductoInput.value = '';
+                }
+            }
         });
     }
+
+    // ---------------- Sugerencias para clientes ----------------
+    function renderSugerenciasClientes(term) {
+        if (!sugerenciasClientes) return;
+        sugerenciasClientes.innerHTML = '';
+        const q = (term || '').trim().toLowerCase();
+        if (!q) { sugerenciasClientes.style.display = 'none'; return; }
+
+        const matches = (clientesLista || []).filter(c => {
+            const nombre = ((c.nombre || '') + ' ' + (c.apellido || '')).toLowerCase();
+            const cuit = String(c.cuil_cuit || c.cuit || '').toLowerCase();
+            return nombre.includes(q) || cuit.includes(q);
+        }).slice(0, 10);
+
+        if (matches.length === 0) { sugerenciasClientes.style.display = 'none'; return; }
+
+        matches.forEach(c => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item list-group-item-action';
+            li.textContent = `${c.nombre} ${c.apellido} ${c.cuil_cuit ? ('('+c.cuil_cuit+')') : ''}`;
+            li.dataset.id = c.id_cliente || c.id || null;
+            li.addEventListener('click', () => {
+                clienteSeleccionadoId = li.dataset.id ? Number(li.dataset.id) : null;
+                clienteSeleccionadoNombre = `${c.nombre} ${c.apellido}`;
+                if (buscarClienteInput) buscarClienteInput.value = clienteSeleccionadoNombre;
+                sugerenciasClientes.classList.add('d-none');
+            });
+            sugerenciasClientes.appendChild(li);
+        });
+        sugerenciasClientes.classList.remove('d-none');
+    }
+
+    if (buscarClienteInput) {
+        buscarClienteInput.addEventListener('input', (e) => renderSugerenciasClientes(e.target.value));
+        buscarClienteInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const first = sugerenciasClientes?.querySelector('li');
+                if (first) {
+                    // simular click
+                    first.click();
+                }
+            }
+        });
+    }
+
+    // Cerrar sugerencias al hacer click fuera
+    document.addEventListener('click', (e) => {
+        if (sugerenciasProductos && !((e.target === buscarProductoInput) || buscarProductoInput?.contains(e.target) || sugerenciasProductos.contains(e.target))) {
+            sugerenciasProductos.classList.add('d-none');
+        }
+        if (sugerenciasClientes && !((e.target === buscarClienteInput) || buscarClienteInput?.contains(e.target) || sugerenciasClientes.contains(e.target))) {
+            sugerenciasClientes.classList.add('d-none');
+        }
+    });
 });
 
 
