@@ -713,7 +713,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!sugerenciasProductos) return;
         sugerenciasProductos.innerHTML = '';
         const q = (term || '').trim().toLowerCase();
-        if (!q) { sugerenciasProductos.style.display = 'none'; return; }
+    if (!q) { sugerenciasProductos.classList.add('d-none'); return; }
 
         const matches = productosLista.filter(p => {
             const nombre = (p.nombre || '').toLowerCase();
@@ -721,7 +721,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return nombre.includes(q) || codigo.includes(q);
         }).slice(0, 10);
 
-        if (matches.length === 0) { sugerenciasProductos.style.display = 'none'; return; }
+    if (matches.length === 0) { sugerenciasProductos.classList.add('d-none'); return; }
 
         matches.forEach(m => {
             const li = document.createElement('li');
@@ -759,7 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!sugerenciasClientes) return;
         sugerenciasClientes.innerHTML = '';
         const q = (term || '').trim().toLowerCase();
-        if (!q) { sugerenciasClientes.style.display = 'none'; return; }
+    if (!q) { sugerenciasClientes.classList.add('d-none'); return; }
 
         const matches = (clientesLista || []).filter(c => {
             const nombre = ((c.nombre || '') + ' ' + (c.apellido || '')).toLowerCase();
@@ -767,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return nombre.includes(q) || cuit.includes(q);
         }).slice(0, 10);
 
-        if (matches.length === 0) { sugerenciasClientes.style.display = 'none'; return; }
+    if (matches.length === 0) { sugerenciasClientes.classList.add('d-none'); return; }
 
         matches.forEach(c => {
             const li = document.createElement('li');
