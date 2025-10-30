@@ -17,6 +17,13 @@ session_set_cookie_params([
     'samesite' => 'Strict'
 ]);
 
+// ✅ Permitir también llamadas tipo api.php?ruta=historial
+if (isset($_GET['ruta'])) {
+    $ruta = $_GET['ruta'];
+    $recurso = explode('/', trim($ruta, '/'))[0];
+}
+
+
 // Iniciar sesión solo si no está iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -148,10 +155,9 @@ switch ($recurso) {
     // Historial
     case 'historial':
     case 'historial_ventas':
+        require_once __DIR__ . '/../../config/database.php';
         require_once __DIR__ . '/../controllers/historialController.php';
-        require_once __DIR__ . '/../../config/database.php'; // conexión PDO (si no está ya cargada)
-
-        obtenerHistorialController($pdo); // Llamada a la función del controlador
+        
         break;
 
     default:

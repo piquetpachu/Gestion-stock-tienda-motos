@@ -1,16 +1,34 @@
 <?php
 
-function obtenerHistorialPorFechas($pdo, $desde, $hasta)
+/**
+ * -----------------------------------------------------------
+ * MODELO: HISTORIAL DE VENTAS
+ * -----------------------------------------------------------
+ * Contiene las funciones para consultar el historial de ventas
+ * filtrado por rango de fechas y generar un resumen por medio de pago.
+ * -----------------------------------------------------------
+ */
+
+require_once 'venta_medio_pago.php'; // Por coherencia estructural
+
+/**
+ * Obtener el historial de ventas entre dos fechas
+ *
+ * @param PDO $pdo Conexión a la base de datos
+ * @param string|null $desde Fecha de inicio (Y-m-d)
+ * @param string|null $hasta Fecha de fin (Y-m-d)
+ * @return array Resultado con listado de ventas y resumen
+ */
+function obtenerHistorialPorFechas($pdo, $desde = null, $hasta = null)
 {
-    // Si no se seleccionan fechas, usar el día actual
+    // Si no se seleccionan fechas, se usa el día actual
     if (empty($desde)) $desde = date('Y-m-d');
     if (empty($hasta)) $hasta = date('Y-m-d');
 
-    // Agregar horas para incluir todo el rango de días
+    // Se agregan las horas para cubrir todo el día
     $desde .= ' 00:00:00';
     $hasta .= ' 23:59:59';
 
-    // ✅ Consulta corregida según tu estructura real
     $sql = "SELECT 
                 v.id_venta AS id, 
                 v.fecha, 
@@ -41,9 +59,11 @@ function obtenerHistorialPorFechas($pdo, $desde, $hasta)
             'cuenta corriente' => 0
         ];
 
-        // Procesar los resultados
+        // Procesar las filas obtenidas
         foreach ($result as $row) {
             $id = $row['id'];
+
+            // Crear entrada base de la venta si no existe aún
             if (!isset($ventas[$id])) {
                 $ventas[$id] = [
                     'id' => $id,
@@ -53,7 +73,8 @@ function obtenerHistorialPorFechas($pdo, $desde, $hasta)
                 ];
             }
 
-            if ($row['medio_pago']) {
+            // Agregar información de medios de pago
+            if (!empty($row['medio_pago'])) {
                 $ventas[$id]['pagos'][] = [
                     'medio_pago' => $row['medio_pago'],
                     'monto' => $row['monto'],
@@ -61,19 +82,21 @@ function obtenerHistorialPorFechas($pdo, $desde, $hasta)
                     'fecha_pago' => $row['fecha_pago']
                 ];
 
-                // Sumar al resumen
+                // Normalizar y sumar al resumen
                 $medio = strtolower(trim($row['medio_pago']));
                 if (isset($resumen[$medio])) {
-                    $resumen[$medio] += $row['monto'];
+                    $resumen[$medio] += floatval($row['monto']);
                 }
             }
         }
 
+        // Retornar estructura final coherente con otros modelos
         return [
             'success' => true,
             'ventas' => array_values($ventas),
             'resumen' => $resumen
         ];
+
     } catch (PDOException $e) {
         return [
             'success' => false,

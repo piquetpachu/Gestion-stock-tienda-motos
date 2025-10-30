@@ -1,29 +1,32 @@
 <?php
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../models/historial.php';
+require_once __DIR__ . '/../helpers/middlewares.php';
 
-require_once __DIR__ . '/../models/historial.php';  // Importa el modelo
-
-function obtenerHistorialController($pdo)
-{
-    // Obtener parámetros GET si existen
-    $desde = isset($_GET['desde']) ? $_GET['desde'] : null;
-    $hasta = isset($_GET['hasta']) ? $_GET['hasta'] : null;
-
-    try {
-        $resultado = obtenerHistorialPorFechas($pdo, $desde, $hasta);
-
-        // Respuesta JSON
-        header('Content-Type: application/json');
-        echo json_encode([
-            'success' => true,
-            'data' => $resultado
-        ]);
-    } catch (Exception $e) {
-        // Manejo de errores
-        http_response_code(500);
-        echo json_encode([
-            'success' => false,
-            'error' => 'Error al obtener el historial',
-            'detalle' => $e->getMessage()
-        ]);
-    }
+// Validar que sea GET
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    echo json_encode(["error" => "Método no permitido"]);
+    exit;
 }
+
+// Autorización
+autorizar(['admin', 'vendedor']);
+
+// Leer parámetros
+$desde = $_GET['desde'] ?? null;
+$hasta = $_GET['hasta'] ?? null;
+
+// Validar formato de fechas (YYYY-MM-DD)
+if ($desde && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $desde)) {
+    echo json_encode(['success' => false, 'error' => 'Formato inválido en parámetro "desde".']);
+    exit;
+}
+
+if ($hasta && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $hasta)) {
+    echo json_encode(['success' => false, 'error' => 'Formato inválido en parámetro "hasta".']);
+    exit;
+}
+
+// Ejecutar consulta
+$resultado = obtenerHistorialPorFechas($pdo, $desde, $hasta);
+echo json_encode($resultado);
