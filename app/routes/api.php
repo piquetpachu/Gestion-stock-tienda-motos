@@ -159,6 +159,12 @@ switch ($recurso) {
 
 
 
+    case 'historial':
+    case 'historial_ventas':
+        require_once __DIR__ . '/../../config/database.php';
+        require_once __DIR__ . '/../controllers/historialController.php';
+        break;
+
     default:
         echo json_encode(["error" => "Ruta no válida"]);
         break;
