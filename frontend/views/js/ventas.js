@@ -666,6 +666,20 @@ function finalizarVenta() {
         id_usuario: Number(idUsuario)
     };
 
+    // Añadir número de cuotas si corresponde (tarjeta crédito)
+    try {
+        const selCuotas = document.getElementById('cuotas');
+        if (selectMetodoPago.value === '4' && selCuotas) {
+            data.cuotas = parseInt(selCuotas.value) || 1;
+        } else {
+            data.cuotas = 1;
+        }
+    } catch (e) {
+        data.cuotas = 1;
+    }
+
+    console.log('Cuotas enviadas:', data.cuotas);
+
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
 
