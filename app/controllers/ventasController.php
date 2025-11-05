@@ -27,17 +27,15 @@ switch (true) {
     // Crear la venta normalmente
     $resultado = crearVenta($pdo, $datos);
 
-    // Si la venta se creó correctamente y devuelve un ID
-    if (isset($resultado['id_venta']) && isset($datos['cuotas']) && $datos['cuotas'] > 1) {
-        require_once __DIR__ . '/ventaCuotaController.php';
-        $accion = 'crear_cuotas';
-        $_POST = [
-            'id_venta' => $resultado['id_venta'],
-            'monto_total' => $datos['monto_total'],
-            'cuotas' => $datos['cuotas']
-        ];
-        include __DIR__ . '/ventaCuotaController.php';
+    // Si la venta devolvió un error, responder con 500 para que el frontend lo detecte
+    if (isset($resultado['error'])) {
+        http_response_code(500);
+        echo json_encode($resultado);
+        break;
     }
+
+    // Las cuotas ya son generadas en el modelo (crearVenta -> crearCuotas).
+    // Evitamos generar cuotas nuevamente desde aquí para no duplicar registros.
 
     echo json_encode($resultado);
     break;

@@ -669,9 +669,13 @@ function finalizarVenta() {
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
 
+    // Debug: mostrar payload en consola
+    console.log('Payload crear_venta:', data);
+
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
         .then(res => {
