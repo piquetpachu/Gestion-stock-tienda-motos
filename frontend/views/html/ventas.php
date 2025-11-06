@@ -94,12 +94,12 @@
               <input type="number" class="form-control text-end" id="descuento" min="0" value="0">
             </div>
             <div class="col-6">
-              <label for="total_venta" class="form-label">Total + IVA</label>
+              <label for="total_venta" class="form-label">Total</label>
               <input type="text" class="form-control text-end" id="total_venta" readonly>
             </div>
           </div>
 
-          <input type="hidden" id="iva" value="21">
+          
 
           <!-- Botones -->
           <div class="d-flex justify-content-between mb-3 flex-wrap gap-2">

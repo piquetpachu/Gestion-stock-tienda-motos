@@ -12,7 +12,7 @@ function obtenerItemsDeVenta($pdo, $idVenta) {
 
 function agregarItemAVenta($pdo, $idVenta, $item) {
     $stmt = $pdo->prepare("INSERT INTO venta_item 
-        (id_venta, id_producto, cantidad, precio_unitario, descuento, iva)
+        (id_venta, id_producto, cantidad, precio_unitario, descuento)
         VALUES (?, ?, ?, ?, ?, ?)");
     $stmt->execute([
         $idVenta,
@@ -20,7 +20,7 @@ function agregarItemAVenta($pdo, $idVenta, $item) {
         $item['cantidad'],
         $item['precio_unitario'],
         $item['descuento'] ?? 0,
-        $item['iva'] ?? 0
+        
     ]);
 
     // Actualizar stock
@@ -35,14 +35,14 @@ function actualizarItemVenta($pdo, $idItem, $datos) {
                 cantidad = ?, 
                 precio_unitario = ?, 
                 descuento = ?, 
-                iva = ? 
+                
             WHERE id_venta_item = ?";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([
         $datos['cantidad'],
         $datos['precio_unitario'],
         $datos['descuento'] ?? 0,
-        $datos['iva'] ?? 0,
+       
         $idItem
     ]);
     return $stmt->rowCount() > 0;
