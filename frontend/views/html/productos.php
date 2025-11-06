@@ -46,6 +46,12 @@
         </select>
       </div>
     </div>
+      <div class="row mb-3">
+        <div class="col-md-12 d-flex align-items-center gap-2">
+          <input type="checkbox" id="mostrar_inactivos" />
+          <label for="mostrar_inactivos" class="mb-0">Mostrar productos inactivos</label>
+        </div>
+      </div>
 
     <!-- Tabla -->
     <div class="table-responsive">

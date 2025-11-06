@@ -35,10 +35,33 @@ function obtenerProductos($pdo)
 
 function crearVenta($pdo, $datos)
 {
+    // Validación: evitar vender productos inactivos (activo = 0 en la BD)
+    if (empty($datos['items']) || !is_array($datos['items'])) {
+        return ["error" => "No se enviaron items para la venta"];
+    }
+
+    $ids = array_unique(array_map(function($it){ return intval($it['id_producto']); }, $datos['items']));
+    if (count($ids) > 0) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $sqlCheck = "SELECT id_producto, nombre, activo FROM producto WHERE id_producto IN ($placeholders)";
+        $stmtCheck = $pdo->prepare($sqlCheck);
+        $stmtCheck->execute($ids);
+        $inactivos = [];
+        while ($row = $stmtCheck->fetch(PDO::FETCH_ASSOC)) {
+            if (isset($row['activo']) && intval($row['activo']) === 0) {
+                $inactivos[] = ['id_producto' => $row['id_producto'], 'nombre' => $row['nombre'] ?? ''];
+            }
+        }
+        if (!empty($inactivos)) {
+            return ["error" => "No se pueden vender productos inactivos", "productos_inactivos" => $inactivos];
+        }
+    }
+
     $pdo->beginTransaction();
 
     try {
         // Insertar en tabla venta (ahora también guardamos id_cliente)
+        // Corrección de placeholders: hay 5 valores después de NOW() (monto_total, tipo_comprobante, nro_comprobante, id_usuario, id_cliente)
         $stmt = $pdo->prepare("INSERT INTO venta (fecha, monto_total, tipo_comprobante, nro_comprobante, id_usuario, id_cliente) 
                        VALUES (NOW(), ?, ?, ?, ?, ?)");
         $stmt->execute([
@@ -53,6 +76,7 @@ function crearVenta($pdo, $datos)
 
         // Insertar productos vendidos
         foreach ($datos['items'] as $item) {
+            // Corregir placeholders: 5 columnas -> 5 marcadores
             $stmtItem = $pdo->prepare("INSERT INTO venta_item (id_venta, id_producto, cantidad, precio_unitario, descuento) 
                                        VALUES (?, ?, ?, ?, ?)");
             $stmtItem->execute([

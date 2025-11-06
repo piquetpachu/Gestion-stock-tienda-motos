@@ -1,6 +1,12 @@
 <?php
-function obtenerProductos($pdo) {
-    $stmt = $pdo->query("SELECT * FROM producto");
+function obtenerProductos($pdo, $mostrarInactivos = false) {
+    // Por defecto solo devolver productos activos (activo = 1).
+    // Si $mostrarInactivos es true, devolver todos los productos.
+    if ($mostrarInactivos) {
+        $stmt = $pdo->query("SELECT * FROM producto");
+    } else {
+        $stmt = $pdo->query("SELECT * FROM producto WHERE activo = 1");
+    }
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

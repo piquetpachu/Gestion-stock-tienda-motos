@@ -101,40 +101,53 @@
     }
 
     // Obtener rol y mostrar botón de agregar si corresponde
-// Obtener rol y mostrar botón de agregar si corresponde
-// === Obtener rol del usuario y luego cargar productos ===
-fetch(API_URL + "usuario-info")
-  .then((r) => r.json())
-  .then((data) => {
-    console.log("Rol detectado:", data.rol);
-    usuarioRol = data.rol;
+    // === Obtener rol del usuario y luego cargar productos ===
+    fetch(API_URL + "usuario-info")
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("Rol detectado:", data.rol);
+        usuarioRol = data.rol;
 
-    const btn = document.getElementById("btnAgregarProducto");
-    const colAcc = document.getElementById("colAcciones");
+        const btn = document.getElementById("btnAgregarProducto");
+        const colAcc = document.getElementById("colAcciones");
 
-    if (usuarioRol === "admin") {
-      if (btn) btn.classList.remove('d-none');
-      if (colAcc) colAcc.style.display = "";
-    } else {
-      if (btn) btn.classList.add('d-none');
-      if (colAcc) colAcc.style.display = "none";
-    }
+        if (usuarioRol === "admin") {
+          if (btn) btn.classList.remove('d-none');
+          if (colAcc) colAcc.style.display = "";
+        } else {
+          if (btn) btn.classList.add('d-none');
+          if (colAcc) colAcc.style.display = "none";
+        }
 
-    // 🔹 Ahora sí, cargamos productos después de saber el rol
-    cargarProductos();
-  })
-  .catch((err) => {
-    console.warn("productos.js: error usuario-info", err);
-    // En caso de error igual cargamos productos, pero sin mostrar botón
-    usuarioRol = "vendedor";
-    const btn = document.getElementById("btnAgregarProducto");
-    if (btn) btn.style.display = "none";
-    cargarProductos();
-  });
+        // Configurar checkbox de mostrar inactivos según preferencia guardada
+        const chkMostrar = document.getElementById('mostrar_inactivos');
+        const pref = localStorage.getItem('mostrar_inactivos') === '1';
+        if (chkMostrar) {
+          chkMostrar.checked = pref;
+          chkMostrar.addEventListener('change', () => {
+            localStorage.setItem('mostrar_inactivos', chkMostrar.checked ? '1' : '0');
+            paginaActual = 1;
+            cargarProductos(chkMostrar.checked);
+          });
+        }
+
+        // Cargar productos respetando la preferencia
+        cargarProductos(pref);
+      })
+      .catch((err) => {
+        console.warn("productos.js: error usuario-info", err);
+        // En caso de error igual cargamos productos, pero sin mostrar botón
+        usuarioRol = "vendedor";
+        const btn = document.getElementById("btnAgregarProducto");
+        if (btn) btn.style.display = "none";
+        const pref = localStorage.getItem('mostrar_inactivos') === '1';
+        cargarProductos(pref);
+      });
 
 
-    function cargarProductos() {
-      fetch(API_URL + "productos")
+    function cargarProductos(mostrarInactivos = false) {
+      const url = API_URL + "productos" + (mostrarInactivos ? "?show_inactivos=1" : "");
+      fetch(url)
         .then((res) => res.json())
         .then((data) => {
           productos = data || [];
@@ -206,9 +219,10 @@ fetch(API_URL + "usuario-info")
           else if (stockVal <= 0) clsStock = "text-danger"; // rojo
           else if (stockVal <= stockMin) clsStock = "text-warning"; // amarillo
 
+          const filaCls = (p.activo != null && Number(p.activo) === 0) ? 'producto-inactivo' : '';
           return `
-    <tr data-id="${p.id_producto}">
-      <td>${p.nombre}</td>
+    <tr data-id="${p.id_producto}" class="${filaCls}">
+      <td class="nombre-producto">${p.nombre}</td>
       <td>${p.precio_venta || 0}</td>
       <td>${p.precio_compra || 0}</td>
       <td class="${clsStock}">${stockVal}</td>
@@ -376,7 +390,8 @@ fetch(API_URL + "usuario-info")
           stock: parseInt(document.getElementById("stock")?.value) || 0,
           id_proveedor: document.getElementById("id_proveedor")?.value || null,
           id_rubro: document.getElementById("id_rubro")?.value || null,
-          activo: document.getElementById("activo")?.checked ? 1 : 0,
+          // El campo 'activo' es un <select> con value '1' o '0'
+          activo: parseInt(document.getElementById("activo")?.value ?? '1', 10) || 0,
           stock_minimo:
             parseInt(document.getElementById("stock_minimo")?.value) || 0,
           codigo_barras: (
