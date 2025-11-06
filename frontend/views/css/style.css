@@ -362,3 +362,29 @@ body.dark-theme .btn-danger {
 .venta-item:last-child {
   border-bottom: none;
 }
+
+/* Visual distinguish inactive products when shown */
+.producto-inactivo {
+  background-color: rgba(220, 53, 69, 0.06) !important; /* light red tone */
+  color: rgba(0,0,0,0.65) !important;
+}
+.producto-inactivo td {
+  opacity: 0.95;
+}
+.producto-inactivo .nombre-producto {
+  text-decoration: line-through;
+  color: rgba(0,0,0,0.6) !important;
+  font-style: italic;
+}
+
+/* Dark theme overrides: mantener texto en blanco tachado para mejor contraste */
+[data-bs-theme="dark"] .producto-inactivo {
+  background-color: rgba(220, 53, 69, 0.06) !important; /* mismo tono, se ve distinto en oscuro */
+}
+[data-bs-theme="dark"] .producto-inactivo td {
+  opacity: 0.95;
+}
+[data-bs-theme="dark"] .producto-inactivo .nombre-producto {
+  color: rgba(255,255,255,0.9) !important;
+  text-decoration: line-through;
+}

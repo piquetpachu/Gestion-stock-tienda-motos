@@ -7,7 +7,12 @@ require_once __DIR__ . '/../helpers/middlewares.php';
 switch (true) {
     case $ruta === 'productos' && $metodo === 'GET':
         autorizar(['admin', 'vendedor']);
-        echo json_encode(obtenerProductos($pdo));
+        // Permitir pasar parámetro GET show_inactivos=1 para incluir inactivos
+        $mostrarInactivos = false;
+        if (isset($_GET['show_inactivos']) && $_GET['show_inactivos'] == '1') {
+            $mostrarInactivos = true;
+        }
+        echo json_encode(obtenerProductos($pdo, $mostrarInactivos));
         break;
 
     case preg_match('/^producto\/(\d+)$/', $ruta, $matches) && $metodo === 'GET':
