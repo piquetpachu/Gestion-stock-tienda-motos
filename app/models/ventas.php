@@ -40,12 +40,11 @@ function crearVenta($pdo, $datos)
     try {
         // Insertar en tabla venta (ahora también guardamos id_cliente)
         $stmt = $pdo->prepare("INSERT INTO venta (fecha, monto_total, tipo_comprobante, nro_comprobante, id_usuario, id_cliente) 
-                       VALUES (NOW(), ?, ?, ?, ?, ?, ?)");
+                       VALUES (NOW(), ?, ?, ?, ?, ?)");
         $stmt->execute([
             $datos['monto_total'],
             $datos['tipo_comprobante'],
             $datos['nro_comprobante'],
-            
             $datos['id_usuario'],
             isset($datos['id_cliente']) && $datos['id_cliente'] !== '' ? $datos['id_cliente'] : null
         ]);
@@ -55,14 +54,13 @@ function crearVenta($pdo, $datos)
         // Insertar productos vendidos
         foreach ($datos['items'] as $item) {
             $stmtItem = $pdo->prepare("INSERT INTO venta_item (id_venta, id_producto, cantidad, precio_unitario, descuento) 
-                                       VALUES (?, ?, ?, ?, ?, ?)");
+                                       VALUES (?, ?, ?, ?, ?)");
             $stmtItem->execute([
                 $idVenta,
                 $item['id_producto'],
                 $item['cantidad'],
                 $item['precio_unitario'],
                 $item['descuento'] ?? 0,
-                
             ]);
 
             // Actualizar stock

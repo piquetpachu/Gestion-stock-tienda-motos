@@ -666,12 +666,30 @@ function finalizarVenta() {
         id_usuario: Number(idUsuario)
     };
 
+    // Añadir número de cuotas si corresponde (tarjeta crédito)
+    try {
+        const selCuotas = document.getElementById('cuotas');
+        if (selectMetodoPago.value === '4' && selCuotas) {
+            data.cuotas = parseInt(selCuotas.value) || 1;
+        } else {
+            data.cuotas = 1;
+        }
+    } catch (e) {
+        data.cuotas = 1;
+    }
+
+    console.log('Cuotas enviadas:', data.cuotas);
+
     botonFinalizar.disabled = true;
     botonFinalizar.textContent = 'Procesando...';
+
+    // Debug: mostrar payload en consola
+    console.log('Payload crear_venta:', data);
 
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
         .then(res => {
