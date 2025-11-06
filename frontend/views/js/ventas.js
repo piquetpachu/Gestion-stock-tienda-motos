@@ -4,7 +4,7 @@ const tablaProductosBody = document.querySelector('#tabla_productos tbody');
 
 // const inputPrecioUnitario = document.getElementById('precio_unitario');
 const inputDescuento = document.getElementById('descuento');
-const inputIVA = document.getElementById('iva');
+
 const inputTotalVenta = document.getElementById('total_venta');
 
 const selectMetodoPago = document.getElementById('metodo_de_pago');
@@ -28,7 +28,8 @@ let productosLista = [];
 let productosVenta = [];
 let metodosPagoLista = [];
 let reciboGuardado = null;
-// Select de clientes ahora es nativo (sin TomSelect)
+let tomSelectCliente = null; // TomSelect para clientes
+let tomSelectProducto = null; // TomSelect para productos
 
 // Formateador de moneda
 const formatearMoneda = valor =>
@@ -42,53 +43,92 @@ function buscarProductoPorCodigo(codigo) {
 
 // Cargar productos
 function cargarProductos() {
-    fetch(API_URL + 'productos', { credentials: 'same-origin' })
+    fetch(API_URL + 'productos')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener productos');
             return res.json();
         })
         .then(data => {
-            productosLista = data || [];
+            productosLista = data;
 
-            if (selectProducto) {
-                // Limpiar y agregar placeholder
-                selectProducto.innerHTML = '';
-                const optPlaceholder = document.createElement('option');
-                optPlaceholder.value = '';
-                optPlaceholder.textContent = 'Seleccionar producto';
-                optPlaceholder.disabled = true;
-                optPlaceholder.selected = true;
-                selectProducto.appendChild(optPlaceholder);
-
-                // Agregar opciones
-                productosLista.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.codigo_barras;
-                    opt.textContent = `${p.nombre}`;
-                    selectProducto.appendChild(opt);
+            // Inicializamos TomSelect solo si no existe
+            if (!tomSelectProducto) {
+                tomSelectProducto = new TomSelect(selectProducto, {
+                    create: false,
+                    sortField: { field: "nombre", direction: "asc" },
+                    valueField: "value",
+                    labelField: "nombre",
+                    searchField: ["nombre", "codigo_barras"],
+                    placeholder: "Seleccionar producto",
+                    openOnFocus: false, // NO abrir solo por focus (evita desplegar al cargar)
+                    onItemAdd: function (value) {
+                        agregarProducto(value);
+                        this.clear();
+                        setTimeout(() => this.close(), 50);
+                    }
                 });
+            } else {
+                tomSelectProducto.clearOptions();
+            }
 
-                if (productosLista.length === 0) {
-                    const noData = document.createElement('option');
-                    noData.value = '';
-                    noData.textContent = 'Sin productos disponibles';
-                    noData.disabled = true;
-                    selectProducto.appendChild(noData);
+            // Agregar todas las opciones
+            data.forEach(prod => {
+                tomSelectProducto.addOption({
+                    value: prod.codigo_barras,
+                    nombre: prod.nombre
+                });
+            });
+
+            // Refrescar opciones y cerrar dropdown
+            tomSelectProducto.refreshOptions();
+            tomSelectProducto.close();
+
+            // --- AÑADIMOS: permitir abrir con CLICK ---
+            // TomSelect expone el input real en control_input
+            setTimeout(() => {
+                const inputTom = tomSelectProducto.control_input;
+                if (inputTom) {
+                    // Al hacer click en el input, abrimos el dropdown manualmente
+                    inputTom.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
+
+                    // También abrir al hacer mousedown (mejor sensación de clic)
+                    inputTom.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        tomSelectProducto.open();
+                    });
                 }
+            }, 50);
+
+            // ENTER desde input (scanner o nombre completo)
+            const inputTomEnter = tomSelectProducto.control_input;
+            if (inputTomEnter) {
+                inputTomEnter.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const texto = inputTomEnter.value.trim();
+                        if (!texto) return;
+
+                        const producto = productosLista.find(p =>
+                            p.nombre.toLowerCase() === texto.toLowerCase() ||
+                            p.codigo_barras === texto
+                        );
+
+                        if (producto) {
+                            agregarProducto(producto.codigo_barras);
+                        }
+
+                        tomSelectProducto.clear();
+                        tomSelectProducto.focus();
+                    }
+                });
             }
         })
         .catch(error => {
             console.error('Error cargando productos:', error);
             alert('No se pudieron cargar los productos. Revisa la consola.');
-            if (selectProducto) {
-                selectProducto.innerHTML = '';
-                const optPlaceholder = document.createElement('option');
-                optPlaceholder.value = '';
-                optPlaceholder.textContent = 'Sin productos (error de carga)';
-                optPlaceholder.disabled = true;
-                optPlaceholder.selected = true;
-                selectProducto.appendChild(optPlaceholder);
-            }
         });
 }
 
@@ -96,7 +136,7 @@ function cargarProductos() {
 // Cargar métodos de pago
 function cargarMetodosPago() {
     // Conservar fetch para que la app siga conectada a la BD
-    fetch(API_URL + 'medios_pago', { credentials: 'same-origin' })
+    fetch(API_URL + 'medios_pago')
         .then(res => res.json())
         .then(data => {
             metodosPagoLista = data; // guardamos la info por si se necesita
@@ -121,63 +161,63 @@ function cargarMetodosPago() {
 // Cargar clientes
 
 function cargarClientes(seleccionarId = null) {
-    fetch(API_URL + 'clientes', { credentials: 'same-origin' })
+    fetch(API_URL + 'clientes')
         .then(res => {
             if (!res.ok) throw new Error('Error al obtener clientes');
             return res.json();
         })
         .then(data => {
-            const lista = Array.isArray(data) ? data : [];
-
-            // Limpiar y reconstruir select nativo
+            // Limpiamos select
             selectCliente.innerHTML = '';
 
-            // Buscar "Consumidor Final" en BD
-            const consumidorFinal = lista.find(c => String(c.id_cliente) === '1');
+            // Tomamos el primer cliente que sea "Consumidor Final" de la BD
+            const consumidorFinal = data.find(c => c.id_cliente == 1);
             if (consumidorFinal) {
                 const opcion = document.createElement('option');
-                opcion.value = String(consumidorFinal.id_cliente);
+                opcion.value = consumidorFinal.id_cliente;
                 opcion.textContent = `${consumidorFinal.nombre} ${consumidorFinal.apellido}`;
-                selectCliente.appendChild(opcion);
-            } else {
-                // Fallback a opción local "Consumidor Final"
-                const opcion = document.createElement('option');
-                opcion.value = '0';
-                opcion.textContent = 'Consumidor Final';
                 selectCliente.appendChild(opcion);
             }
 
-            // Agregar el resto de clientes
-            lista.forEach(cliente => {
-                const idStr = String(cliente.id_cliente);
-                if (idStr !== '0' && idStr !== (consumidorFinal ? String(consumidorFinal.id_cliente) : '')) {
+            // Agregamos el resto de clientes
+            data.forEach(cliente => {
+                if (cliente.id_cliente != 0) {
                     const opcion = document.createElement('option');
-                    opcion.value = idStr;
+                    opcion.value = cliente.id_cliente;
                     opcion.textContent = `${cliente.nombre} ${cliente.apellido}`;
                     selectCliente.appendChild(opcion);
                 }
             });
 
-            // Seleccionar valor por defecto
-            if (seleccionarId) {
-                selectCliente.value = String(seleccionarId);
-            } else if (consumidorFinal) {
-                selectCliente.value = String(consumidorFinal.id_cliente);
+            // Inicializamos o refrescamos TomSelect
+            if (!tomSelectCliente) {
+                tomSelectCliente = new TomSelect(selectCliente, {
+                    create: false,
+                    sortField: { field: "text", direction: "asc" }
+                });
             } else {
-                selectCliente.value = '0';
+                tomSelectCliente.clearOptions();
+                data.forEach(cliente => {
+                    tomSelectCliente.addOption({ value: cliente.id_cliente, text: `${cliente.nombre} ${cliente.apellido}` });
+                });
+                tomSelectCliente.refreshOptions();
+            }
+
+            // Seleccionamos por defecto
+            if (seleccionarId) {
+                tomSelectCliente.addItem(seleccionarId, true);
+            } else if (consumidorFinal) {
+                tomSelectCliente.addItem(consumidorFinal.id_cliente, true);
+            } else if (data.length > 0) {
+                tomSelectCliente.addItem(data[0].id_cliente, true); // Primer cliente de la lista si no hay Consumidor Final
             }
         })
         .catch(error => {
             console.error('Error cargando clientes:', error);
-            // Fallback: dejar "Consumidor Final"
-            selectCliente.innerHTML = '';
-            const opcion = document.createElement('option');
-            opcion.value = '0';
-            opcion.textContent = 'Consumidor Final';
-            selectCliente.appendChild(opcion);
-            selectCliente.value = '0';
+            alert('No se pudieron cargar los clientes. Revisa la consola.');
         });
 }
+
 
 // -------------------- CLIENTES --------------------
 
@@ -190,22 +230,12 @@ guardarClienteBtn.addEventListener('click', () => {
         return;
     }
 
-    // Sanitizar y validar CUIL/CUIT
-    const cuitDigits = (document.getElementById('cliente_cuit').value || '').replace(/\D/g, '');
-    if (cuitDigits.length !== 11) {
-        alert('El CUIL/CUIT debe tener 11 dígitos');
-        return;
-    }
-
-    // Sanitizar teléfono a solo dígitos (opcional vacío)
-    const telDigits = (document.getElementById('cliente_telefono').value || '').replace(/\D/g, '');
-
     const nuevoCliente = {
         nombre: document.getElementById('cliente_nombre').value.trim(),
         apellido: document.getElementById('cliente_apellido').value.trim(),
-        cuil_cuit: cuitDigits,
+        cuil_cuit: document.getElementById('cliente_cuit').value.trim(),
         email: document.getElementById('cliente_email').value.trim(),
-        telefono: telDigits,
+        telefono: document.getElementById('cliente_telefono').value.trim(),
         direccion: document.getElementById('cliente_direccion').value.trim()
     };
 
@@ -215,7 +245,6 @@ guardarClienteBtn.addEventListener('click', () => {
     fetch(API_URL + 'crear_cliente', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
         body: JSON.stringify(nuevoCliente)
     })
         .then(res => {
@@ -227,8 +256,7 @@ guardarClienteBtn.addEventListener('click', () => {
             formCliente.reset();
             guardarClienteBtn.disabled = false;
             guardarClienteBtn.textContent = 'Guardar';
-            const idNuevo = clienteCreado?.id || clienteCreado?.id_cliente || null;
-            cargarClientes(idNuevo);
+            cargarClientes(clienteCreado.id);
         })
         .catch(err => {
             alert('Error al guardar cliente: ' + err.message);
@@ -237,60 +265,17 @@ guardarClienteBtn.addEventListener('click', () => {
         });
 });
 
-// 🚀 Restricciones de entrada: CUIT/CUIL con máscara y Teléfono solo números
+// 🚀 Limitador CUIT también en modal de cliente
 document.addEventListener('DOMContentLoaded', () => {
     const inputCuitCliente = document.getElementById('cliente_cuit');
-    const inputTelefonoCliente = document.getElementById('cliente_telefono');
-
-    function isControlKey(e){
-        return ['Backspace','Delete','Tab','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].includes(e.key) || (e.ctrlKey || e.metaKey);
-    }
-    function maskCUITInput(el){
-        let val = (el.value || '').replace(/[^0-9\-]/g,'');
-        const digits = val.replace(/\D/g,'').slice(0,11);
-        let out = digits;
-        if (out.length > 2) out = out.slice(0,2) + '-' + out.slice(2);
-        if (out.length > 11) out = out.slice(0,11) + '-' + out.slice(11);
-        if (out.length > 13) out = out.slice(0,13);
-        el.value = out;
-    }
-    function onlyDigitsKeydown(e){ if (!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); }
-    function sanitizeDigitsPaste(e){
-        const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
-        const digits = data.replace(/\D+/g,'');
-        e.preventDefault();
-        const el = e.target;
-        const start = el.selectionStart; const end = el.selectionEnd;
-        const before = el.value.slice(0,start);
-        const after = el.value.slice(end);
-        el.value = before + digits + after;
-        const caret = (before + digits).length;
-        try { el.setSelectionRange(caret, caret); } catch {}
-        el.dispatchEvent(new Event('input', { bubbles:true }));
-    }
-
-    if (inputCuitCliente){
-        inputCuitCliente.addEventListener('keydown', (e)=>{ if(!isControlKey(e) && !/^\d$/.test(e.key)) e.preventDefault(); });
-        inputCuitCliente.addEventListener('paste', (e)=>{
-            const data = (e.clipboardData || window.clipboardData)?.getData('text') || '';
-            const digits = data.replace(/\D+/g,'').slice(0,11);
-            e.preventDefault();
-            const el = e.target;
-            const start = el.selectionStart; const end = el.selectionEnd;
-            const before = el.value.slice(0,start);
-            const after = el.value.slice(end);
-            el.value = before + digits + after;
-            maskCUITInput(el);
-        });
-        inputCuitCliente.addEventListener('input', ()=> maskCUITInput(inputCuitCliente));
-    }
-
-    if (inputTelefonoCliente){
-        inputTelefonoCliente.addEventListener('keydown', onlyDigitsKeydown);
-        inputTelefonoCliente.addEventListener('paste', sanitizeDigitsPaste);
-        inputTelefonoCliente.addEventListener('input', (e)=>{
-            const cleaned = e.target.value.replace(/\D+/g,'');
-            if (e.target.value !== cleaned) e.target.value = cleaned;
+    if (inputCuitCliente) {
+        inputCuitCliente.addEventListener('input', () => {
+            let val = inputCuitCliente.value;
+            val = val.replace(/[^0-9\-]/g, '');
+            if (val.length > 2 && val[2] !== '-') val = val.slice(0, 2) + '-' + val.slice(2);
+            if (val.length > 11 && val[11] !== '-') val = val.slice(0, 11) + '-' + val.slice(11);
+            if (val.length > 13) val = val.slice(0, 13);
+            inputCuitCliente.value = val;
         });
     }
 });
@@ -300,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function agregarProducto(codigoSeleccionado = null) {
-    let codigo = codigoSeleccionado || (selectProducto ? selectProducto.value : null);
+    let codigo = codigoSeleccionado || tomSelectProducto.getValue();
     if (!codigo) return;
 
     const producto = buscarProductoPorCodigo(codigo);
@@ -322,9 +307,10 @@ function agregarProducto(codigoSeleccionado = null) {
     actualizarTabla();
     actualizarTotales();
 
-    // Volver a la opción placeholder para evitar agregar repetidamente el mismo producto
-    if (selectProducto) {
-        selectProducto.selectedIndex = 0; // placeholder
+    if (tomSelectProducto) {
+        tomSelectProducto.clear();          // Limpiar el input
+        setTimeout(() => tomSelectProducto.close(), 50);  // Esperar 50ms y cerrar el dropdown
+        tomSelectProducto.focus();          // Volver a enfocar para seguir agregando productos
     }
 
 }
@@ -405,31 +391,23 @@ function actualizarTabla() {
     });
 }
 
-
 function actualizarTotales() {
     // Calcular subtotal
     const subtotal = productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0);
 
-    // Leer descuento e IVA
+    // Leer descuento 
     const descuentoPerc = parseFloat(inputDescuento.value) || 0;
-    const ivaPerc = parseFloat(inputIVA.value) || 0;
 
     // Aplicar descuento
-    const montoConDescuento = subtotal * (1 - descuentoPerc / 100);
-
-    // Aplicar IVA
-
-    const totalFinal = montoConDescuento * (1 + ivaPerc / 100);
+    const totalFinal = subtotal * (1 - descuentoPerc / 100);
 
     // Actualizar campo total en formato moneda
     if (inputTotalVenta) {
-        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        inputTotalVenta.value = totalFinal.toLocaleString('es-AR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
-}
-
-// Listener para recalcular total al cambiar descuento
-if (inputDescuento) {
-    inputDescuento.addEventListener('input', actualizarTotales);
 }
 
 
@@ -576,7 +554,7 @@ function mostrarRecibo(data) {
         <div class="totales">
             <p>Subtotal: <span>${formatearMoneda(productosVenta.reduce((acc, p) => acc + p.precio * p.cantidad, 0))}</span></p>
             <p>Descuento: <span>${inputDescuento.value || 0}%</span></p>
-            <p>IVA: <span>${inputIVA.value || 0}%</span></p>
+            
             <p>Total Final: <span>${inputTotalVenta.value}</span></p>
         </div>
         <div class="gracias">
@@ -615,8 +593,8 @@ function finalizarVenta() {
         return;
     }
 
-    // Verificar si hay varios métodos seleccionados en el bloque visible
-    const variosActivos = document.querySelectorAll('#bloque_varios_metodos .form-check-input:checked');
+    // Verificar si hay varios métodos seleccionados
+    const variosActivos = document.querySelectorAll('#bloque_varios .pago-check:checked');
     const tieneVarios = variosActivos.length > 0;
 
     if (!tieneVarios && !selectMetodoPago.value) {
@@ -634,8 +612,8 @@ function finalizarVenta() {
         id_producto: p.id_producto,
         cantidad: p.cantidad,
         precio_unitario: p.precio,
-        descuento: parseFloat(inputDescuento.value) || 0,
-        iva: parseFloat(inputIVA.value) || 0
+        descuento: parseFloat(inputDescuento.value) || 0
+        
     }));
 
     let pagos = [];
@@ -643,20 +621,20 @@ function finalizarVenta() {
 
     if (tieneVarios) {
         variosActivos.forEach(chk => {
-            let idMetodo = null;
-            if (chk.id === 'varios_efectivo') idMetodo = 1;
-            else if (chk.id === 'varios_transferencia') idMetodo = 2;
-            else if (chk.id === 'varios_tarjeta') idMetodo = 4; // Tarjeta (crédito/débito genérico)
+            const idMetodo = parseInt(chk.id.replace('mp_', ''));
+            const montoInput = chk.closest('.metodo-pago').querySelector('.monto');
+            const montoRaw = montoInput?.value || '0';
 
-            const cont = chk.closest('.form-check');
-            const montoInput = cont ? cont.querySelector('input.form-control') : null;
-            const montoRaw = (montoInput?.value || '0').toString();
+            // Quitar formato de moneda antes de parsear
+            const monto = parseFloat(
+                montoRaw.replace(/\./g, '').replace(',', '.').replace('$', '')
+            ) || 0;
 
-            // Parsear número (permite coma o punto)
-            const monto = parseFloat(montoRaw.replace(/\./g, '').replace(',', '.')) || 0;
-
-            if (idMetodo && monto > 0) {
-                pagos.push({ id_medio_pago: idMetodo, monto });
+            if (monto > 0) {
+                pagos.push({
+                    id_medio_pago: idMetodo,
+                    monto: monto
+                });
             }
         });
 
@@ -677,32 +655,23 @@ function finalizarVenta() {
         });
     }
 
-const data = {
-    items,
-    pagos,
-    monto_total: totalVenta,
-    tipo_comprobante: 'TICKET',
-    nro_comprobante: Date.now().toString(),
-    id_iva: 1,
-    id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
-    id_usuario: Number(idUsuario)
-};
-
-// 👇 Agregamos este bloque ANTES del fetch
-if (selectMetodoPago.value === '4') { // Tarjeta crédito
-    const selectCuotas = document.getElementById('cuotas');
-    const cantidadCuotas = parseInt(selectCuotas?.value || '1');
-    data.cuotas = cantidadCuotas;
-} else {
-    data.cuotas = 1; // Por defecto
-}
+    const data = {
+        items,
+        pagos,
+        monto_total: totalVenta,
+        tipo_comprobante: 'TICKET',
+        nro_comprobante: Date.now().toString(),
+        
+        id_cliente: (selectCliente.value && selectCliente.value !== "0") ? Number(selectCliente.value) : null,
+        id_usuario: Number(idUsuario)
+    };
 
     botonFinalizar.disabled = true;
+    botonFinalizar.textContent = 'Procesando...';
 
     fetch(API_URL + 'crear_venta', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
         body: JSON.stringify(data)
     })
         .then(res => {
@@ -721,6 +690,8 @@ if (selectMetodoPago.value === '4') { // Tarjeta crédito
             actualizarTotales();
             selectMetodoPago.value = '';
             cambiarCamposMetodoPago();
+
+            
         })
         .catch(err => {
             mensajeResultado.textContent = 'Error al registrar la venta: ' + err.message;
@@ -730,6 +701,7 @@ if (selectMetodoPago.value === '4') { // Tarjeta crédito
         })
         .finally(() => {
             botonFinalizar.disabled = false;
+            botonFinalizar.textContent = 'Finalizar Venta';
         });
 }
 
@@ -744,36 +716,118 @@ botonCancelar.addEventListener('click', () => {
     cambiarCamposMetodoPago();
     mensajeResultado.textContent = '';
 });
- 
+
+// Cambios en método de pago
+selectMetodoPago.addEventListener('change', cambiarCamposMetodoPago);
+
 // -------------------- INICIALIZACIÓN --------------------
 document.addEventListener('DOMContentLoaded', () => {
     cargarProductos();
     cargarMetodosPago();
     cargarClientes();
     actualizarTotales();
-
-    // Al seleccionar un producto en el select nativo, agregarlo y volver al placeholder
-    if (selectProducto) {
-        selectProducto.addEventListener('change', () => {
-            const val = selectProducto.value;
-            if (val) agregarProducto(val);
-        });
-    }
 });
 
 
 
 // -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
-const btnVarios = document.getElementById('btn_varios_metodos');
-const bloqueVarios = document.getElementById('bloque_varios_metodos');
-btnVarios?.addEventListener('click', (e) => {
-    e.preventDefault();
-    const visible = bloqueVarios.style.display !== 'none';
-    bloqueVarios.style.display = visible ? 'none' : 'block';
+// -------------------- BOTÓN VARIOS MÉTODOS DE PAGO --------------------
+const btnVarios = document.getElementById('btn_varios');
+const contenedorVarios = document.getElementById('bloque_varios');
+let mostrandoVarios = false;
+let pagosVarios = [];
+
+btnVarios?.addEventListener('click', () => {
+    mostrandoVarios = !mostrandoVarios;
+    if (!contenedorVarios) return;
+    contenedorVarios.innerHTML = '';
+    if (!mostrandoVarios) return;
+
+    const html = document.createElement('div');
+    html.className = 'card bg-dark text-white p-3';
+    html.innerHTML = `<h6 class="text-center mb-3">Varios métodos de pago</h6>`;
+    contenedorVarios.appendChild(html);
+
+    // IDs según la BD: 1-Efectivo, 2-Transferencia, 3-Mercado Pago, 4-Tarjeta Crédito, 5-Tarjeta Débito, 6-Cta Corriente
+    const metodos = [
+        { id: 1, nombre: 'Efectivo' },
+        { id: 2, nombre: 'Transferencia' },
+        { id: 3, nombre: 'Mercado Pago' },
+        { id: 4, nombre: 'Tarjeta Crédito/Débito' },
+        { id: 6, nombre: 'Cuenta corriente' }
+    ];
+
+    metodos.forEach(m => {
+        const div = document.createElement('div');
+        div.className = 'form-check mb-2 metodo-pago';
+        div.dataset.id = m.id;
+
+        div.innerHTML = `
+           <input class="form-check-input pago-check" type="checkbox" id="mp_${m.id}">
+           <label class="form-check-label" for="mp_${m.id}">${m.nombre}</label>
+           <div class="detalles-pago mt-2"></div>
+       `;
+
+        html.appendChild(div);
+
+        const chk = div.querySelector('.pago-check');
+        const detalles = div.querySelector('.detalles-pago');
+
+        chk.addEventListener('change', () => {
+            detalles.innerHTML = '';
+            if (!chk.checked) return;
+
+            // Si es tarjeta (id 4)
+            if (m.id === 4) {
+                detalles.innerHTML = `
+                   <select class="form-select mb-2 tipo-tarjeta">
+                       <option value="">Seleccione tipo</option>
+                       <option value="debito">Débito</option>
+                       <option value="credito">Crédito</option>
+                   </select>
+                   <div class="cuotas-container mb-2" style="display:none;">
+                       <select class="form-select cuotas">
+                           <option value="1">1 cuota</option>
+                           <option value="3">3 cuotas</option>
+                           <option value="6">6 cuotas</option>
+                           <option value="12">12 cuotas</option>
+                       </select>
+                   </div>
+                   <input type="text" class="form-control monto" placeholder="Monto $">
+               `;
+
+                const tipoSel = detalles.querySelector('.tipo-tarjeta');
+                const cuotasDiv = detalles.querySelector('.cuotas-container');
+
+                tipoSel.addEventListener('change', () => {
+                    cuotasDiv.style.display = tipoSel.value === 'credito' ? 'block' : 'none';
+                });
+            } else {
+                detalles.innerHTML = `<input type="text" class="form-control monto" placeholder="Monto $">`;
+            }
+
+            // Formatear montos
+            detalles.querySelectorAll('.monto').forEach(input => {
+                // permitir solo números al escribir
+                                // permitir números y decimales
+                input.addEventListener('input', e => {
+                    // solo dígitos y coma/punto
+                    e.target.value = e.target.value.replace(/[^0-9.,]/g, '');
+                });
+
+
+                // aplicar formato recién al salir
+                input.addEventListener('blur', e => {
+                    e.target.value = formatoMoneda(e.target.value);
+                });
+            });
+
+    });
 });
 
 // Función para formato de moneda sin decimales
-function formatoMoneda(valor) {
+    
+    function formatoMoneda(valor) {
         if (valor == null || valor === '') return '';
 
         // Reemplazar comas por puntos y dejar solo dígitos y un punto
@@ -789,3 +843,5 @@ function formatoMoneda(valor) {
             maximumFractionDigits: 2
         });
     }
+
+});
