@@ -81,17 +81,7 @@
           </a>
         </li>
 
-          <!-- Dropdown Caja -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" role="button" data-bs-toggle="dropdown"
-              aria-expanded="false">
-              Caja
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalIngreso">Ingreso de dinero</a></li>
-              <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#modalCierre">Cierre de caja</a></li>
-            </ul>
-          </li>
+          
         </ul>
 
         <div class="d-flex align-items-center gap-2 ms-3">
